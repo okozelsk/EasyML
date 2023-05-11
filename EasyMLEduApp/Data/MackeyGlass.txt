@@ -1,0 +1,21 @@
+﻿Size         Length   Number of Features   Number of Dimensions   Type
+2288         1        1                    1 (value)              Time Point Data
+
+Dataset contains generated Mackey Glass chaotic time series (tau=17).
+
+
+Important:
+Data is designed for Reservoir Computer in feeding mode = TimePoint
+Necessary csv file format: the file always has the names of the values in the first
+line and separate values in the following lines, where each data line represents the values
+at one point in time.
+
+Source:
+Values were generated according to
+https://en.wikipedia.org/wiki/Mackey%E2%80%93Glass_equations
+tau=17
+
+Best referential accuracy:
+N/A
+
+

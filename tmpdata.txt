@@ -1,0 +1,150 @@
+
+Libras classification (15 classes) performed by the model based on EasyMLCore.FF.ClusterModelConfig.
+Loading ./Data/LibrasMovement_train.csv...
+Loading ./Data/LibrasMovement_verify.csv...
+Model configuration xml:
+<clusterModel foldDataRatio="0.05">
+  <networkModel attempts="2" epochs="2000" batchMinSizeMultiple="2" stopAttemptPatiency="0.9">
+    <rmsprop />
+    <hiddenLayers>
+      <layer neurons="50" activation="ReLU">
+        <dropout p="0.5" mode="Bernoulli" />
+      </layer>
+      <layer neurons="50" activation="ReLU">
+        <dropout p="0.5" mode="Bernoulli" />
+      </layer>
+    </hiddenLayers>
+    <learningThrottleValve throttlingSlope="2" />
+  </networkModel>
+</clusterModel>
+Model build...
+[Libras.Cluster.Net-F01] Attempt 2, Epoch 2000, Samples 165/15, BestNet-{TrainRMSE 1.509E-002/0/0, TestRMSE 9.738E-002/1/1, HWRMS 2.490E-001, OWRMS 4.408E-001}, CurrNet-{TrainRMSE 2.155E-002/1/1, TestRMSE 1.060E-001/2/1, HWRMS 2.501E-001, OWRMS 4.438E-001}
+[Libras.Cluster.Net-F02] Attempt 2, Epoch 2000, Samples 165/15, BestNet-{TrainRMSE 2.260E-002/0/0, TestRMSE 1.319E-001/2/2, HWRMS 2.304E-001, OWRMS 3.875E-001}, CurrNet-{TrainRMSE 1.822E-002/1/1, TestRMSE 1.643E-001/3/3, HWRMS 2.446E-001, OWRMS 4.487E-001}
+[Libras.Cluster.Net-F03] Attempt 2, Epoch 2000, Samples 165/15, BestNet-{TrainRMSE 2.215E-002/0/0, TestRMSE 1.043E-001/1/1, HWRMS 2.384E-001, OWRMS 4.071E-001}, CurrNet-{TrainRMSE 1.473E-002/0/0, TestRMSE 1.351E-001/2/2, HWRMS 2.477E-001, OWRMS 4.562E-001}
+[Libras.Cluster.Net-F04] Attempt 2, Epoch 2000, Samples 165/15, BestNet-{TrainRMSE 1.587E-002/0/0, TestRMSE 1.557E-001/3/3, HWRMS 2.414E-001, OWRMS 4.325E-001}, CurrNet-{TrainRMSE 1.754E-002/0/0, TestRMSE 1.629E-001/3/3, HWRMS 2.460E-001, OWRMS 4.421E-001}
+[Libras.Cluster.Net-F05] Attempt 2, Epoch 2000, Samples 165/15, BestNet-{TrainRMSE 2.770E-002/0/0, TestRMSE 1.571E-001/3/3, HWRMS 2.049E-001, OWRMS 4.197E-001}, CurrNet-{TrainRMSE 4.312E-003/0/0, TestRMSE 1.563E-001/3/3, HWRMS 2.428E-001, OWRMS 4.543E-001}
+[Libras.Cluster.Net-F06] Attempt 2, Epoch 2000, Samples 165/15, BestNet-{TrainRMSE 2.547E-002/0/0, TestRMSE 1.096E-001/1/1, HWRMS 2.204E-001, OWRMS 4.160E-001}, CurrNet-{TrainRMSE 1.377E-002/0/0, TestRMSE 1.510E-001/3/3, HWRMS 2.445E-001, OWRMS 4.433E-001}
+[Libras.Cluster.Net-F07] Attempt 2, Epoch 2000, Samples 165/15, BestNet-{TrainRMSE 1.995E-002/0/0, TestRMSE 7.547E-002/1/1, HWRMS 2.418E-001, OWRMS 4.253E-001}, CurrNet-{TrainRMSE 1.703E-002/0/0, TestRMSE 1.096E-001/2/2, HWRMS 2.437E-001, OWRMS 4.386E-001}
+[Libras.Cluster.Net-F08] Attempt 2, Epoch 2000, Samples 165/15, BestNet-{TrainRMSE 2.101E-002/0/0, TestRMSE 3.715E-002/0/0, HWRMS 2.435E-001, OWRMS 4.371E-001}, CurrNet-{TrainRMSE 2.824E-002/3/3, TestRMSE 7.418E-002/1/1, HWRMS 2.451E-001, OWRMS 4.410E-001}
+[Libras.Cluster.Net-F09] Attempt 2, Epoch 2000, Samples 165/15, BestNet-{TrainRMSE 1.262E-002/0/0, TestRMSE 9.082E-002/1/1, HWRMS 2.385E-001, OWRMS 4.107E-001}, CurrNet-{TrainRMSE 1.166E-002/0/0, TestRMSE 1.543E-001/3/3, HWRMS 2.438E-001, OWRMS 4.393E-001}
+[Libras.Cluster.Net-F10] Attempt 2, Epoch 2000, Samples 165/15, BestNet-{TrainRMSE 2.402E-002/1/0, TestRMSE 4.413E-002/0/0, HWRMS 2.433E-001, OWRMS 4.306E-001}, CurrNet-{TrainRMSE 2.034E-002/1/1, TestRMSE 9.889E-002/2/2, HWRMS 2.483E-001, OWRMS 4.400E-001}
+[Libras.Cluster.Net-F11] Attempt 2, Epoch 2000, Samples 165/15, BestNet-{TrainRMSE 2.310E-002/0/0, TestRMSE 1.381E-001/2/2, HWRMS 2.309E-001, OWRMS 3.942E-001}, CurrNet-{TrainRMSE 1.892E-002/1/0, TestRMSE 1.647E-001/3/3, HWRMS 2.496E-001, OWRMS 4.473E-001}
+[Libras.Cluster.Net-F12] Attempt 2, Epoch 2000, Samples 165/15, BestNet-{TrainRMSE 2.312E-002/0/0, TestRMSE 2.911E-002/0/0, HWRMS 2.269E-001, OWRMS 3.680E-001}, CurrNet-{TrainRMSE 2.125E-002/1/1, TestRMSE 1.150E-001/2/2, HWRMS 2.425E-001, OWRMS 4.375E-001}
+
+
+Model verification...
+
+
+Samples              : 180
+Categorical Errors   : 23
+Categorical Accuracy : 87.22%
+Low Probabilities    : 3 (right highest category probability, but less than 0.5)
+RMSE                 : 1.205E-001
+
+
+
+Libras classification (15 classes) performed by the model based on EasyMLCore.FF.NetworkModelConfig.
+Loading ./Data/LibrasMovement_train.csv...
+Loading ./Data/LibrasMovement_verify.csv...
+Model configuration xml:
+<networkModel attempts="2" epochs="2000" batchMinSizeMultiple="2" stopAttemptPatiency="0.9">
+  <rmsprop />
+  <hiddenLayers>
+    <layer neurons="50" activation="ReLU">
+      <dropout p="0.5" mode="Bernoulli" />
+    </layer>
+    <layer neurons="50" activation="ReLU">
+      <dropout p="0.5" mode="Bernoulli" />
+    </layer>
+  </hiddenLayers>
+  <learningThrottleValve throttlingSlope="2" />
+</networkModel>
+Model build...
+[Libras.Net] Attempt 2, Epoch 2000, Samples 180/180, BestNet-{TrainRMSE 1.417E-002/0/0, TestRMSE 1.417E-002/0/0, HWRMS 2.503E-001, OWRMS 4.403E-001}, CurrNet-{TrainRMSE 1.520E-002/0/0, TestRMSE 1.520E-002/0/0, HWRMS 2.520E-001, OWRMS 4.438E-001}
+
+
+Model verification...
+
+
+Samples              : 180
+Categorical Errors   : 28
+Categorical Accuracy : 84.44%
+Low Probabilities    : 1 (right highest category probability, but less than 0.5)
+RMSE                 : 1.328E-001
+
+
+
+Age Group classification (3 classes) performed by the model based on EasyMLCore.FF.ClusterModelConfig.
+Loading ./Data/ProximalPhalanxOutlineAgeGroup_train.csv...
+Loading ./Data/ProximalPhalanxOutlineAgeGroup_verify.csv...
+Model configuration xml:
+<clusterModel>
+  <networkModel attempts="2" epochs="2000" batchMinSizeMultiple="2" stopAttemptPatiency="0.9">
+    <rmsprop />
+    <hiddenLayers>
+      <layer neurons="50" activation="ReLU">
+        <dropout p="0.5" mode="Bernoulli" />
+      </layer>
+      <layer neurons="50" activation="ReLU">
+        <dropout p="0.5" mode="Bernoulli" />
+      </layer>
+    </hiddenLayers>
+    <learningThrottleValve throttlingSlope="2" />
+  </networkModel>
+</clusterModel>
+Model build...
+[Age Group.Cluster.Net-F01] Attempt 2, Epoch 2000, Samples 359/41, BestNet-{TrainRMSE 2.827E-002/0/0, TestRMSE 2.630E-001/4/4, HWRMS 2.767E-001, OWRMS 3.461E-001}, CurrNet-{TrainRMSE 1.163E-002/0/0, TestRMSE 3.415E-001/7/7, HWRMS 3.888E-001, OWRMS 4.295E-001}
+[Age Group.Cluster.Net-F02] Attempt 2, Epoch 2000, Samples 359/41, BestNet-{TrainRMSE 3.954E-002/0/0, TestRMSE 2.757E-001/4/4, HWRMS 2.817E-001, OWRMS 3.897E-001}, CurrNet-{TrainRMSE 4.973E-003/0/0, TestRMSE 2.874E-001/5/5, HWRMS 3.840E-001, OWRMS 3.961E-001}
+[Age Group.Cluster.Net-F03] Attempt 2, Epoch 2000, Samples 360/40, BestNet-{TrainRMSE 5.682E-002/1/1, TestRMSE 3.940E-001/9/9, HWRMS 2.687E-001, OWRMS 3.179E-001}, CurrNet-{TrainRMSE 1.605E-002/0/0, TestRMSE 4.674E-001/14/14, HWRMS 3.800E-001, OWRMS 4.256E-001}
+[Age Group.Cluster.Net-F04] Attempt 2, Epoch 2000, Samples 360/40, BestNet-{TrainRMSE 4.022E-002/0/0, TestRMSE 2.274E-001/3/3, HWRMS 2.879E-001, OWRMS 3.631E-001}, CurrNet-{TrainRMSE 1.991E-002/0/0, TestRMSE 3.676E-001/9/9, HWRMS 4.030E-001, OWRMS 4.478E-001}
+[Age Group.Cluster.Net-F05] Attempt 2, Epoch 2000, Samples 360/40, BestNet-{TrainRMSE 1.326E-002/0/0, TestRMSE 2.936E-001/5/5, HWRMS 3.536E-001, OWRMS 4.215E-001}, CurrNet-{TrainRMSE 1.196E-002/0/0, TestRMSE 3.482E-001/8/8, HWRMS 4.024E-001, OWRMS 4.297E-001}
+[Age Group.Cluster.Net-F06] Attempt 2, Epoch 2000, Samples 360/40, BestNet-{TrainRMSE 2.391E-002/0/0, TestRMSE 2.278E-001/3/3, HWRMS 3.186E-001, OWRMS 4.172E-001}, CurrNet-{TrainRMSE 1.359E-002/0/0, TestRMSE 2.923E-001/5/5, HWRMS 4.028E-001, OWRMS 4.499E-001}
+[Age Group.Cluster.Net-F07] Attempt 2, Epoch 2000, Samples 360/40, BestNet-{TrainRMSE 3.674E-002/0/0, TestRMSE 1.380E-001/1/1, HWRMS 3.322E-001, OWRMS 4.232E-001}, CurrNet-{TrainRMSE 2.056E-002/0/0, TestRMSE 2.594E-001/4/4, HWRMS 3.854E-001, OWRMS 4.350E-001}
+[Age Group.Cluster.Net-F08] Attempt 2, Epoch 2000, Samples 360/40, BestNet-{TrainRMSE 4.748E-002/0/0, TestRMSE 1.934E-001/2/2, HWRMS 2.588E-001, OWRMS 4.091E-001}, CurrNet-{TrainRMSE 8.810E-003/0/0, TestRMSE 2.097E-001/3/3, HWRMS 3.847E-001, OWRMS 4.551E-001}
+[Age Group.Cluster.Net-F09] Attempt 2, Epoch 2000, Samples 360/40, BestNet-{TrainRMSE 8.666E-002/4/4, TestRMSE 3.041E-001/5/5, HWRMS 2.224E-001, OWRMS 2.485E-001}, CurrNet-{TrainRMSE 7.539E-003/0/0, TestRMSE 3.811E-001/9/9, HWRMS 3.916E-001, OWRMS 4.045E-001}
+[Age Group.Cluster.Net-F10] Attempt 2, Epoch 2000, Samples 362/38, BestNet-{TrainRMSE 6.975E-002/4/4, TestRMSE 3.582E-001/7/7, HWRMS 2.374E-001, OWRMS 3.861E-001}, CurrNet-{TrainRMSE 6.760E-003/0/0, TestRMSE 4.679E-001/13/13, HWRMS 3.693E-001, OWRMS 4.105E-001}
+
+
+Model verification...
+
+
+Samples              : 205
+Categorical Errors   : 35
+Categorical Accuracy : 82.93%
+Low Probabilities    : 0 (right highest category probability, but less than 0.5)
+RMSE                 : 3.062E-001
+
+
+
+Age Group classification (3 classes) performed by the model based on EasyMLCore.FF.NetworkModelConfig.
+Loading ./Data/ProximalPhalanxOutlineAgeGroup_train.csv...
+Loading ./Data/ProximalPhalanxOutlineAgeGroup_verify.csv...
+Model configuration xml:
+<networkModel attempts="2" epochs="2000" batchMinSizeMultiple="2" stopAttemptPatiency="0.9">
+  <rmsprop />
+  <hiddenLayers>
+    <layer neurons="50" activation="ReLU">
+      <dropout p="0.5" mode="Bernoulli" />
+    </layer>
+    <layer neurons="50" activation="ReLU">
+      <dropout p="0.5" mode="Bernoulli" />
+    </layer>
+  </hiddenLayers>
+  <learningThrottleValve throttlingSlope="2" />
+</networkModel>
+Model build...
+[Age Group.Net] Attempt 2, Epoch 2000, Samples 400/400, BestNet-{TrainRMSE 1.132E-002/0/0, TestRMSE 1.132E-002/0/0, HWRMS 4.320E-001, OWRMS 4.797E-001}, CurrNet-{TrainRMSE 1.609E-002/0/0, TestRMSE 1.609E-002/0/0, HWRMS 4.276E-001, OWRMS 4.692E-001}
+
+
+Model verification...
+
+
+Samples              : 205
+Categorical Errors   : 33
+Categorical Accuracy : 83.90%
+Low Probabilities    : 0 (right highest category probability, but less than 0.5)
+RMSE                 : 3.261E-001
+
+
+
+Press Enter to return to menu...

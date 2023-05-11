@@ -1,0 +1,19 @@
+﻿Train Size   Test Size   Length   Number of Classes   Number of Real Features  Number of Binary Features  Number of Dimensions   Type
+400          205         80       3                   1                        1                          1                      IMAGE
+
+This dataset was derived from original ProximalPhalanxOutlineAgeGroup dataset
+(see ProximalPhalanxOutlineAgeGroup.txt).
+In order to demonstrate the Reservoir Computer's possibility of computing several different
+tasks simultaneously in RC, two additional output values were added to the original dataset.
+The first is a real value calculated as the square root of the sum of the first six values
+of the input vector. The second is a binary value that is true when the first value in the
+input vector is greater than the eighth value.
+
+Source:
+https://timeseriesclassification.com/description.php?Dataset=ProximalPhalanxOutlineAgeGroup
+UEA & UCR Time Series Classification Repository
+
+Best referential accuracy:
+N/A
+
+

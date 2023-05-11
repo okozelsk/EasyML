@@ -1,0 +1,23 @@
+﻿Train Size   Test Size   Length   Number of Features   Number of Dimensions   Type
+1446         76          15       3                    3                      FIN
+
+Full dataset TTOO.csv contains time series of "T2 Biosystems, Inc. (TTOO)" real daily share prices
+downloaded from https://finance.yahoo.com/quote/TTOO/history?p=TTOO.
+Seven variables relate to each time point: Date, Open, High, Low, Close, Adj Close and Volume.
+Full dataset is here converted using:
+EasyMLCore.Data.CsvDataHolder.ConvertAndSaveContinuousTimeSeriesDataAsPatternizedDatasets
+to train (TTOO_patterns_train.csv) and test (TTOO_patterns_test.csv) part.
+Converted dataset contains on each data row:
+    15x3 features (High, Low, Adj Close)  =45 total input values
+    followed by
+    1x3 features (High, Low, Adj Close)   =3 ideal output features
+The data line is therefore made up of triplets of values connected in time.
+Each subsequent data row is shifted one time point into the future relative to the previous data row.
+
+Source:
+https://finance.yahoo.com/quote/TTOO/history?p=TTOO
+
+Best referential accuracy:
+N/A
+
+

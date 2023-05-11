@@ -1,0 +1,878 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema targetNamespace="ConfigTypes"
+           attributeFormDefault="unqualified"
+           elementFormDefault="unqualified"
+           xmlns="ConfigTypes"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           >
+  <!-- Defines types used in configurations. -->
+
+  <!-- Simple types -->
+  <!-- Enumerations -->
+  <!-- Computation output tasks type -->
+  <xs:simpleType name="OutputTaskTypeEnum">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Regression">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">A real-value(s) quantity computation.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="Binary">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Binary classification (one or more independent real-world binary decisions).</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="Categorical">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Multi-Class classification (more than two classes where one takes all in tne real-world).</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Activations -->
+  <xs:simpleType name="ActivationEnum">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="BentIdentity">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Bent Identity activation function.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="ElliotSig">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">ElliotSig activation function (aka Softsign).</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="ELU">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Exponential Linear Unit activation function.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="GELU">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Gaussian Error Linear Unit activation function.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="LeakyReLU">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Leaky Rectified Linear Unit activation function.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="Linear">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Linear activation function (aka Identity).</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="ReLU">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Rectified Linear Unit activation function.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="SELU">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Scaled Exponential Linear Unit activation function.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="Sigmoid">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Sigmoid activation function.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="Softmax">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Softmax activation function.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="Softplus">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Softplus activation function.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="TanH">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Hyperbolic Tangent activation function.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Reservoir activations -->
+  <xs:simpleType name="ReservoirActivationEnum">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="ElliotSig">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">ElliotSig activation function (aka Softsign).</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="TanH">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Hyperbolic Tangent activation function.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Reservoir input feeding -->
+  <xs:simpleType name="ReservoirInputFeedingEnum">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="TimePoint">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Data is fed continuously at separated time points and reservoir state is never reseted. Predictors are collected after each time point computation.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="Pattern">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Time series data is processed first from right to left (reversed time order). Predictors are collected and reservoir's state is reseted. Subsequently, the time series data is processed from left to right. And the second set of predictors is collected.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Reservoir output sections -->
+  <xs:simpleType name="ReservoirOutSection">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Activations">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Activation predictors.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="SquaredActivations">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Squared activation predictors.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="SpikesFadingTraces">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Spikes fading trace predictors.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="ResInputs">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Reservoir's input data.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+
+  
+  <!-- Schema of variables organization in a time series flat array -->
+  <xs:simpleType name="TSPatternFlatVarSchemaEnum">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Groupped">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">{v1[t1],v2[t1],v1[t2],v2[t2],v1[t3],v2[t3],...} where "v" means variable and "t" means time point.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="VarSequence">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">{v1[t1],v1[t2],v1[t3],v2[t1],v2[t2],v2[t3],...} where "v" means variable and "t" means time point.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Dropout mode -->
+  <xs:simpleType name="DropoutModeEnum">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="None">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">No dropout.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="Bernoulli">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Bernoulli dropout mode.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="Gaussian">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Gaussian dropout mode.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Auto option-->
+  <xs:simpleType name="AutoOptionType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Auto"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Full option-->
+  <xs:simpleType name="FullOptionType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Full"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- NA option-->
+  <xs:simpleType name="NAOptionType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="NA"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Numeric types -->
+  <!-- Nonzero unsigned integer -->
+  <xs:simpleType name="UIntGT0Type">
+    <xs:restriction base="xs:unsignedInt">
+      <xs:minInclusive value="1" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- UIntGT0Type with Auto option -->
+  <xs:simpleType name="UIntGT0AutoOptionType">
+    <xs:union memberTypes="UIntGT0Type AutoOptionType"/>
+  </xs:simpleType>
+
+  <!-- UIntGT0Type with Full and Auto options -->
+  <xs:simpleType name="UIntGT0FullAndAutoOptionType">
+    <xs:union memberTypes="UIntGT0Type AutoOptionType FullOptionType"/>
+  </xs:simpleType>
+
+  <!-- Unsigned double -->
+  <xs:simpleType name="UDoubleType">
+    <xs:restriction base="xs:double">
+      <xs:minInclusive value="0" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Unsigned double GT 0 -->
+  <xs:simpleType name="UDoubleGT0Type">
+    <xs:restriction base="xs:double">
+      <xs:minExclusive value="0" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Unsigned double GT 1 -->
+  <xs:simpleType name="UDoubleGT1Type">
+    <xs:restriction base="xs:double">
+      <xs:minExclusive value="1" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Unsigned double GT 0 LE 0.5-->
+  <xs:simpleType name="UDoubleGT0LE05Type">
+    <xs:restriction base="xs:double">
+      <xs:minExclusive value="0" />
+      <xs:maxInclusive value="0.5" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Unsigned double GE 0 LE 0.5-->
+  <xs:simpleType name="UDoubleGE0LE05Type">
+    <xs:restriction base="xs:double">
+      <xs:minInclusive value="0" />
+      <xs:maxInclusive value="0.5" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Unsigned double GT 0 LT 1-->
+  <xs:simpleType name="UDoubleGT0LT1Type">
+    <xs:restriction base="xs:double">
+      <xs:minExclusive value="0" />
+      <xs:maxExclusive value="1" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Unsigned double GT 0 LE 1-->
+  <xs:simpleType name="UDoubleGT0LE1Type">
+    <xs:restriction base="xs:double">
+      <xs:minExclusive value="0" />
+      <xs:maxInclusive value="1" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Unsigned double GE 0 LT 1-->
+  <xs:simpleType name="UDoubleGE0LT1Type">
+    <xs:restriction base="xs:double">
+      <xs:minInclusive value="0" />
+      <xs:maxExclusive value="1" />
+    </xs:restriction>
+  </xs:simpleType>
+
+
+  <!-- Complex types -->
+  <!-- MLP Network -->
+  <!-- Regularization -->
+  <!-- Dropout configuration -->
+  <xs:complexType name="DropoutConfig">
+    <xs:attribute type="UDoubleGE0LT1Type" name="p" use="optional" default="0">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies the dropout probability. Default is 0 (no dropout).</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="DropoutModeEnum" name="mode" use="optional" default="None">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies the dropout mode. Default is None (no dropout).</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <!-- Weights L1 (lasso) regularization configuration -->
+  <xs:complexType name="RegL1Config">
+    <xs:attribute type="UDoubleGE0LT1Type" name="strength" use="optional" default="0">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies the L1 penalty strength (lasso). Default is 0 (no L1 regularization).</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="xs:boolean" name="biases" use="optional" default="false">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies whether to apply L1 regularization to biases. Default value is false.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <!-- Weights L2 (ridge) regularization configuration -->
+  <xs:complexType name="RegL2Config">
+    <xs:attribute type="UDoubleGE0LT1Type" name="strength" use="optional" default="0">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies the L2 penalty strength (ridge). Default is 0 (no L2 regularization).</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="xs:boolean" name="biases" use="optional" default="false">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies whether to apply L2 regularization to biases. Default value is false.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <!-- Weights norm constraint configuration -->
+  <xs:complexType name="NormConsConfig">
+    <xs:attribute type="UDoubleType" name="min" use="optional" default="0">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies the L2 min-norm constraint. Default is 0 (no constraint).</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="UDoubleType" name="max" use="optional" default="0">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies the L2 max-norm constraint. Default is 0 (no constraint).</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="xs:boolean" name="biases" use="optional" default="false">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies whether to include biases during norm constraint application. Default value is false.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <!-- Hidden layer configuration -->
+  <xs:complexType name="HiddenLayerConfig">
+    <xs:sequence minOccurs="1" maxOccurs="1">
+      <xs:element type="DropoutConfig" name="dropout" minOccurs="0" maxOccurs="1"/>
+      <xs:element type="RegL1Config" name="regL1" minOccurs="0" maxOccurs="1"/>
+      <xs:element type="RegL2Config" name="regL2" minOccurs="0" maxOccurs="1"/>
+      <xs:element type="NormConsConfig" name="normCons" minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
+    <xs:attribute type="UIntGT0Type" name="neurons" use="required">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Number of layer neurons.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="ActivationEnum" name="activation" use="required">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Layer activation function.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <!-- Hidden layers configuration -->
+  <xs:complexType name="HiddenLayersConfig">
+    <xs:sequence minOccurs="1" maxOccurs="1">
+      <xs:element type="HiddenLayerConfig" name="layer" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Input options configuration -->
+  <xs:complexType name="InputOptionsConfig">
+    <xs:sequence minOccurs="1" maxOccurs="1">
+      <xs:element type="DropoutConfig" name="dropout" minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Output options configuration -->
+  <xs:complexType name="OutputOptionsConfig">
+    <xs:sequence minOccurs="1" maxOccurs="1">
+      <xs:element type="RegL1Config" name="regL1" minOccurs="0" maxOccurs="1"/>
+      <xs:element type="RegL2Config" name="regL2" minOccurs="0" maxOccurs="1"/>
+      <xs:element type="NormConsConfig" name="normCons" minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Optimizers -->
+  <!-- Configuration of the RProp optimizer (Resilient Back Propagation) -->
+  <xs:complexType name="RPropConfig">
+    <xs:attribute type="UDoubleGT0Type" name="iniLR" use="optional" default="0.0025">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies the initial learning rate. Default is 0.0025.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="UDoubleGT0Type" name="minLR" use="optional" default="1e-6">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies the min learning rate. Default is 1e-6.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="UDoubleGT0Type" name="maxLR" use="optional" default="0.0075">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies the max learning rate. Default is 0.0075.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="UDoubleGT1Type" name="posEta" use="optional" default="1.2">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies the learning rate increase coefficient. Default is 1.2.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="UDoubleGT0LT1Type" name="negEta" use="optional" default="0.5">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies the learning rate decrease coefficient. Default is 0.5.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <!-- Configuration of the SGD optimizer with momentum option (Stochastic Gradient Descent) -->
+  <xs:complexType name="SGDConfig">
+    <xs:attribute type="UDoubleGT0Type" name="iniLR" use="optional" default="0.0001">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies the initial learning rate. Default is 1e-4.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="UDoubleGE0LT1Type" name="momentum" use="optional" default="0.9">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies the momentum. Default is 0.9.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="UDoubleType" name="dampening" use="optional" default="0">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies the dampening for momentum. Default is 0.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="xs:boolean" name="nesterov" use="optional" default="false">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies whether to apply Nesterov momentum. Default is false.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <!-- Configuration of the Adam optimizer with Amsgrad option (Adaptive Moment Estimation) -->
+  <xs:complexType name="AdamConfig">
+    <xs:attribute type="UDoubleGT0Type" name="iniLR" use="optional" default="0.001">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies the initial learning rate. Default is 1e-3.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="xs:boolean" name="amsgrad" use="optional" default="false">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies whether to apply amsgrad modification. Default is false.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="UDoubleGT0LT1Type" name="beta1" use="optional" default="0.9">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies the first moment decay rate. Default is 0.9.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="UDoubleGT0LT1Type" name="beta2" use="optional" default="0.999">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies the second moment decay rate. Default is 0.999.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <!-- Configuration of the Adabelief optimizer (Adapting Stepsizes by the Belief in Observed Gradients) -->
+  <xs:complexType name="AdabeliefConfig">
+    <xs:attribute type="UDoubleGT0Type" name="iniLR" use="optional" default="0.001">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies the initial learning rate. Default is 1e-3.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="UDoubleGT0LT1Type" name="beta1" use="optional" default="0.9">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies the first moment decay rate. Default is 0.9.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="UDoubleGT0LT1Type" name="beta2" use="optional" default="0.999">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies the second moment decay rate. Default is 0.999.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <!-- Configuration of the Padam optimizer (Partially Adaptive Moment Estimation) -->
+  <xs:complexType name="PadamConfig">
+    <xs:attribute type="UDoubleGT0Type" name="iniLR" use="optional" default="0.01">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies the initial learning rate. Default is 1e-2 (due to numerical stability).</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="UDoubleGT0LT1Type" name="beta1" use="optional" default="0.9">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies the first moment decay rate. Default is 0.9.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="UDoubleGT0LT1Type" name="beta2" use="optional" default="0.999">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies the second moment decay rate. Default is 0.999.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="UDoubleGE0LE05Type" name="p" use="optional" default="0.125">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies the partially adaptive parameter. Default is 0.125.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <!-- Configuration of the Adamax optimizer (variant of Adam based on the infinity norm) -->
+  <xs:complexType name="AdamaxConfig">
+    <xs:attribute type="UDoubleGT0Type" name="iniLR" use="optional" default="0.002">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies the initial learning rate. Default is 2e-3.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="UDoubleGT0LT1Type" name="beta1" use="optional" default="0.9">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies the first moment decay rate. Default is 0.9.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="UDoubleGT0LT1Type" name="beta2" use="optional" default="0.999">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies the second moment decay rate. Default is 0.999.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <!-- Configuration of the Adagrad optimizer -->
+  <xs:complexType name="AdagradConfig">
+    <xs:attribute type="UDoubleGT0Type" name="iniLR" use="optional" default="0.01">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies the initial learning rate. Default is 1e-2.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <!-- Configuration of the Adadelta optimizer (an extension of Adagrad that attempts to solve its radically diminishing learning rates) -->
+  <xs:complexType name="AdadeltaConfig">
+    <xs:attribute type="UDoubleGT0LT1Type" name="gamma" use="optional" default="0.95">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies the gamma decay rate. Default is 0.95.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <!-- Configuration of the RMSProp optimizer with Centered option -->
+  <xs:complexType name="RMSPropConfig">
+    <xs:attribute type="UDoubleGT0Type" name="iniLR" use="optional" default="0.001">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies the initial learning rate. Default is 1e-3.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="xs:boolean" name="centered" use="optional" default="false">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies whether to apply centered version (the gradient is normalized by an estimation of its variance). Default is false.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="UDoubleGT0LT1Type" name="alpha" use="optional" default="0.99">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies the smoothing constant. Default is 0.99.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="UDoubleGE0LT1Type" name="momentum" use="optional" default="0">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies the momentum factor. Default is 0.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <!-- Learning rate decay -->
+  <!-- Learning throttle valve configuration -->
+  <xs:complexType name="LearningThrottleValveConfig">
+    <xs:attribute type="UDoubleGT0LE1Type" name="minPermeability" use="optional" default="1">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies the minimum throttle permeability. Default is 1 (means full permeability, thus no throttling).</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="UDoubleType" name="throttlingSlope" use="optional" default="0">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies the throttling slope (permeability decay steepness). Default is 0 (linear mapping).</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="UDoubleGT0LE1Type" name="lastThrottlingEpochRatio" use="optional" default="1">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies epoch/maxEpoch ratio when to achieve minPermeability and then to hold constant minPermeability. Default is 1 (means to achieve minPermeability at the last epoch).</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <!-- Models -->
+  <!-- Configuration of the NetworkModel. -->
+  <xs:complexType name="NetworkModelConfig">
+    <xs:sequence minOccurs="1" maxOccurs="1">
+      <xs:choice minOccurs="1" maxOccurs="1">
+        <xs:element type="RPropConfig" name="rprop" minOccurs="0" maxOccurs="1"/>
+        <xs:element type="SGDConfig" name="sgd" minOccurs="0" maxOccurs="1"/>
+        <xs:element type="AdamConfig" name="adam" minOccurs="0" maxOccurs="1"/>
+        <xs:element type="AdabeliefConfig" name="adabelief" minOccurs="0" maxOccurs="1"/>
+        <xs:element type="PadamConfig" name="padam" minOccurs="0" maxOccurs="1"/>
+        <xs:element type="AdamaxConfig" name="adamax" minOccurs="0" maxOccurs="1"/>
+        <xs:element type="AdagradConfig" name="adagrad" minOccurs="0" maxOccurs="1"/>
+        <xs:element type="AdadeltaConfig" name="adadelta" minOccurs="0" maxOccurs="1"/>
+        <xs:element type="RMSPropConfig" name="rmsprop" minOccurs="0" maxOccurs="1"/>
+      </xs:choice>
+      <xs:element type="HiddenLayersConfig" name="hiddenLayers" minOccurs="0" maxOccurs="1"/>
+      <xs:element type="InputOptionsConfig" name="inputOptions" minOccurs="0" maxOccurs="1"/>
+      <xs:element type="OutputOptionsConfig" name="outputOptions" minOccurs="0" maxOccurs="1"/>
+      <xs:element type="LearningThrottleValveConfig" name="learningThrottleValve" minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
+    <xs:attribute type="UIntGT0Type" name="attempts" use="required">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Maximum number of training attempts.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="UIntGT0Type" name="epochs" use="required">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Maximum number of epochs within a training attempt.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="UIntGT0FullAndAutoOptionType" name="batchSize" use="optional" default="Auto">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies the number of samples within one mini-batch. Default value is Auto.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="UDoubleType" name="gradClipNorm" use="optional" default="0">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies max norm of the weight gradients. Default value is 0 (means no clipping).</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="UDoubleType" name="gradClipVal" use="optional" default="0">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies max absolute value of the weight gradient. Default value is 0 (means no clipping).</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="xs:boolean" name="classBalancedLoss" use="optional" default="true">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies whether to apply class/balanced loss. Default value is true.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="UDoubleGE0LT1Type" name="stopAttemptPatiency" use="optional" default="0.25">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies the ratio of continuous non-improvement epochs to stop current training attempt. Default value is 1/4.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  
+  <!-- Configuration of a CrossValModel. -->
+  <xs:complexType name="CrossValModelConfig">
+    <xs:sequence minOccurs="1" maxOccurs="1">
+      <xs:element type="NetworkModelConfig" name="networkModel" minOccurs="1" maxOccurs="1"/>
+    </xs:sequence>
+    <xs:attribute type="UDoubleGT0LE05Type" name="foldDataRatio" use="optional" default="0.1">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies the ratio of samples constituting validation data fold. Default value is 1/10.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <!-- Configuration of a stack of NetworkModel(s) configurations. -->
+  <xs:complexType name="NetworkStackConfig">
+    <xs:sequence minOccurs="1" maxOccurs="1">
+      <xs:element type="NetworkModelConfig" name="networkModel" minOccurs="2" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Configuration of the StackingModel. -->
+  <xs:complexType name="StackingModelConfig">
+    <xs:sequence minOccurs="1" maxOccurs="1">
+      <xs:element type="NetworkStackConfig" name="stack" minOccurs="1" maxOccurs="1"/>
+      <xs:choice minOccurs="1" maxOccurs="unbounded">
+        <xs:element type="NetworkModelConfig" name="networkModel" minOccurs="0" maxOccurs="1"/>
+        <xs:element type="CrossValModelConfig" name="crossValModel" minOccurs="0" maxOccurs="1"/>
+        <xs:element type="StackingModelConfig" name="stackingModel" minOccurs="0" maxOccurs="1"/>
+        <xs:element type="CompositeModelConfig" name="compositeModel" minOccurs="0" maxOccurs="1"/>
+      </xs:choice>
+    </xs:sequence>
+    <xs:attribute type="UDoubleGT0LE05Type" name="foldDataRatio" use="optional" default="0.1">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies the ratio of samples constituting hold-out fold. Default value is 1/10.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="xs:boolean" name="routeInput" use="optional" default="false">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies whether to provide original input to meta-learner. Default value is false.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <!-- Configuration of the CompositeModel. -->
+  <xs:complexType name="CompositeModelConfig">
+    <xs:choice minOccurs="1" maxOccurs="unbounded">
+      <xs:element type="NetworkModelConfig" name="networkModel" minOccurs="0" maxOccurs="1"/>
+      <xs:element type="CrossValModelConfig" name="crossValModel" minOccurs="0" maxOccurs="1"/>
+      <xs:element type="StackingModelConfig" name="stackingModel" minOccurs="0" maxOccurs="1"/>
+      <xs:element type="CompositeModelConfig" name="compositeModel" minOccurs="0" maxOccurs="1"/>
+    </xs:choice>
+  </xs:complexType>
+
+
+  <!-- Feature configuration -->
+  <xs:complexType name="FeatureConfig">
+    <xs:attribute type="xs:string" name="name" use="required">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Feature name.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <!-- Features configuration -->
+  <xs:complexType name="FeaturesConfig">
+    <xs:sequence minOccurs="1" maxOccurs="1">
+      <xs:element type="FeatureConfig" name="feature" minOccurs="1" maxOccurs="unbounded">
+        <xs:unique name="unique_feature_name">
+          <xs:selector xpath="./*"/>
+          <xs:field xpath="@name"/>
+        </xs:unique>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  
+  <!-- Configuration of a reservoir's input. -->
+  <xs:complexType name="ReservoirInputConfig">
+    <xs:attribute type="UIntGT0Type" name="flatDataLength"  use="required">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">The length of a flat input vector.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="UIntGT0Type" name="variables"  use="required">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Number of input variables.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="TSPatternFlatVarSchemaEnum" name="varSchema" use="required">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Schema of input variables organization in the time series flat array.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="ReservoirInputFeedingEnum" name="feeding" use="required">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies regime of input data feeding.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="UDoubleGT0Type" name="density" use="optional" default="0.25">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">If it is a positive fraction less than 1 then specifies what proportion of all hidden neurons to connect to each input variable. If it is an integer greater or equal to 1 then specifies exact number of hidden neurons to connect to each input variable. Default is 1/4.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="xs:unsignedInt" name="maxDelay"  use="optional" default="0">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies the maximum delay of data transfer through an input synapse (the degree of delay is evenly distributed across the synapses). Default is 0 (no delay).</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="UDoubleGT0Type" name="maxStrength"  use="optional" default="2">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies the maximum strength of input per hidden neuron (the minimum strength is then half of the maximum strength). Default is 2.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <!-- Configuration of a reservoir's hidden layer. -->
+  <xs:complexType name="ReservoirHiddenLayerConfig">
+    <xs:attribute type="UIntGT0Type" name="neurons" use="required">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies number of hidden neurons.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="UDoubleGT0Type" name="density" use="optional" default="0.1">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">If it is a positive fraction less than 1 then specifies what proportion of all hidden neurons to connect to each hidden neuron. If it is an integer value greater or equal to 1 then specifies exact number of hidden neurons to connect to each hidden neuron. Default is 1/10.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="xs:unsignedInt" name="maxDelay"  use="optional" default="0">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies the maximum delay of data transfer through a hidden synapse (the degree of delay is evenly distributed across the synapses). Default is 0 (no delay).</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="ReservoirActivationEnum" name="activation"  use="optional" default="TanH">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies the activation function of hidden neurons. Default is TanH.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="UDoubleGE0LT1Type" name="retainment" use="optional" default="0">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies the retainment of hidden neuron. Default is 0.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="UDoubleGT0LE1Type" name="spikeEventThreshold" use="optional" default="0.00125">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">When the new activation is higher than the previous by this threshold, a spike event is emitted. Default is 0.00125.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="UDoubleGT0Type" name="spectralRadius" use="optional" default="0.999">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Spectral radius of hidden weights matrix. Default is 0.999.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <!-- Configuration of the Reservoir. -->
+  <xs:complexType name="ReservoirConfig">
+    <xs:sequence minOccurs="1" maxOccurs="1">
+      <xs:element type="ReservoirInputConfig" name="input" minOccurs="1" maxOccurs="1"/>
+      <xs:element type="ReservoirHiddenLayerConfig" name="hiddenLayer" minOccurs="1" maxOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- ResCompTask input section configuration -->
+  <xs:complexType name="ResCompTaskInputSectionConfig">
+    <xs:attribute type="ReservoirOutSection" name="name" use="required">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Reservoir's output section name.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <!-- ResCompTask input sections configuration -->
+  <xs:complexType name="ResCompTaskInputSectionsConfig">
+    <xs:sequence minOccurs="1" maxOccurs="1">
+      <xs:element type="ResCompTaskInputSectionConfig" name="section" minOccurs="1" maxOccurs="unbounded">
+        <xs:unique name="unique_input_res_out_section_name">
+          <xs:selector xpath="./*"/>
+          <xs:field xpath="@name"/>
+        </xs:unique>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Configuration of the ResCompTask. -->
+  <xs:complexType name="ResCompTaskConfig">
+    <xs:sequence minOccurs="1" maxOccurs="1">
+      <xs:element type="ResCompTaskInputSectionsConfig" name="inputSections" minOccurs="1" maxOccurs="1"/>
+      <xs:element type="FeaturesConfig" name="outputFeatures" minOccurs="1" maxOccurs="1"/>
+      <xs:choice minOccurs="1" maxOccurs="1">
+        <xs:element type="NetworkModelConfig" name="networkModel" minOccurs="0" maxOccurs="1"/>
+        <xs:element type="CrossValModelConfig" name="crossValModel" minOccurs="0" maxOccurs="1"/>
+        <xs:element type="StackingModelConfig" name="stackingModel" minOccurs="0" maxOccurs="1"/>
+        <xs:element type="CompositeModelConfig" name="compositeModel" minOccurs="0" maxOccurs="1"/>
+      </xs:choice>
+    </xs:sequence>
+    <xs:attribute type="xs:string" name="name" use="required">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Name of output task.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="OutputTaskTypeEnum" name="taskType" use="required">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Type of output task.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <!-- Configuration of the ResComp. -->
+  <xs:complexType name="ResCompConfig">
+    <xs:sequence minOccurs="1" maxOccurs="1">
+      <xs:element type="ReservoirConfig" name="reservoir" minOccurs="1" maxOccurs="1"/>
+      <xs:element type="ResCompTaskConfig" name="task" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+
+
+</xs:schema>
+

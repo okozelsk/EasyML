@@ -1,0 +1,20 @@
+﻿Size         Length   Number of Features   Number of Dimensions   Type
+1537         7        7                    7                      Time Point Data
+
+Dataset TTOO.csv contains time series of "T2 Biosystems, Inc. (TTOO)" real daily share prices
+downloaded from https://finance.yahoo.com/quote/TTOO/history?p=TTOO.
+Seven variables relate to each time point: Date, Open, High, Low, Close, Adj Close and Volume.
+
+Important:
+Data is designed for Reservoir Computer in feed mode = TimePoint
+Necessary csv file format: the file always has the names of the values in the first
+line and separate values in the following lines, where each data line represents the values
+at one point in time.
+
+Source:
+https://finance.yahoo.com/quote/TTOO/history?p=TTOO
+
+Best referential accuracy:
+N/A
+
+

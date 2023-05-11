@@ -1,0 +1,16 @@
+﻿Train Size   Test Size   Length   Number of Classes   Number of Dimensions   Type
+375          375         720      3                   1                      DEVICE
+
+These problems were taken from data recorded as part of government sponsored study called Powering the Nation. 
+The intention was to collect behavioural data about how consumers use electricity within the home to help reduce the UK's carbon footprint. 
+The data contains readings from 251 households, sampled in two-minute intervals over a month. Each series is length 720 (24 hours of readings taken every 2
+ minutes). Classes are Washing Machine, Tumble Dryer and Dishwasher.
+
+Source:
+https://timeseriesclassification.com/description.php?Dataset=LargeKitchenAppliances
+UEA & UCR Time Series Classification Repository
+
+Best referential accuracy:
+93.25% (ST)
+
+

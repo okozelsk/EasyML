@@ -1,0 +1,1 @@
+﻿This folder is primarily used for examples of serialization of EasyML components.

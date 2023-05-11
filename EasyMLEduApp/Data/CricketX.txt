@@ -1,0 +1,19 @@
+
+Train Size   Test Size   Length   Number of Classes   Number of Dimensions   Type
+390          390         300      12                  1                      MOTION
+
+The series Cricket X, Y and Z are accelerometer data (in three dimensions) taken from actors performing cricket gestures.
+The twelve classes are different umpire signals: Cancel Call, Dead Ball, Four, Last Hour, Leg Bye, No Ball, One Short, Out,
+Penalty Runs, Six, TV Replay, and Wide. They mounted two accelerometers orthogonal to each other, thus acceleration is measured
+in 3D space. The accelerometers are housed in a small wrist watch sized enclosure worn in the form of a wrist band.
+Taken together the data is a multivariate time series classification problem, but the series are not aligned so in its
+current format cannot be used as such Originally used in Ko et al. "Online Context Recognition in Multisensor Systems
+using Dynamic Time Warping"
+
+Source:
+https://timeseriesclassification.com/description.php?Dataset=CricketX
+UEA & UCR Time Series Classification Repository
+
+Best referential accuracy:
+81.40% (COTE)
+
