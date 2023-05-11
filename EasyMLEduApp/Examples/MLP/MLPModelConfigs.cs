@@ -202,8 +202,8 @@ namespace EasyMLDemoApp.Examples.MLP
             //Model configuration
             CrossValModelConfig modelCfg =
                 new CrossValModelConfig(CreateNetworkModelConfig(ActivationFnID.ReLU), //For every validation fold will be trained a member network having this configuration
-                                       foldDataRatio //Validation fold data ratio
-                                       );
+                                        foldDataRatio //Validation fold data ratio
+                                        );
             return modelCfg;
         }
 
@@ -214,9 +214,9 @@ namespace EasyMLDemoApp.Examples.MLP
         /// <param name="trainAttempts">Maximum number of training attempts.</param>
         /// <param name="attemptEpochs">Maximum number of epochs within a training attempt.</param>
         public static CrossValModelConfig CreateRPropCrossValModelConfig(double foldDataRatio,
-                                                                       int trainAttempts,
-                                                                       int attemptEpochs
-                                                                       )
+                                                                         int trainAttempts,
+                                                                         int attemptEpochs
+                                                                         )
         {
             //Model configuration
             CrossValModelConfig modelCfg =
@@ -247,9 +247,9 @@ namespace EasyMLDemoApp.Examples.MLP
         /// <param name="trainAttempts">Maximum number of training attempts.</param>
         /// <param name="attemptEpochs">Maximum number of epochs within a training attempt.</param>
         public static CrossValModelConfig CreateRPropOutputOnlyNetworkCrossValModelConfig(double foldDataRatio,
-                                                                                        int trainAttempts,
-                                                                                        int attemptEpochs
-                                                                                        )
+                                                                                          int trainAttempts,
+                                                                                          int attemptEpochs
+                                                                                          )
         {
             //Model configuration
             CrossValModelConfig modelCfg =
@@ -281,9 +281,7 @@ namespace EasyMLDemoApp.Examples.MLP
             //Model configuration
             StackingModelConfig cfg =
                 new StackingModelConfig(stackCfg,
-                                        //CreateOutputOnlyNetworkModelConfig(),
-                                        CreateNetworkModelConfig(ActivationFnID.ReLU), //Stacking model configuration
-                                        //CreateCrossValModelConfig(foldDataRatio),
+                                        CreateNetworkModelConfig(ActivationFnID.ReLU), //Meta-learner model configuration
                                         foldDataRatio, //Specifies the ratio of training samples constituting one hold-out fold
                                         routeInput //Specifies whether to provide original input to meta-learner.
                                         );
@@ -312,7 +310,7 @@ namespace EasyMLDemoApp.Examples.MLP
             //Model configuration
             StackingModelConfig cfg =
                 new StackingModelConfig(stackCfg,
-                                        CreateRPropNetworkModelConfig(3, 500, ActivationFnID.ReLU), //Stacking model configuration
+                                        CreateRPropNetworkModelConfig(3, 500, ActivationFnID.ReLU), //Meta-learner model configuration
                                         foldDataRatio, //Specifies the ratio of training samples constituting one hold-out fold
                                         routeInput //Specifies whether to provide original input to meta-learner
                                         );
@@ -338,7 +336,7 @@ namespace EasyMLDemoApp.Examples.MLP
         }
 
         /// <summary>
-        /// Creates configuration of the CompositeModel of three NetworkModels, one CrossValModel and one another small CompositeModel.
+        /// Creates configuration of the CompositeModel consisting of StackingModel, CrossValModel and one another CompositeModel.
         /// </summary>
         /// <param name="foldDataRatio">Used for inner CrossValModel model. Specifies the ratio of training samples constituting validation fold.</param>
         public static CompositeModelConfig CreateCompositeModelConfig(double foldDataRatio)
