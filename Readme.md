@@ -40,6 +40,7 @@ Contains data manipulation/evaluation/description components.
 
 ### MLP (namespace EasyMLCore.MLP)
 
+![MLP models](./EasyMLCore/Docs/MLP_models.png)
 
 ### TimeSeries (namespace EasyMLCore.TimeSeries)
 
