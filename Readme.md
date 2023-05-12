@@ -44,5 +44,6 @@ Contains data manipulation/evaluation/description components.
 
 ### TimeSeries (namespace EasyMLCore.TimeSeries)
 
+![Reservoir Computer](./EasyMLCore/Docs/ResComp.png)
 
 The detailed description is being worked on and will be added gradually and as soon as possible.
