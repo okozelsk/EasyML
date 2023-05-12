@@ -24,11 +24,10 @@ namespace EasyMLDemoApp
                 //Root menu
                 Console.Clear();
                 Console.WriteLine("Main menu:");
-                Console.WriteLine("  1. EasyMLCore.MLP components code examples...");
-                Console.WriteLine("  2. Reservoir Computing code examples...");
-                Console.WriteLine("  3. Performance demo");
+                Console.WriteLine("  1. (EasyMLCore.MLP) MLP models code examples...");
+                Console.WriteLine("  2. (EasyMLCore.TimeSeries) Reservoir Computer code examples...");
                 Console.WriteLine("  P. Playground");
-                Console.WriteLine("  X. Exit the demo application");
+                Console.WriteLine("  X. Exit the application");
                 Console.WriteLine();
                 Console.WriteLine("  Press the digit or letter of your choice...");
                 ConsoleKeyInfo consoleKeyInfo = Console.ReadKey(true);
