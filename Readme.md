@@ -9,8 +9,12 @@ The purpose of this library is to support the usual machine-learning scenario in
 <br />
 ![Typical ML scenario](./EasyMLCore/Docs/ML_scenario.png)
 
+The root namespace contains some common elements such as xsd describing configuration xml(s).
+But the main thing it contains is the [EasyML class with its Oper](./EasyMLCore/EasyML.cs) interface, which provides basic functionalities supporting the ML process in a user-friendly way. The EasyML.Oper interface is a singleton. It is immediately usable and its main methods are LoadSampleData, Report, Build and Test. Unless otherwise stated, the methods log the progress of the operation in the system console by default. To redirect logs elsewhere, it is sufficient to set any instance of a custom object implementing the trivial [IOutputLog](./EasyMLCore/Log/IOutputLog.cs) interface using the EasyML.Oper.ChangeOutputLog method.
+If you want to write anything of your own to the active log, use the EasyML.Oper.Log.Write method.
+
 ### Activation (namespace EasyMLCore.Activation)
-Contains activation functions. Currently implemented activations are: BentIdentity, ElliotSig, ELU, GELU, LeakyReLU, Linear, ReLU, SELU, Sigmoid, Softmax, Softplus, TanH.
+Contains activation functions. Currently implemented [activations](./EasyMLCore/Activation) are: BentIdentity, ElliotSig, ELU, GELU, LeakyReLU, Linear, ReLU, SELU, Sigmoid, Softmax, Softplus, TanH.
 <br />
 ![TanH activation](./EasyMLCore/Docs/TanH.png)
 
