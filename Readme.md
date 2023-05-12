@@ -72,3 +72,6 @@ The detailed description is being worked on and will be added gradually and as s
 Contains a small console application, where is shown how to work with EasyMLCore. Application has no startup parameters and walking through examples is solved as the menu.
 Examples are divided into two main parts. The first one shows usage of MLP models (here is recommended to start) and the second shows usage of Reservoir Computer.
 Application uses datasets stored in Data sub-folder. Datasets are in csv format and each dataset has associated text file describing it (just for information). Application writes serialization data to Temp sub-folder.
+
+#### Contact
+Questions, ideas, suggestions for improvement and other constructive comments are welcome at my email address oldrich.kozelsky@email.cz
