@@ -11,6 +11,8 @@ The purpose of this library is to support the usual machine-learning scenario in
 
 ### Activation (namespace EasyMLCore.Activation)
 Contains activation functions. Currently implemented activations are: BentIdentity, ElliotSig, ELU, GELU, LeakyReLU, Linear, ReLU, SELU, Sigmoid, Softmax, Softplus, TanH.
+<br />
+![TanH activation](./EasyMLCore/Docs/TanH.png)
 
 ### Data (namespace EasyMLCore.Data)
 Contains data manipulation/evaluation/description components.
