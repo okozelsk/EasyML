@@ -38,6 +38,10 @@ Contains data manipulation/evaluation/description components.
 |[TaskErrStat](./EasyMLCore/Data/TaskErrStat)|A set of ML task-specific error statistics holders. Each ML task type has associated its root summary error statistics class, which inherits and/or encapsulates other more granular/detailed error statistics classes.|
 |[TaskOutputDetail](./EasyMLCore/Data/TaskOutputDetail)|A set of ML task-specific computed output descriptors. Each ML task type has associated its xxxOutputDetail class, which provides detailed information about computed values (also in textual form).|
 
+### MLP (namespace EasyMLCore.MLP)
+
+
+### TimeSeries (namespace EasyMLCore.TimeSeries)
 
 
 The detailed description is being worked on and will be added gradually and as soon as possible.
