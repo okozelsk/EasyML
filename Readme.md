@@ -18,6 +18,7 @@ If you want to write anything of your own to the active log, use the EasyML.Oper
 * No GPU utilization, only CPUs
 * Common floating point data type is double (not float)
 * Every ML model class has associated its own Builder class (or directly contains Build method), which requires appropriate Config class. Every Config class holds model's properties, ensures the basic consistency and has constructor(s) for setup from scratch and also the constructor accepting XElement. Every Config class provides GetXml method
+* Almost every component is derived from [SerializableObject](./EasyMLCore/SerializableObject.cs) base class and is easily serializable/deserializable using methods of that base class. Serialization uses the BinaryFormatter
 * The library does not support the use of distributed resources and is intended for the preparation of models solving small to medium-sized tasks. It is not intended for massive ML tasks with hundreds of thousands of samples
 
 ### Activation (namespace EasyMLCore.Activation)
