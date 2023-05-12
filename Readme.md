@@ -60,6 +60,12 @@ The Reservoir Computer is shown schematically in the following figure. The mutua
 
 ![Reservoir Computer](./EasyMLCore/Docs/ResComp.png)
 
+|Main content|Description|
+|--|--|
+|[Reservoir](./EasyMLCore/TimeSeries/Preprocessing/Reservoir.cs)|...|
+|[ResCompTask](./EasyMLCore/TimeSeries/ResCompTask.cs)|...|
+|[ResComp](./EasyMLCore/TimeSeries/ResComp.cs)|...|
+
 The detailed description is being worked on and will be added gradually and as soon as possible.
 
 ## EasyMLEduApp (namespace EasyMLEduApp)
