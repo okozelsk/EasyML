@@ -39,8 +39,14 @@ Contains data manipulation/evaluation/description components.
 |[TaskOutputDetail](./EasyMLCore/Data/TaskOutputDetail)|A set of ML task-specific computed output descriptors. Each ML task type has associated its xxxOutputDetail class, which provides detailed information about computed values (also in textual form).|
 
 ### MLP (namespace EasyMLCore.MLP)
+Contains MLP engine and MLP models. The mutual relationship is shown schematically in the following figure and will be described in more detail below.
 
 ![MLP models](./EasyMLCore/Docs/MLP_models.png)
+
+|Main content|Description|
+|--|--|
+|[MLPEngine](./EasyMLCore/MLP/Engine/MLPEngine.cs)|Implements MLP, a classical fully connected Feed Forward network that may or may not have hidden layers. A [Trainer](./EasyMLCore/MLP/Engine/Trainer.cs) component is dedicated to the MLPEngine. Trainer in iterations (epochs) modifies the weights so that the outputs of the network are as close as possible to the expected outputs. The trainer can be instructed to try to train the network several times from the beginning (attempts). This is mainly due to the random nature of the initialization of the network weights, where repeating with a different initial setting of the weights increases the chance of finding the optimum. The trainer ensures packaging of training data (mini-batches or BGD). As part of the training iteration, it applies the set of required [regularization techniques](./EasyMLCore/MLP/Engine) and calculates the gradients, subsequently modifies the weights using one of the [implemented optimizers](./EasyMLCore/MLP/Engine/Optimizer), and finally modifies the weights if any regularization post-rules are set.|
+
 
 ### TimeSeries (namespace EasyMLCore.TimeSeries)
 
