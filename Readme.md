@@ -60,6 +60,11 @@ The spikes of the analog neuron are used to generate its SpikesFadingTrace predi
 These predictors substantially improve time series classification and are what I contribute to Reservoir Computing.
 <br />
 <br />
+Recurrent Reservoir is shown schematically in the following figure.
+
+![Reservoir](./EasyMLCore/Docs/Reservoir.png)
+<br />
+<br />
 The Reservoir Computer is shown schematically in the following figure. 
 
 ![Reservoir Computer](./EasyMLCore/Docs/ResComp.png)
