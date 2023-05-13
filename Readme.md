@@ -1,23 +1,24 @@
 # Machine Learning Library for .NET (EasyML)
-This solution is a successor of my [older project](https://github.com/okozelsk/NET). 
-Unlike the older solution, there is full [**MLP**](https://en.wikipedia.org/wiki/Multilayer_perceptron) support (many optimizers, standard regularization techniques and types of network models). There is also implemented the [**Reservoir Computer**](https://en.wikipedia.org/wiki/Reservoir_computing), which is now much easier to configure and has a more powerful spike-trace predictor for time series classifications. Overall, the components are much simpler to configure and easier to use than in the older solution. 
-The entire solution is written for .net 6 and consists of the main library (**EasyMLCore**) and an educational console application (**EasyMLEduApp**), where it is shown how to work with the library.
+This repo is a successor of my [older repo](https://github.com/okozelsk/NET). 
+Now there is full [**MLP**](https://en.wikipedia.org/wiki/Multilayer_perceptron) support (many optimizers, standard regularization techniques and types of network models). There is also implemented the [**Reservoir Computer**](https://en.wikipedia.org/wiki/Reservoir_computing), which is now much easier to configure and has a more powerful spike-trace predictor for time series classifications. Overall, the components are much simpler to configure and easier to use than in the older solution. 
+Repo consists of the main library (**EasyMLCore**) and a small educational console application (**EasyMLEduApp**), where it is shown how to work with the library.
 
 ## EasyMLCore (namespace EasyMLCore)
-The source code of the library is independent on any third party and entire code is written for .net 6.0 in C# 10.
-The purpose of this library is to support the usual machine-learning scenario in an easy way.
+The purpose is to support the usual machine-learning scenario in an easy way.
 <br />
 ![Typical ML scenario](./EasyMLCore/Docs/ML_scenario.png)
 
-The root namespace contains some common elements such as xsd describing configuration xml(s).
-But the main thing it contains is the [EasyML class with its Oper](./EasyMLCore/EasyML.cs) interface, which provides basic functionalities supporting the ML process in a user-friendly way. The EasyML.Oper interface is a singleton. It is immediately usable and its main methods are LoadSampleData, Report, Build and Test. Unless otherwise stated, the methods log the progress of the operation in the system console by default. To redirect logs elsewhere, it is sufficient to set any instance of a custom object implementing the trivial [IOutputLog](./EasyMLCore/Log/IOutputLog.cs) interface using the EasyML.Oper.ChangeOutputLog method.
+The EasyMLCore namespace is a root namespace of the library. It contains some common elements but the main thing it contains is the [EasyML class with its Oper](./EasyMLCore/EasyML.cs) interface, which provides basic functionalities supporting the ML process in a user-friendly way. The EasyML.Oper interface is a singleton. It is immediately usable and its main methods are LoadSampleData, Report, Build and Test. Unless otherwise stated, the methods log the progress of the operation in the system console by default. To redirect logs elsewhere, it is sufficient to set any instance of a custom object implementing the trivial [IOutputLog](./EasyMLCore/Log/IOutputLog.cs) interface using the EasyML.Oper.ChangeOutputLog method.
 If you want to write anything of your own to the active log, use the EasyML.Oper.Log.Write method.
 <br />
 <br />
 **General characteristics and limitations**
+* The source code is independent on any third party and entire code is written for .net 6.0 in C# 10
 * No GPU utilization, only CPUs
 * Common floating point data type is double (not float)
-* Every ML model class has static method Build, which creates valid trained instance (ML models haven't public constructors). Build method among others requires appropriate Config class. Every Config class holds model's properties, ensures the basic consistency and has constructor(s) for setup from scratch and also the constructor accepting XElement. Every Config class provides GetXml method
+* Each ML model class provides static method Build, which creates valid and trained instance (there is no public constructors). The Build method always requires an instance of the appropriate Config class. Config class specifies model's properties, ensures the basic consistency and has constructor(s) for setup from scratch and also the constructor accepting XElement. Config class of any type always provides GetXml method
+* Each ML model provides a Compute method (respectively the IComputable interface). The method expects a 1D array of doubles on input and returns the result as a 1D array of doubles as well
+* Each ML model provides a Test method that computes a test dataset and returns the results along with error statistics
 * Almost every component is derived from [SerializableObject](./EasyMLCore/SerializableObject.cs) base class and is easily serializable/deserializable using methods of that base class. Serialization uses the BinaryFormatter
 * EasyML does not support the use of distributed resources and is intended for the preparation of models solving small to medium-sized tasks. It is not intended for massive ML tasks with hundreds of thousands of samples
 * Supported ML task types are: Categorical (multi-class classification), Binary (single or multiple decisions) and Regression (single or multiple forecasting)
@@ -80,7 +81,7 @@ The mutual relationship of the components will be described in more detail withi
 The detailed description is being worked on and will be added gradually and as soon as possible.
 
 ## EasyMLEduApp (namespace EasyMLEduApp)
-Contains a small console application, where is shown how to work with EasyMLCore. Application has no startup parameters and walking through examples is solved as the menu.
+Contains a small console application (.net 6, C#10), where is shown how to work with EasyMLCore. Application has no startup parameters and walking through examples is solved as the menu.
 Examples are divided into two main parts. The first one shows usage of MLP models (here is recommended to start) and the second shows usage of Reservoir Computer.
 Application uses datasets stored in Data sub-folder. Datasets are in csv format and each dataset has associated text file describing it (just for information). Application writes serialization data to Temp sub-folder.
 
