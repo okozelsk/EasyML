@@ -53,12 +53,18 @@ Contains MLP engine and MLP models. The mutual relationship is shown schematical
 
 
 ### TimeSeries (namespace EasyMLCore.TimeSeries)
-Contains implementation of recurrent reservoir and the Reservoir Computer.
-Reservoir is a classic ESN, but here with one unique essential feature. This is the ability of an analog neuron to spike in relation to the dynamics of changes in its activation. The Reservoir implemented here is therefore an ESN lightly combined with an LSM. The spikes of the analog neuron are used to generate its SpikesFadingTrace predictor. These predictors dramatically improve time series classification (low reservoir resources - high accuracy) and are what I contribute to Reservoir Computing.
+Contains implementation of recurrent Reservoir and the Reservoir Computer to solve ML tasks where input is univariate or multivariate time series.
+Reservoir is a classic ESN, but here with one unique essential feature, which is the ability of an analog neuron to spike in relation to the dynamics of changes in its activation.
+The Reservoir implemented here is therefore an ESN lightly combined with a LSM.
+The spikes of the analog neuron are used to generate its SpikesFadingTrace predictor.
+These predictors substantially improve time series classification and are what I contribute to Reservoir Computing.
 <br />
-The Reservoir Computer is shown schematically in the following figure. The mutual relationship of the components will be described in more detail within the description of the individual components. 
+<br />
+The Reservoir Computer is shown schematically in the following figure. 
 
 ![Reservoir Computer](./EasyMLCore/Docs/ResComp.png)
+
+The mutual relationship of the components will be described in more detail within the description of the individual components.
 
 |Main content|Description|
 |--|--|
