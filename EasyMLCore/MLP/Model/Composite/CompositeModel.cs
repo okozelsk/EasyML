@@ -1,9 +1,11 @@
-﻿using EasyMLCore.Extensions;
+﻿using EasyMLCore.Data;
+using EasyMLCore.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Xml.Linq;
 
 namespace EasyMLCore.MLP
 {
@@ -29,14 +31,16 @@ namespace EasyMLCore.MLP
         /// <summary>
         /// Creates an uninitialized instance.
         /// </summary>
+        /// <param name="modelConfig">Model configuration.</param>
         /// <param name="name">Model name.</param>
         /// <param name="taskType">Output task.</param>
         /// <param name="outputFeatureNames">Names of output features.</param>
-        public CompositeModel(string name,
-                              OutputTaskType taskType,
-                              IEnumerable<string> outputFeatureNames
-                              )
-            : base(name, taskType, outputFeatureNames)
+        private CompositeModel(CompositeModelConfig modelConfig,
+                               string name,
+                               OutputTaskType taskType,
+                               IEnumerable<string> outputFeatureNames
+                               )
+            : base(modelConfig, name, taskType, outputFeatureNames)
         {
             _members = new List<ModelBase>();
             _weights = null;
@@ -64,7 +68,7 @@ namespace EasyMLCore.MLP
         /// Adds a new member.
         /// </summary>
         /// <param name="newMember">A new member to be added.</param>
-        public void AddMember(ModelBase newMember)
+        private void AddMember(ModelBase newMember)
         {
             //Checks
             if (newMember.NumOfOutputFeatures != NumOfOutputFeatures)
@@ -83,7 +87,7 @@ namespace EasyMLCore.MLP
         /// <summary>
         /// Sets the model operationable.
         /// </summary>
-        public void SetOperationable()
+        private void SetOperationable()
         {
             //Checks
             if (_members.Count < 1)
@@ -102,7 +106,7 @@ namespace EasyMLCore.MLP
         /// Computes outputs of all members.
         /// </summary>
         /// <param name="inputVector">Input vector.</param>
-        public List<double[]> ComputeMembers(double[] inputVector)
+        private List<double[]> ComputeMembers(double[] inputVector)
         {
             List<double[]> outputVectors = new List<double[]>(_members.Count);
             for (int memberIdx = 0; memberIdx < _members.Count; memberIdx++)
@@ -154,13 +158,110 @@ namespace EasyMLCore.MLP
             return infoText;
         }
 
-
-
         /// <inheritdoc/>
         public override ModelBase DeepClone()
         {
             return new CompositeModel(this);
         }
+
+        //Static methods
+        /// <summary>
+        /// Builds a CompositeModel.
+        /// </summary>
+        /// <param name="cfg">Model configuration.</param>
+        /// <param name="name">Model name.</param>
+        /// <param name="taskType">Output task type.</param>
+        /// <param name="outputFeatureNames">Names of output features.</param>
+        /// <param name="trainingData">Training samples.</param>
+        /// <param name="progressInfoSubscriber">Subscriber will receive notification event about progress. (Parameter can be null).</param>
+        /// <returns>Built model.</returns>
+        public static CompositeModel Build(IModelConfig cfg,
+                                           string name,
+                                           OutputTaskType taskType,
+                                           List<string> outputFeatureNames,
+                                           SampleDataset trainingData,
+                                           ModelBuildProgressChangedHandler progressInfoSubscriber = null
+                                           )
+        {
+            //Checks
+            if (cfg == null)
+            {
+                throw new ArgumentNullException(nameof(cfg));
+            }
+            if (cfg.GetType() != typeof(CompositeModelConfig))
+            {
+                throw new ArgumentException($"Wrong type of configuration. Expected {typeof(CompositeModelConfig)} but received {cfg.GetType()}.", nameof(cfg));
+            }
+            //Composite model
+            CompositeModelConfig modelConfig = (CompositeModelConfig)cfg;
+            CompositeModel model = new CompositeModel(modelConfig,
+                                                      (name + CompositeModel.ContextPathID),
+                                                      taskType,
+                                                      outputFeatureNames
+                                                      );
+            //Sub models build
+            for (int subModelIdx = 0; subModelIdx < modelConfig.SubModelCfgCollection.Count; subModelIdx++)
+            {
+                string subModelNum = "M" + (subModelIdx + 1).ToLeftPaddedString(modelConfig.SubModelCfgCollection.Count, '0');
+                Type subModelCfgType = modelConfig.SubModelCfgCollection[subModelIdx].GetType();
+                string subModelName = $"{model.Name}.{subModelNum}-";
+                if (subModelCfgType == typeof(NetworkModelConfig))
+                {
+                    NetworkModel subModel =
+                        NetworkModel.Build(modelConfig.SubModelCfgCollection[subModelIdx],
+                                           subModelName,
+                                           taskType,
+                                           outputFeatureNames,
+                                           trainingData,
+                                           null,
+                                           progressInfoSubscriber
+                                           );
+                    model.AddMember(subModel);
+                }
+                else if (subModelCfgType == typeof(CrossValModelConfig))
+                {
+                    CrossValModel subModel =
+                        CrossValModel.Build(modelConfig.SubModelCfgCollection[subModelIdx],
+                                            subModelName,
+                                            taskType,
+                                            outputFeatureNames,
+                                            trainingData,
+                                            progressInfoSubscriber
+                                            );
+                    model.AddMember(subModel);
+                }
+                else if (subModelCfgType == typeof(StackingModelConfig))
+                {
+                    StackingModel subModel =
+                        StackingModel.Build(modelConfig.SubModelCfgCollection[subModelIdx],
+                                            subModelName,
+                                            taskType,
+                                            outputFeatureNames,
+                                            trainingData,
+                                            progressInfoSubscriber
+                                            );
+                    model.AddMember(subModel);
+                }
+                else if (subModelCfgType == typeof(CompositeModelConfig))
+                {
+                    CompositeModel subModel =
+                        CompositeModel.Build(modelConfig.SubModelCfgCollection[subModelIdx],
+                                             subModelName,
+                                             taskType,
+                                             outputFeatureNames,
+                                             trainingData,
+                                             progressInfoSubscriber
+                                             );
+                    model.AddMember(subModel);
+                }
+            }//subModelIdx
+            //Set model operationable
+            model.SetOperationable();
+            //Return built model
+            return model;
+        }
+
+
 
     }//CompositeModel
 

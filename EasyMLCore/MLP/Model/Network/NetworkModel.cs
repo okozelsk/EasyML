@@ -22,6 +22,16 @@ namespace EasyMLCore.MLP
         /// </summary>
         public const string ContextPathID = "MLP";
 
+        /// <summary>
+        /// Default training total RMSE treshold.
+        /// </summary>
+        private const double RMSETreshold = 1E-6d;
+        
+        /// <summary>
+        /// Specifies whether to try additional fine tuning when achieved 100% accuracy
+        /// </summary>
+        private const bool EnabledFineTuning = true;
+        
         //Attribute properties
         /// <summary>
         /// MLP network engine.
@@ -46,6 +56,7 @@ namespace EasyMLCore.MLP
         /// <summary>
         /// Creates an initialized instance
         /// </summary>
+        /// <param name="modelConfig">Model configuration.</param>
         /// <param name="name">Model name.</param>
         /// <param name="outputFeatureNames">A collection of output feature names.</param>
         /// <param name="engine">MLP network engine.</param>
@@ -53,15 +64,16 @@ namespace EasyMLCore.MLP
         /// <param name="outputFilters">Prepared output filters.</param>
         /// <param name="trainingErrStat">Error statistics from the training.</param>
         /// <param name="validationData">Validation dataset (can be null).</param>
-        public NetworkModel(string name,
-                            IEnumerable<string> outputFeatureNames,
-                            MLPEngine engine,
-                            FeatureFilterBase[] inputFilters,
-                            FeatureFilterBase[] outputFilters,
-                            ModelErrStat trainingErrStat,
-                            SampleDataset validationData
-                            )
-            : base(name, engine.TaskType, outputFeatureNames)
+        private NetworkModel(NetworkModelConfig modelConfig,
+                             string name,
+                             IEnumerable<string> outputFeatureNames,
+                             MLPEngine engine,
+                             FeatureFilterBase[] inputFilters,
+                             FeatureFilterBase[] outputFilters,
+                             ModelErrStat trainingErrStat,
+                             SampleDataset validationData
+                             )
+            : base(modelConfig, name, engine.TaskType, outputFeatureNames)
         {
             if (OutputFeatureNames.Count != engine.NumOfOutputFeatures)
             {
@@ -97,6 +109,7 @@ namespace EasyMLCore.MLP
         /// <summary>
         /// Creates an initialized instance
         /// </summary>
+        /// <param name="modelConfig">Model configuration.</param>
         /// <param name="name">Model name.</param>
         /// <param name="outputFeatureNames">A collection of output feature names.</param>
         /// <param name="engine">MLP network engine.</param>
@@ -104,15 +117,16 @@ namespace EasyMLCore.MLP
         /// <param name="outputFilters">Prepared output filters.</param>
         /// <param name="trainingErrStat">Error statistics from the training.</param>
         /// <param name="validationErrStat">Error statistics from the validation (can be null).</param>
-        public NetworkModel(string name,
-                            IEnumerable<string> outputFeatureNames,
-                            MLPEngine engine,
-                            FeatureFilterBase[] inputFilters,
-                            FeatureFilterBase[] outputFilters,
-                            ModelErrStat trainingErrStat,
-                            ModelErrStat validationErrStat
-                            )
-            : base(name, engine.TaskType, outputFeatureNames)
+        private NetworkModel(NetworkModelConfig modelConfig,
+                             string name,
+                             IEnumerable<string> outputFeatureNames,
+                             MLPEngine engine,
+                             FeatureFilterBase[] inputFilters,
+                             FeatureFilterBase[] outputFilters,
+                             ModelErrStat trainingErrStat,
+                             ModelErrStat validationErrStat
+                             )
+            : base(modelConfig, name, engine.TaskType, outputFeatureNames)
         {
             if (OutputFeatureNames.Count != engine.NumOfOutputFeatures)
             {
@@ -364,6 +378,172 @@ namespace EasyMLCore.MLP
             }
             return infoText;
         }
+
+        /// <summary>
+        /// Builds a NetworkModel.
+        /// </summary>
+        /// <param name="cfg">Model configuration.</param>
+        /// <param name="name">Model name.</param>
+        /// <param name="taskType">Output task type.</param>
+        /// <param name="outputFeatureNames">Names of output features.</param>
+        /// <param name="trainingData">Training samples.</param>
+        /// <param name="validationData">Validation samples (can be null).</param>
+        /// <param name="progressInfoSubscriber">Subscriber will receive notification event about progress. (Parameter can be null).</param>
+        /// <returns>Built model.</returns>
+        public static NetworkModel Build(IModelConfig cfg,
+                                         string name,
+                                         OutputTaskType taskType,
+                                         IEnumerable<string> outputFeatureNames,
+                                         SampleDataset trainingData,
+                                         SampleDataset validationData,
+                                         ModelBuildProgressChangedHandler progressInfoSubscriber = null
+                                        )
+        {
+            //Checks
+            if(cfg == null)
+            {
+                throw new ArgumentNullException(nameof(cfg));
+            }
+            if(cfg.GetType() != typeof(NetworkModelConfig))
+            {
+                throw new ArgumentException($"Wrong type of configuration. Expected {typeof(NetworkModelConfig)} but received {cfg.GetType()}.", nameof(cfg));
+            }
+            if (progressInfoSubscriber != null)
+            {
+                BuildProgressChanged += progressInfoSubscriber;
+            }
+            //Build
+            try
+            {
+                NetworkModelConfig modelConfig = (NetworkModelConfig)cfg;
+                bool engageValidationData = validationData != null;
+                Random rand = new Random(RandomSeed);
+                NetworkModel bestNet = null;
+                int bestNetAttempt = 0;
+                int bestNetAttemptEpoch = 0;
+                NetworkModel lastImprovementNet = null;
+                int lastImprovementEpoch = 0;
+                bool inFineTunePhase = false;
+                //Create network engine and trainer
+                //Network engine
+                MLPEngine engine = new MLPEngine(taskType, trainingData.InputVectorLength, outputFeatureNames, modelConfig);
+                //Trainer
+                Trainer trainer = new Trainer(modelConfig, engine, trainingData, rand);
+                //Iterate training cycles
+                while (trainer.Epoch())
+                {
+                    //Create current network instance and compute error statistics after training iteration
+                    NetworkModel currNet = new NetworkModel(modelConfig,
+                                                            (name + NetworkModel.ContextPathID),
+                                                            outputFeatureNames,
+                                                            engine,
+                                                            trainer.InputFilters,
+                                                            trainer.OutputFilters,
+                                                            trainer.EpochErrStat,
+                                                            validationData
+                                                            );
+                    //Initialization of the best network
+                    if (bestNet == null)
+                    {
+                        bestNet = (NetworkModel)currNet.DeepClone();
+                        bestNetAttempt = trainer.Attempt;
+                    }
+                    //Reset attempt scope variables when new training attempt starts
+                    if (trainer.AttemptEpoch == 1)
+                    {
+                        lastImprovementEpoch = 0;
+                        lastImprovementNet = null;
+                        inFineTunePhase = false;
+                    }
+                    //Update the last improvement point
+                    if (lastImprovementNet == null || lastImprovementNet.IsBetter(currNet, !engageValidationData))
+                    {
+                        lastImprovementNet = currNet;
+                        lastImprovementEpoch = trainer.AttemptEpoch;
+                    }
+                    //Stop all attempts?
+                    bool stopAllAttempts = false;
+                    //Is current network better than the best network so far?
+                    if (bestNet.IsBetter(currNet, !engageValidationData))
+                    {
+                        //Adopt current network as the best one
+                        bestNet = (NetworkModel)currNet.DeepClone();
+                        bestNetAttempt = trainer.Attempt;
+                        bestNetAttemptEpoch = trainer.AttemptEpoch;
+                        //Entering the fine tune phase?
+                        if (engageValidationData)
+                        {
+                            if (EnabledFineTuning)
+                            {
+                                inFineTunePhase = (taskType != OutputTaskType.Regression && bestNet.ConfidenceMetrics.BinaryAccuracy == 1d);
+                            }
+                            else
+                            {
+                                stopAllAttempts |= (taskType != OutputTaskType.Regression && bestNet.ConfidenceMetrics.BinaryAccuracy == 1d);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        stopAllAttempts |= engageValidationData && inFineTunePhase;
+                    }
+                    stopAllAttempts |= inFineTunePhase && trainer.AttemptEpoch == trainer.MaxAttemptEpochs;
+                    if (!stopAllAttempts && !engageValidationData)
+                    {
+                        //Stop all attempts when accuracy on training data reaches 100%
+                        stopAllAttempts = (taskType != OutputTaskType.Regression && ((MultipleDecisionErrStat)currNet.TrainingErrorStat.StatData).BinaryAccuracy == 1d) ||
+                                          (taskType == OutputTaskType.Regression && ((MultiplePrecisionErrStat)currNet.TrainingErrorStat.StatData).TotalPrecisionStat.RootMeanSquare < RMSETreshold);
+                    }
+                    //Stop current attempt?
+                    bool stopCurrAttempt = stopAllAttempts;
+                    if (!stopCurrAttempt)
+                    {
+                        //Stop current training attempt when improvement patiency is over the limit
+                        stopCurrAttempt |= (trainer.AttemptEpoch - lastImprovementEpoch >= trainer.MaxAttemptEpochs * modelConfig.StopAttemptPatiency);
+                        stopCurrAttempt |= ((MultiplePrecisionErrStat)currNet.TrainingErrorStat.StatData).TotalPrecisionStat.RootMeanSquare < RMSETreshold;
+                    }
+                    //Progress info
+                    ModelBuildProgressInfo progressInfo =
+                        new ModelBuildProgressInfo(trainer.Attempt,
+                                                   trainer.MaxAttempts,
+                                                   trainer.AttemptEpoch,
+                                                   trainer.MaxAttemptEpochs,
+                                                   currNet,
+                                                   bestNet,
+                                                   bestNetAttempt,
+                                                   bestNetAttemptEpoch,
+                                                   stopCurrAttempt
+                                                   );
+                    //Raise notification event
+                    InvokeBuildProgressChanged(progressInfo);
+                    //Stop?
+                    if (stopAllAttempts)
+                    {
+                        break;
+                    }
+                    else if (stopCurrAttempt)
+                    {
+                        //Push trainer to next attempt
+                        if (!trainer.NextAttempt())
+                        {
+                            //No next attempt available
+                            break;
+                        }
+                    }
+                }//while (trainer iteration)
+                return bestNet;
+            }
+            finally
+            {
+                //Unsubscibe from static event
+                if (progressInfoSubscriber != null)
+                {
+                    BuildProgressChanged -= progressInfoSubscriber;
+                }
+            }
+        }
+
+
 
 
     }//NetworkModel

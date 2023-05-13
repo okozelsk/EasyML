@@ -19,12 +19,6 @@ namespace EasyMLCore.TimeSeries
 
         //Events
         /// <summary>
-        /// This informative event occurs each time the progress of the build process takes a step forward.
-        /// </summary>
-        [field: NonSerialized]
-        public event ModelBuildProgressChangedHandler BuildProgressChanged;
-
-        /// <summary>
         /// This informative event occurs each time the progress of the 
         /// testing process takes a step forward.
         /// </summary>
@@ -39,7 +33,7 @@ namespace EasyMLCore.TimeSeries
         private ModelBase _model;
 
         //Constructors
-        public ResCompTask(ResCompTaskConfig cfg)
+        private ResCompTask(ResCompTaskConfig cfg)
         {
             OutputFeatureNames = cfg.OutputFeaturesCfg.GetFeatureNames();
             _cfg = (ResCompTaskConfig)cfg.DeepClone();
@@ -63,11 +57,6 @@ namespace EasyMLCore.TimeSeries
         /// <inheritdoc cref="ResCompTaskConfig.Name"/>
         public string Name { get { return _cfg.Name; } }
 
-        /// <summary>
-        /// Indicates readiness.
-        /// </summary>
-        public bool Ready { get { return _model != null; } }
-
         /// <inheritdoc/>
         public OutputTaskType TaskType { get { return _cfg.TaskType; } }
 
@@ -75,15 +64,6 @@ namespace EasyMLCore.TimeSeries
         public int NumOfOutputFeatures { get { return OutputFeatureNames.Count; } }
 
         //Methods
-        private void OnModelBuildProgressChanged(ModelBuildProgressInfo progressInfo)
-        {
-            //Update context
-            progressInfo.ExtendContextPath($"{ContextPathID}({Name})");
-            //Raise event
-            BuildProgressChanged?.Invoke(progressInfo);
-            return;
-        }
-
         private void OnModelTestProgressChanged(ModelTestProgressInfo progressInfo)
         {
             //Update context
@@ -99,29 +79,71 @@ namespace EasyMLCore.TimeSeries
         /// <remarks>
         /// Data of samples can be in any range. Method always does data standardization.
         /// </remarks>
+        /// <param name="cfg">Configuration of the RC's task.</param>
         /// <param name="trainingData">Training samples.</param>
         /// <param name="progressInfoSubscriber">Subscriber will receive notification event about progress. (Parameter can be null).</param>
         /// <returns>Confidence metrics of built model.</returns>
-        public ModelConfidenceMetrics Build(SampleDataset trainingData,
-                                            ModelBuildProgressChangedHandler progressInfoSubscriber = null
-                                            )
+        public static ResCompTask Build(ResCompTaskConfig cfg,
+                                        SampleDataset trainingData,
+                                        ModelBuildProgressChangedHandler progressInfoSubscriber = null
+                                        )
         {
-            if (Ready)
-            {
-                throw new InvalidOperationException($"ResCompTask {Name} has been already built.");
-            }
             if (!trainingData.IsConsistent || trainingData.Count < 1 || !trainingData.IsConsistentInputLength())
             {
                 throw new ArgumentException($"Invalid or insufficient data.", nameof(trainingData));
             }
-            if (progressInfoSubscriber != null)
+            //Build
+            ResCompTask resCompTask = new ResCompTask(cfg);
+            Type modelCfgType = cfg.ModelCfg.GetType();
+            string modelNamePrefix = $"({resCompTask.Name}){ContextPathID}-";
+            ModelBase model = null;
+            if (modelCfgType == typeof(NetworkModelConfig))
             {
-                BuildProgressChanged += progressInfoSubscriber;
+                model = NetworkModel.Build(cfg.ModelCfg,
+                                           modelNamePrefix,
+                                           resCompTask.TaskType,
+                                           resCompTask.OutputFeatureNames,
+                                           trainingData,
+                                           null,
+                                           progressInfoSubscriber
+                                           );
             }
-            //Build model
-            ModelBuilder builder = new ModelBuilder(_cfg.ModelCfg);
-            _model = builder.Build(string.Empty, TaskType, OutputFeatureNames, trainingData, OnModelBuildProgressChanged);
-            return _model.ConfidenceMetrics;
+            else if (modelCfgType == typeof(CrossValModelConfig))
+            {
+                model = CrossValModel.Build(cfg.ModelCfg,
+                                            modelNamePrefix,
+                                            resCompTask.TaskType,
+                                            resCompTask.OutputFeatureNames,
+                                            trainingData,
+                                            progressInfoSubscriber
+                                            );
+            }
+            else if (modelCfgType == typeof(StackingModelConfig))
+            {
+                model = StackingModel.Build(cfg.ModelCfg,
+                                            modelNamePrefix,
+                                            resCompTask.TaskType,
+                                            resCompTask.OutputFeatureNames,
+                                            trainingData,
+                                            progressInfoSubscriber
+                                            );
+            }
+            else if (modelCfgType == typeof(CompositeModelConfig))
+            {
+                model = CompositeModel.Build(cfg.ModelCfg,
+                                            modelNamePrefix,
+                                            resCompTask.TaskType,
+                                            resCompTask.OutputFeatureNames,
+                                            trainingData,
+                                            progressInfoSubscriber
+                                            );
+            }
+            else
+            {
+                throw new ApplicationException($"Unsupported model configuration {modelCfgType}.");
+            }
+            resCompTask._model = model;
+            return resCompTask;
         }
 
         /// <inheritdoc/>
@@ -131,10 +153,6 @@ namespace EasyMLCore.TimeSeries
         /// </remarks>
         public double[] Compute(double[] input)
         {
-            if (!Ready)
-            {
-                throw new InvalidOperationException($"ResCompTask {Name} has not been built.");
-            }
             if (input == null)
             {
                 throw new ArgumentNullException(nameof(input));
@@ -170,10 +188,6 @@ namespace EasyMLCore.TimeSeries
                                  ModelTestProgressChangedHandler progressInfoSubscriber = null
                                  )
         {
-            if (!Ready)
-            {
-                throw new InvalidOperationException($"ResCompTask {Name} has not been built yet.");
-            }
             if (progressInfoSubscriber != null)
             {
                 ModelTestProgressChanged += progressInfoSubscriber;
@@ -202,7 +216,6 @@ namespace EasyMLCore.TimeSeries
         public string GetInfoText(bool detail = false, int margin = 0)
         {
             StringBuilder sb = new StringBuilder($"Task ({Name}){Environment.NewLine}");
-            sb.Append($"    Ready          : {Ready.GetXmlCode()}{Environment.NewLine}");
             sb.Append($"    Task type      : {TaskType.ToString()}{Environment.NewLine}");
             sb.Append($"    Output features: {NumOfOutputFeatures.ToString(CultureInfo.InvariantCulture)}");
             foreach (string outputFeatureName in OutputFeatureNames)

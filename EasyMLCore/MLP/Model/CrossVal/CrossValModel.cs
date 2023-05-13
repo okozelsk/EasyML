@@ -1,9 +1,11 @@
-﻿using EasyMLCore.Extensions;
+﻿using EasyMLCore.Data;
+using EasyMLCore.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Xml.Linq;
 
 namespace EasyMLCore.MLP
 {
@@ -28,14 +30,16 @@ namespace EasyMLCore.MLP
         /// <summary>
         /// Creates an uninitialized instance.
         /// </summary>
+        /// <param name="modelConfig">Model configuration.</param>
         /// <param name="name">Name.</param>
         /// <param name="taskType">Output task.</param>
         /// <param name="outputFeatureNames">Names of output features.</param>
-        public CrossValModel(string name,
-                            OutputTaskType taskType,
-                            IEnumerable<string> outputFeatureNames
-                            )
-            : base(name, taskType, outputFeatureNames)
+        private CrossValModel(CrossValModelConfig modelConfig,
+                              string name,
+                              OutputTaskType taskType,
+                              IEnumerable<string> outputFeatureNames
+                              )
+            : base(modelConfig, name, taskType, outputFeatureNames)
         {
             _members = new List<NetworkModel>();
             _weights = null;
@@ -63,7 +67,7 @@ namespace EasyMLCore.MLP
         /// Adds a new member Network model.
         /// </summary>
         /// <param name="newMember">A new member Network model to be added.</param>
-        public void AddMember(NetworkModel newMember)
+        private void AddMember(NetworkModel newMember)
         {
             //Checks
             if (newMember.NumOfOutputFeatures != NumOfOutputFeatures)
@@ -82,7 +86,7 @@ namespace EasyMLCore.MLP
         /// <summary>
         /// Sets the model operationable.
         /// </summary>
-        public void SetOperationable()
+        private void SetOperationable()
         {
             //Checks
             if (_members.Count < 1)
@@ -100,7 +104,7 @@ namespace EasyMLCore.MLP
         /// Computes outputs of all members.
         /// </summary>
         /// <param name="inputVector">Input vector.</param>
-        public List<double[]> ComputeMembers(double[] inputVector)
+        private List<double[]> ComputeMembers(double[] inputVector)
         {
             List<double[]> outputVectors = new List<double[]>(_members.Count);
             for (int memberIdx = 0; memberIdx < _members.Count; memberIdx++)
@@ -151,13 +155,86 @@ namespace EasyMLCore.MLP
             return infoText;
         }
 
-
-
         /// <inheritdoc/>
         public override ModelBase DeepClone()
         {
             return new CrossValModel(this);
         }
+
+        //Static methods
+        /// <summary>
+        /// Builds a CrossValModel.
+        /// </summary>
+        /// <param name="cfg">Model configuration.</param>
+        /// <param name="name">Model name.</param>
+        /// <param name="taskType">Output task type.</param>
+        /// <param name="outputFeatureNames">Names of output features.</param>
+        /// <param name="trainingData">Training samples.</param>
+        /// <param name="progressInfoSubscriber">Subscriber will receive notification event about progress. (Parameter can be null).</param>
+        /// <returns>Built model.</returns>
+        public static CrossValModel Build(IModelConfig cfg,
+                                          string name,
+                                          OutputTaskType taskType,
+                                          List<string> outputFeatureNames,
+                                          SampleDataset trainingData,
+                                          ModelBuildProgressChangedHandler progressInfoSubscriber = null
+                                          )
+        {
+            //Checks
+            if (cfg == null)
+            {
+                throw new ArgumentNullException(nameof(cfg));
+            }
+            if (cfg.GetType() != typeof(CrossValModelConfig))
+            {
+                throw new ArgumentException($"Wrong type of configuration. Expected {typeof(CrossValModelConfig)} but received {cfg.GetType()}.", nameof(cfg));
+            }
+            SampleDataset localDataset = trainingData.ShallowClone();
+            //Model
+            CrossValModelConfig modelConfig = cfg as CrossValModelConfig;
+            CrossValModel model = new CrossValModel(modelConfig,
+                                                    (name + CrossValModel.ContextPathID),
+                                                    taskType,
+                                                    outputFeatureNames
+                                                    );
+            //Reshuffle local data
+            localDataset.Shuffle(new Random(RandomSeed));
+            //Split data to folds
+            List<SampleDataset> foldCollection = localDataset.Folderize(modelConfig.FoldDataRatio, taskType);
+            //Member's training
+            //Train a network for each validation fold.
+            for (int validationFoldIdx = 0; validationFoldIdx < foldCollection.Count; validationFoldIdx++)
+            {
+                //Prepare training data dataset
+                SampleDataset nodeTrainingData = new SampleDataset();
+                for (int foldIdx = 0; foldIdx < foldCollection.Count; foldIdx++)
+                {
+                    if (foldIdx != validationFoldIdx)
+                    {
+                        nodeTrainingData.Add(foldCollection[foldIdx]);
+                    }
+                }
+                string validationFoldNumStr = "F" + (validationFoldIdx + 1).ToLeftPaddedString(foldCollection.Count, '0');
+                //Build network
+                NetworkModel network =
+                    NetworkModel.Build(modelConfig.NetworkModelCfg,
+                                       $"{model.Name}.{validationFoldNumStr}-",
+                                       taskType,
+                                       outputFeatureNames,
+                                       nodeTrainingData,
+                                       foldCollection[validationFoldIdx],
+                                       progressInfoSubscriber
+                                       );
+                //Add network into the model
+                model.AddMember(network);
+            }//validationFoldIdx
+            //Set model operationable
+            model.SetOperationable();
+            //Return built model
+            return model;
+        }
+
+
 
     }//CrossValModel
 

@@ -327,9 +327,6 @@ namespace EasyMLCore
                                bool detail = false
                                )
         {
-            //Create instance of model builder.
-            ModelBuilder builder = new ModelBuilder(modelCfg //Model configuration
-                                                    );
             if (verbose)
             {
                 Log.Write($"Build model for {taskType} task {taskName}.");
@@ -338,13 +335,56 @@ namespace EasyMLCore
                 Log.Write(string.Empty);
                 Log.Write($"Build is running...");
             }
-            //Build the model.
-            ModelBase model = builder.Build(taskName, //Use task name as the name of model
-                                            taskType, //Type of output task
-                                            outputFeatureNames, //Output features
-                                            trainingData, //Training data
+
+            //Build a model
+            Type modelCfgType = modelCfg.GetType();
+            string modelNamePrefix = $"({taskName})-";
+            ModelBase model = null;
+            if (modelCfgType == typeof(NetworkModelConfig))
+            {
+                model = NetworkModel.Build(modelCfg,
+                                           modelNamePrefix,
+                                           taskType,
+                                           outputFeatureNames,
+                                           trainingData,
+                                           null,
+                                           verbose ? Handlers.OnModelBuildProgressChanged : null
+                                           );
+            }
+            else if (modelCfgType == typeof(CrossValModelConfig))
+            {
+                model = CrossValModel.Build(modelCfg,
+                                            modelNamePrefix,
+                                            taskType,
+                                            outputFeatureNames,
+                                            trainingData,
                                             verbose ? Handlers.OnModelBuildProgressChanged : null
                                             );
+            }
+            else if (modelCfgType == typeof(StackingModelConfig))
+            {
+                model = StackingModel.Build(modelCfg,
+                                            modelNamePrefix,
+                                            taskType,
+                                            outputFeatureNames,
+                                            trainingData,
+                                            verbose ? Handlers.OnModelBuildProgressChanged : null
+                                            );
+            }
+            else if (modelCfgType == typeof(CompositeModelConfig))
+            {
+                model = CompositeModel.Build(modelCfg,
+                                             modelNamePrefix,
+                                             taskType,
+                                             outputFeatureNames,
+                                             trainingData,
+                                             verbose ? Handlers.OnModelBuildProgressChanged : null
+                                             );
+            }
+            else
+            {
+                throw new ArgumentException($"Unsupported model configuration {modelCfgType}.", nameof(modelCfg));
+            }
             if(verbose)
             {
                 Log.Write(string.Empty);
@@ -404,8 +444,6 @@ namespace EasyMLCore
                              bool detail = false
                              )
         {
-            //Create instance of ResComp.
-            ResComp resComp = new ResComp(cfg);
             if (verbose)
             {
                 Log.Write($"Build reservoir computer.");
@@ -415,7 +453,7 @@ namespace EasyMLCore
                 Log.Write($"Build is running...");
             }
             //Build
-            reservoirStat = resComp.Build(trainingData, verbose ? Handlers.OnResCompBuildProgressChanged : null);
+            ResComp resComp = ResComp.Build(cfg, trainingData, out reservoirStat, verbose ? Handlers.OnResCompBuildProgressChanged : null);
             if (verbose)
             {
                 Log.Write(string.Empty);

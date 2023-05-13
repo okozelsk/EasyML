@@ -1,9 +1,12 @@
-﻿using EasyMLCore.Extensions;
+﻿using EasyMLCore.Data;
+using EasyMLCore.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace EasyMLCore.MLP
 {
@@ -30,16 +33,18 @@ namespace EasyMLCore.MLP
         /// <summary>
         /// Creates an uninitialized instance.
         /// </summary>
+        /// <param name="modelConfig">Model configuration.</param>
         /// <param name="name">Name.</param>
         /// <param name="taskType">Output task.</param>
         /// <param name="outputFeatureNames">Names of output features.</param>
         /// <param name="routeInput">Specifies whether to provide original input to meta-learner.</param>
-        public StackingModel(string name,
-                             OutputTaskType taskType,
-                             IEnumerable<string> outputFeatureNames,
-                             bool routeInput
-                             )
-            : base(name, taskType, outputFeatureNames)
+        private StackingModel(StackingModelConfig modelConfig,
+                              string name,
+                              OutputTaskType taskType,
+                              IEnumerable<string> outputFeatureNames,
+                              bool routeInput
+                              )
+            : base(modelConfig, name, taskType, outputFeatureNames)
         {
             _stack = new List<NetworkModel>();
             _metaLearner = null;
@@ -68,7 +73,7 @@ namespace EasyMLCore.MLP
         /// Adds network into the stack.
         /// </summary>
         /// <param name="stackMember">A network model to be added into the stack.</param>
-        public void AddStackMember(NetworkModel stackMember)
+        private void AddStackMember(NetworkModel stackMember)
         {
             //Check
             if (stackMember.TaskType != TaskType || stackMember.NumOfOutputFeatures != NumOfOutputFeatures)
@@ -84,7 +89,7 @@ namespace EasyMLCore.MLP
         /// Sets the model operationable.
         /// </summary>
         /// <param name="metaLearner">A meta-learner model combining outputs od the stack members.</param>
-        public void SetOperationable(ModelBase metaLearner)
+        private void SetOperationable(ModelBase metaLearner)
         {
             //Checks
             if (metaLearner.TaskType != TaskType || metaLearner.NumOfOutputFeatures != NumOfOutputFeatures)
@@ -159,12 +164,198 @@ namespace EasyMLCore.MLP
             return infoText;
         }
 
-
         /// <inheritdoc/>
         public override ModelBase DeepClone()
         {
             return new StackingModel(this);
         }
+
+        //Static methods
+        /// <summary>
+        /// Builds a StackingModel.
+        /// </summary>
+        /// <param name="cfg">Model configuration.</param>
+        /// <param name="name">Model name.</param>
+        /// <param name="taskType">Output task type.</param>
+        /// <param name="outputFeatureNames">Names of output features.</param>
+        /// <param name="trainingData">Training samples.</param>
+        /// <param name="progressInfoSubscriber">Subscriber will receive notification event about progress. (Parameter can be null).</param>
+        /// <returns>Built model.</returns>
+        public static StackingModel Build(IModelConfig cfg,
+                                          string name,
+                                          OutputTaskType taskType,
+                                          List<string> outputFeatureNames,
+                                          SampleDataset trainingData,
+                                          ModelBuildProgressChangedHandler progressInfoSubscriber = null
+                                          )
+        {
+            //Checks
+            if (cfg == null)
+            {
+                throw new ArgumentNullException(nameof(cfg));
+            }
+            if (cfg.GetType() != typeof(StackingModelConfig))
+            {
+                throw new ArgumentException($"Wrong type of configuration. Expected {typeof(StackingModelConfig)} but received {cfg.GetType()}.", nameof(cfg));
+            }
+            //Model instance
+            StackingModelConfig modelConfig = (StackingModelConfig)cfg;
+            StackingModel model = new StackingModel(modelConfig, (name + StackingModel.ContextPathID), taskType, outputFeatureNames, modelConfig.RouteInput);
+            //Copy the data locally
+            SampleDataset localDataset = trainingData.ShallowClone();
+            //Shuffle local data
+            localDataset.Shuffle(new Random(RandomSeed));
+            //Folderize local data
+            List<SampleDataset> foldCollection = localDataset.Folderize(modelConfig.FoldDataRatio, taskType);
+            //Weak networks
+            //Array of weak networks
+            NetworkModel[][] weakNetworks = new NetworkModel[modelConfig.StackCfg.NetworkModelCfgCollection.Count][];
+            for (int i = 0; i < modelConfig.StackCfg.NetworkModelCfgCollection.Count; i++)
+            {
+                weakNetworks[i] = new NetworkModel[foldCollection.Count];
+            }
+            //Weak networks validation outputs storage
+            double[][][][] stackNetsHoldOutOutputs = new double[foldCollection.Count][][][];
+            for (int i = 0; i < foldCollection.Count; i++)
+            {
+                stackNetsHoldOutOutputs[i] = new double[modelConfig.StackCfg.NetworkModelCfgCollection.Count][][];
+            }
+            //Weak networks cumulated training err statistics
+            ModelErrStat[] weakNetErrStats = new ModelErrStat[modelConfig.StackCfg.NetworkModelCfgCollection.Count];
+            for (int i = 0; i < modelConfig.StackCfg.NetworkModelCfgCollection.Count; i++)
+            {
+                weakNetErrStats[i] = new ModelErrStat(taskType, outputFeatureNames);
+            }
+            NetworkModel[] strongNetworks = new NetworkModel[modelConfig.StackCfg.NetworkModelCfgCollection.Count];
+            //Build stack's weak networks and prepare input data for meta model
+            for (int holdOutFoldIdx = 0; holdOutFoldIdx < foldCollection.Count; holdOutFoldIdx++)
+            {
+                string holdOutFoldNumStr = "F" + (holdOutFoldIdx + 1).ToLeftPaddedString(foldCollection.Count, '0');
+                //Prepare training data
+                SampleDataset weakNetTrainingData = new SampleDataset();
+                for (int foldIdx = 0; foldIdx < foldCollection.Count; foldIdx++)
+                {
+                    if (foldIdx != holdOutFoldIdx)
+                    {
+                        weakNetTrainingData.Add(foldCollection[foldIdx]);
+                    }
+                }
+                //Build weak networks on training data and prepare hold-out data fold as an input for meta model
+                for (int stackNetIdx = 0; stackNetIdx < modelConfig.StackCfg.NetworkModelCfgCollection.Count; stackNetIdx++)
+                {
+                    string netNumStr = (stackNetIdx + 1).ToLeftPaddedString(modelConfig.StackCfg.NetworkModelCfgCollection.Count, '0');
+                    //Build weak network
+                    NetworkModel weakNetwork =
+                        NetworkModel.Build(modelConfig.StackCfg.NetworkModelCfgCollection[stackNetIdx],
+                                           $"{model.Name}.{holdOutFoldNumStr}-Weak{netNumStr}-",
+                                           taskType,
+                                           outputFeatureNames,
+                                           weakNetTrainingData,
+                                           null,
+                                           progressInfoSubscriber
+                                           );
+                    weakNetworks[stackNetIdx][holdOutFoldIdx] = weakNetwork;
+                    weakNetErrStats[stackNetIdx].Merge(weakNetwork.TrainingErrorStat);
+                    stackNetsHoldOutOutputs[holdOutFoldIdx][stackNetIdx] =
+                        weakNetwork.ComputeSampleDataset(foldCollection[holdOutFoldIdx], out _);
+                }//stackNetIdx
+            }//holdOutFoldIdx
+            //Build stack's strong networks on whole data and add them into the model's stack
+            for (int stackNetIdx = 0; stackNetIdx < modelConfig.StackCfg.NetworkModelCfgCollection.Count; stackNetIdx++)
+            {
+                string netNumStr = (stackNetIdx + 1).ToLeftPaddedString(modelConfig.StackCfg.NetworkModelCfgCollection.Count, '0');
+                //Build strong network
+                NetworkModel strongNetwork =
+                    NetworkModel.Build(modelConfig.StackCfg.NetworkModelCfgCollection[stackNetIdx],
+                                       $"{model.Name}.Strong{netNumStr}-",
+                                       taskType,
+                                       outputFeatureNames,
+                                       localDataset,
+                                       null,
+                                       progressInfoSubscriber
+                                       );
+                strongNetworks[stackNetIdx] = strongNetwork;
+                //Add strong network into the model's stack
+                model.AddStackMember(strongNetwork);
+            }//stackNetIdx
+            //Prepare data for meta-learner model
+            Sample[] metaLearnerTrainingDataArray = new Sample[localDataset.Count];
+            Parallel.For(0, foldCollection.Count, foldIdx =>
+            {
+                for (int sampleIdx = 0; sampleIdx < foldCollection[foldIdx].Count; sampleIdx++)
+                {
+                    double[][] stackNetsOutputs = new double[modelConfig.StackCfg.NetworkModelCfgCollection.Count][];
+                    for (int netIdx = 0; netIdx < modelConfig.StackCfg.NetworkModelCfgCollection.Count; netIdx++)
+                    {
+                        stackNetsOutputs[netIdx] = stackNetsHoldOutOutputs[foldIdx][netIdx][sampleIdx];
+                        //Average weak outputs and strong outputs
+                        double[] strongNetOutput = strongNetworks[netIdx].Compute(foldCollection[foldIdx].SampleCollection[sampleIdx].InputVector);
+                        for (int i = 0; i < stackNetsOutputs[netIdx].Length; i++)
+                        {
+                            //(1:1) seems to be the best choice
+                            stackNetsOutputs[netIdx][i] = (stackNetsOutputs[netIdx][i] + strongNetOutput[i]) / 2d;
+                        }
+                    }//netIdx
+                    metaLearnerTrainingDataArray[foldCollection[foldIdx].SampleCollection[sampleIdx].ID] =
+                        new Sample(foldCollection[foldIdx].SampleCollection[sampleIdx].ID,
+                                   modelConfig.RouteInput ? (double[])foldCollection[foldIdx].SampleCollection[sampleIdx].InputVector.Concat(stackNetsOutputs.Flattenize()) : stackNetsOutputs.Flattenize(),
+                                   foldCollection[foldIdx].SampleCollection[sampleIdx].OutputVector
+                                   );
+                }//sampleIdx
+            });//foldIdx
+            SampleDataset metaLearnerTrainingData = new SampleDataset(metaLearnerTrainingDataArray);
+            //Build a meta-learner
+            Type metaLearnerCfgType = modelConfig.MetaLearnerCfg.GetType();
+            string metaLearnerModelStr = $"{model.Name}.Meta-Learner-";
+            ModelBase metaLearnerModel = null;
+            if (metaLearnerCfgType == typeof(NetworkModelConfig))
+            {
+                metaLearnerModel = NetworkModel.Build(modelConfig.MetaLearnerCfg,
+                                                      metaLearnerModelStr,
+                                                      taskType,
+                                                      outputFeatureNames,
+                                                      metaLearnerTrainingData,
+                                                      null,
+                                                      progressInfoSubscriber
+                                                      );
+            }
+            else if (metaLearnerCfgType == typeof(CrossValModelConfig))
+            {
+                metaLearnerModel = CrossValModel.Build(modelConfig.MetaLearnerCfg,
+                                                       metaLearnerModelStr,
+                                                       taskType,
+                                                       outputFeatureNames,
+                                                       metaLearnerTrainingData,
+                                                       progressInfoSubscriber
+                                                       );
+            }
+            else if (metaLearnerCfgType == typeof(StackingModelConfig))
+            {
+                metaLearnerModel = StackingModel.Build(modelConfig.MetaLearnerCfg,
+                                                       metaLearnerModelStr,
+                                                       taskType,
+                                                       outputFeatureNames,
+                                                       metaLearnerTrainingData,
+                                                       progressInfoSubscriber
+                                                       );
+            }
+            else if (metaLearnerCfgType == typeof(CompositeModelConfig))
+            {
+                metaLearnerModel = CompositeModel.Build(modelConfig.MetaLearnerCfg,
+                                                        metaLearnerModelStr,
+                                                        taskType,
+                                                        outputFeatureNames,
+                                                        metaLearnerTrainingData,
+                                                        progressInfoSubscriber
+                                                        );
+            }
+            //Set model operationable
+            model.SetOperationable(metaLearnerModel);
+            //Return built model
+            return model;
+        }
+
+
 
     }//StackingModel
 

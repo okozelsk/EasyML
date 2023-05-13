@@ -39,8 +39,7 @@ namespace EasyMLCore.TimeSeries
         /// <summary>
         /// This informative event occurs each time the progress of the reservoir's build process takes a step forward.
         /// </summary>
-        [field: NonSerialized]
-        public event ResCompBuildProgressChangedHandler BuildProgressChanged;
+        public static event ResCompBuildProgressChangedHandler BuildProgressChanged;
 
         /// <summary>
         /// This informative event occurs each time the progress of the reservoir computer
@@ -69,7 +68,7 @@ namespace EasyMLCore.TimeSeries
         /// Creates an uninitialized instance.
         /// </summary>
         /// <param name="cfg">Reservoir computer's configuration.</param>
-        public ResComp(ResCompConfig cfg)
+        private ResComp(ResCompConfig cfg)
         {
             _cfg = (ResCompConfig)cfg.DeepClone();
             //Reservoir instance
@@ -89,22 +88,6 @@ namespace EasyMLCore.TimeSeries
         }
 
         //Properties
-        /// <summary>
-        /// Indicates ready to use.
-        /// </summary>
-        public bool Ready
-        {
-            get
-            {
-                if(!Res.Ready) { return false; }
-                foreach(ResCompTask task in Tasks)
-                {
-                    if(!task.Ready) { return false; }
-                }
-                return true;
-            }
-        }
-
         /// <inheritdoc/>
         public int NumOfOutputFeatures
         {
@@ -120,7 +103,7 @@ namespace EasyMLCore.TimeSeries
         }
 
         //Methods
-        private void OnReservoirInitProgressChanged(ReservoirInitProgressInfo progressInfo)
+        private static void OnReservoirInitProgressChanged(ReservoirInitProgressInfo progressInfo)
         {
             progressInfo.ExtendContextPath(ContextPathID);
             ResCompBuildProgressInfo trainProgressInfo =
@@ -129,7 +112,7 @@ namespace EasyMLCore.TimeSeries
             return;
         }
 
-        private void OnModelBuildProgressChanged(ModelBuildProgressInfo progressInfo)
+        private static void OnModelBuildProgressChanged(ModelBuildProgressInfo progressInfo)
         {
             progressInfo.ExtendContextPath(ContextPathID);
             ResCompBuildProgressInfo trainingProgressInfo =
@@ -169,55 +152,65 @@ namespace EasyMLCore.TimeSeries
         }
 
         /// <summary>
-        /// Trains this reservoir computer.
+        /// Builds the Reservoir Computer.
         /// </summary>
+        /// <param name="cfg">Reservoir Computer configuration.</param>
         /// <param name="trainingData">Training data.</param>
+        /// <param name="reservoirStat">Statistics of inner reservoir.</param>
         /// <param name="progressInfoSubscriber">Subscriber will receive notification event about progress. (Parameter can be null).</param>
-        /// <returns>Statistics of inner reservoir.</returns>
-        public ReservoirStat Build(SampleDataset trainingData,
-                                   ResCompBuildProgressChangedHandler progressInfoSubscriber = null
-                                   )
+        /// <returns>Built Reservoir Computer.</returns>
+        public static ResComp Build(ResCompConfig cfg,
+                                    SampleDataset trainingData,
+                                    out ReservoirStat reservoirStat,
+                                    ResCompBuildProgressChangedHandler progressInfoSubscriber = null
+                                    )
         {
-            if(Ready)
-            {
-                throw new InvalidOperationException("Buid can not be called twice. Reservoir computer is already built.");
-            }
+            reservoirStat = null;
             if (progressInfoSubscriber != null)
             {
                 BuildProgressChanged += progressInfoSubscriber;
             }
-            //Init reservoir and obtain inputs for build tasks' models
-            Res.Init((from sample in trainingData.SampleCollection select sample.InputVector).ToList(),
-                      out List<List<Tuple<string, double[]>>> bulkResOutSectionsData,
-                      out ReservoirStat reservoitStat,
-                      OnReservoirInitProgressChanged
-                      );
-            //Not all input samples are available for tasks training
-            int trainingDataStartIdx = trainingData.Count - bulkResOutSectionsData.Count;
-            //Build task's models
-            //_taskInputSectionIdxs
-            int taskOutputFeaturesStartIdx = 0;
-            for (int taskIdx = 0; taskIdx < _cfg.TaskCfgCollection.Count; taskIdx++)
+            try
             {
-                //Extract task inputs and outputs and prepare task-specific data
-                SampleDataset taskDataset;
-                taskDataset = new SampleDataset(bulkResOutSectionsData.Count);
-                for(int sampleIdx = trainingDataStartIdx, resOutIdx = 0; sampleIdx < trainingData.SampleCollection.Count; sampleIdx++, resOutIdx++)
+                ResComp resComp = new ResComp(cfg);
+                //Init reservoir and obtain inputs for build tasks' models
+                resComp.Res.Init((from sample in trainingData.SampleCollection select sample.InputVector).ToList(),
+                                  out List<List<Tuple<string, double[]>>> bulkResOutSectionsData,
+                                  out reservoirStat,
+                                  OnReservoirInitProgressChanged
+                                  );
+                //Not all input samples are available for tasks training
+                int trainingDataStartIdx = trainingData.Count - bulkResOutSectionsData.Count;
+                //Build task's models
+                //_taskInputSectionIdxs
+                int taskOutputFeaturesStartIdx = 0;
+                for (int taskIdx = 0; taskIdx < cfg.TaskCfgCollection.Count; taskIdx++)
                 {
-                    double[] taskInputVector = GetTaskInputVector(taskIdx, bulkResOutSectionsData[resOutIdx]);
-                    double[] taskOutputVector = trainingData.SampleCollection[sampleIdx].OutputVector.Extract(taskOutputFeaturesStartIdx, _cfg.TaskCfgCollection[taskIdx].OutputFeaturesCfg.FeatureCfgCollection.Count);
-                    taskDataset.AddSample(trainingData.SampleCollection[sampleIdx].ID,
-                                          taskInputVector,
-                                          taskOutputVector
-                                          );
+                    //Extract task inputs and outputs and prepare task-specific data
+                    SampleDataset taskDataset;
+                    taskDataset = new SampleDataset(bulkResOutSectionsData.Count);
+                    for (int sampleIdx = trainingDataStartIdx, resOutIdx = 0; sampleIdx < trainingData.SampleCollection.Count; sampleIdx++, resOutIdx++)
+                    {
+                        double[] taskInputVector = resComp.GetTaskInputVector(taskIdx, bulkResOutSectionsData[resOutIdx]);
+                        double[] taskOutputVector = trainingData.SampleCollection[sampleIdx].OutputVector.Extract(taskOutputFeaturesStartIdx, cfg.TaskCfgCollection[taskIdx].OutputFeaturesCfg.FeatureCfgCollection.Count);
+                        taskDataset.AddSample(trainingData.SampleCollection[sampleIdx].ID,
+                                              taskInputVector,
+                                              taskOutputVector
+                                              );
+                    }
+                    //Build task
+                    resComp.Tasks.Add(ResCompTask.Build(cfg.TaskCfgCollection[taskIdx], taskDataset, OnModelBuildProgressChanged));
+                    taskOutputFeaturesStartIdx += cfg.TaskCfgCollection[taskIdx].OutputFeaturesCfg.FeatureCfgCollection.Count;
                 }
-                //Build task
-                ResCompTask task = new ResCompTask(_cfg.TaskCfgCollection[taskIdx]);
-                task.Build(taskDataset, OnModelBuildProgressChanged);
-                Tasks.Add(task);
-                taskOutputFeaturesStartIdx += _cfg.TaskCfgCollection[taskIdx].OutputFeaturesCfg.FeatureCfgCollection.Count;
+                return resComp;
             }
-            return reservoitStat;
+            finally
+            {
+                if(progressInfoSubscriber != null)
+                {
+                    BuildProgressChanged -= progressInfoSubscriber;
+                }
+            }
         }
 
         /// <summary>
@@ -228,10 +221,6 @@ namespace EasyMLCore.TimeSeries
         /// <returns>Computed tlat output vector.</returns>
         public double[] Compute(double[] input, out List<Tuple<string, TaskOutputDetailBase>> detailedOutputs)
         {
-            if (!Ready)
-            {
-                throw new InvalidOperationException("Compute method can not be called before res computer is trained. Call Train method first.");
-            }
             Res.Compute(input, out List<Tuple<string, double[]>> outSectionsData);
             detailedOutputs = new List<Tuple<string, TaskOutputDetailBase>>(_cfg.TaskCfgCollection.Count);
             List<double[]> taskFlatOutputs = new List<double[]>(_cfg.TaskCfgCollection.Count);
@@ -262,10 +251,6 @@ namespace EasyMLCore.TimeSeries
                                        ResCompTestProgressChangedHandler progressInfoSubscriber = null
                                        )
         {
-            if (!Ready)
-            {
-                throw new InvalidOperationException("Test method can not be called before res computer is built. Call Build method first.");
-            }
             if (progressInfoSubscriber != null)
             {
                 TestProgressChanged += progressInfoSubscriber;
@@ -343,7 +328,6 @@ namespace EasyMLCore.TimeSeries
         {
             margin = Math.Max(margin, 0);
             StringBuilder sb = new StringBuilder($"Reservoir Computer:{Environment.NewLine}");
-            sb.Append($"    Ready          : {Ready.GetXmlCode()}{Environment.NewLine}");
             sb.Append($"    Output features: {NumOfOutputFeatures.ToString(CultureInfo.InvariantCulture)}{Environment.NewLine}");
             sb.Append($"{Res.GetInfoText(detail, 4)}");
             sb.Append($"    Output tasks   : {Tasks.Count.ToString(CultureInfo.InvariantCulture)}{Environment.NewLine}");

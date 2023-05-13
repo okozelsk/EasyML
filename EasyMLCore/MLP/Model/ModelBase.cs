@@ -8,6 +8,12 @@ namespace EasyMLCore.MLP
 {
     //Delegates
     /// <summary>
+    /// Delegate of the model's build progress changed event handler.
+    /// </summary>
+    /// <param name="progressInfo">Current state of the model's build process.</param>
+    public delegate void ModelBuildProgressChangedHandler(ModelBuildProgressInfo progressInfo);
+
+    /// <summary>
     /// Delegate of the model testing progress changed event handler.
     /// </summary>
     /// <param name="progressInfo">Current state of the computation process.</param>
@@ -19,15 +25,31 @@ namespace EasyMLCore.MLP
     [Serializable]
     public abstract class ModelBase : SerializableObject, IComputableTaskSpecific
     {
+        //Static variables
+        /// <summary>
+        /// A number used to initialize pseudo random numbers.
+        /// </summary>
+        protected static int RandomSeed = Common.DefaultRandomSeed;
+
         //Events
+        /// <summary>
+        /// This informative event occurs each time the progress of the build process takes a step forward.
+        /// </summary>
+        protected static event ModelBuildProgressChangedHandler BuildProgressChanged;
+
         /// <summary>
         /// This informative event occurs each time the progress of the model
         /// testing process takes a step forward.
         /// </summary>
         [field: NonSerialized]
-        public event ModelTestProgressChangedHandler ModelTestProgressChanged;
+        protected event ModelTestProgressChangedHandler ModelTestProgressChanged;
 
         //Attribute properties
+        /// <summary>
+        /// Model configuration.
+        /// </summary>
+        public IModelConfig ModelConfig { get; }
+
         /// <summary>
         /// Name.
         /// </summary>
@@ -45,18 +67,25 @@ namespace EasyMLCore.MLP
         /// <summary>
         /// Protected constructor.
         /// </summary>
+        /// <param name="modelConfig">Model configuration.</param>
         /// <param name="name">Name.</param>
         /// <param name="taskType">Output task.</param>
         /// <param name="outputFeatureNames">A collection of output feature names.</param>
-        protected ModelBase(string name,
+        protected ModelBase(IModelConfig modelConfig,
+                            string name,
                             OutputTaskType taskType,
                             IEnumerable<string> outputFeatureNames
                             )
         {
-            if(outputFeatureNames == null)
+            if (modelConfig == null)
+            {
+                throw new ArgumentNullException(nameof(modelConfig));
+            }
+            if (outputFeatureNames == null)
             {
                 throw new ArgumentNullException(nameof(outputFeatureNames));
             }
+            ModelConfig = (IModelConfig)modelConfig.DeepClone();
             Name = name;
             TaskType = taskType;
             OutputFeatureNames = new List<string>(outputFeatureNames);
@@ -78,6 +107,7 @@ namespace EasyMLCore.MLP
         /// <param name="source">The source instance.</param>
         protected ModelBase(ModelBase source)
         {
+            ModelConfig = (IModelConfig)source.ModelConfig.DeepClone();
             Name = source.Name;
             TaskType = source.TaskType;
             OutputFeatureNames = new List<string>(source.OutputFeatureNames);
@@ -93,6 +123,36 @@ namespace EasyMLCore.MLP
         /// Indicates model readiness for usage.
         /// </summary>
         public bool Ready { get { return ConfidenceMetrics != null; } }
+
+        //Static methods
+        /// <summary>
+        /// Changes a number used to initialize pseudo random numbers.
+        /// </summary>
+        /// <param name="seed">New seed value.</param>
+        public static void SetRandomSeed(int seed)
+        {
+            RandomSeed = seed;
+            return;
+        }
+
+        /// <summary>
+        /// Gets a number to be used to initialize pseudo random numbers.
+        /// </summary>
+        /// <param name="seed">New seed value.</param>
+        public static int GetRandomSeed()
+        {
+            return RandomSeed;
+        }
+
+        /// <summary>
+        /// Invokes BuildProgressChanged.
+        /// </summary>
+        /// <param name="progressInfo">Progress info.</param>
+        protected static void InvokeBuildProgressChanged(ModelBuildProgressInfo progressInfo)
+        {
+            BuildProgressChanged?.Invoke(progressInfo);
+            return;
+        }
 
         //Methods
         /// <summary>
