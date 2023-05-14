@@ -63,11 +63,18 @@ Here implemented Reservoir is therefore an ESN lightly combined with a LSM.
 
 ![Reservoir](./EasyMLCore/Docs/Reservoir.png)
 
-Each Hidden neuron provides a set of predictors.
+**Reservoir configuration**
+<br />
+Reservoir has its own [Config class](./EasyMLCore/TimeSeries/Preprocessing/ReservoirConfig.cs). It is necessary to specify several parameters in the configuration (a default value is available for most of them).
+Reservoir's Config has two parts: [Input config](./EasyMLCore/TimeSeries/Preprocessing/ReservoirInputConfig.cs) and [Hidden layer config](./EasyMLCore/TimeSeries/Preprocessing/ReservoirHiddenLayerConfig.cs).
+
+**Reservoir's output**
+<br />
+Each Reservoir's Hidden neuron provides a set of predictors.
 
 |Predictor type|Description|
 |--|--|
-|Activation|Use it for Regression tasks. It is simply the current activation value on the hidden neuron.|
+|Activation|Use it for Regression tasks. It is simply the current activation value of the hidden neuron.|
 |Squared Activation|Use it for Regression tasks (together with Activation or alone). It is the current activation value of Hidden neuron squared, but with the preserved sign.|
 |Spikes Fading Trace|Use it for Categorical and Binary tasks.The predictor is constructed as a gradually decaying trace of the history of spikes emitted by the Hidden neuron. The predictor is the result of my research and is my main contribution to Reservoir Computing.|
 
