@@ -76,11 +76,14 @@ It is necessary to specify several parameters in both configurations (a default 
 *"Variables", "VarSchema", "Feeding" and their relation*
 <br />
 These parameters are essential and must be specified in ReservoirInputConfig. They determine how the submitted input will be understood and processed.
-"Variables" parameter simply specifies, how many variables your time series has. Univariate has 1 variable. Multivariate has more than 1 variable. For example if your time series describes evolving of position in space, you have 3 variables (X, Y and Z coordinate) at each time series point.
-"Feeding" parameter has two options: "Pattern" and "TimePoint".
+<br />
+*"Variables"* parameter simply specifies, how many variables your time series has. Univariate has 1 variable. Multivariate has more than 1 variable. For example if your time series describes evolving of position in space, you have 3 variables (X, Y and Z coordinate) at each time series point.
+<br />
+*"Feeding"* parameter has two options: "Pattern" and "TimePoint".
 "Pattern" option mens, that input 1D array of doubles (vector) is a time series and hence it contains several time points. Individual input vector is independent of each other. In that case, Reservoir is always reseted before the next input vector to be processed.
 "TimePoint" option mens, that input 1D array of doubles (vector) contains data of single time point of time series. So order of the input vectors is important. In that case, Reservoir is never reseted and is continuously evolving.
-"VarSchema" parameter specifies schema of variables organization in an input 1D array of doubles (vector).
+<br />
+*"VarSchema"* parameter specifies schema of variables organization in an input 1D array of doubles (vector).
 This parameter does matter only in case of multivariate "Pattern" feeding and has two options: "Groupped" and "VarSequence".
 "Groupped" option means, that variables of one time point are together (v1[t1]v2[t1]v1[t2]v2[t2]v1[t3]v2[t3],...).
 Option "VarSequence" means, that variables of one time point are separated so it looks like noodles (v1[t1]v1[t2]v1[t3]v2[t1]v2[t2]v2[t3],...).
