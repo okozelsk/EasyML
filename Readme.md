@@ -82,11 +82,10 @@ The output of the Reservoir is all the predictors collected from all the hidden 
 In order to further work with the output, it is divided into sections: Activations, SquaredActivations, SpikesFadingTraces and ResInput.
 
 #### Reservoir Computer
+The Reservoir Computer connects the Reservoir and usually one MLP model solving a specific ML task. The output from the Reservoir serves as input to the MLP model. The MLP model is wrapped by the ResCompTask class, which specifies the output sections from the Reservoir to be used as input to the MLP model.
 The Reservoir Computer is shown schematically in the following figure. 
 
 ![Reservoir Computer](./EasyMLCore/Docs/ResComp.png)
-
-The mutual relationship of the components will be described in more detail within the description of the individual components.
 
 |Main content|Description|
 |--|--|
