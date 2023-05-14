@@ -54,18 +54,27 @@ Contains MLP engine and MLP models. The mutual relationship is shown schematical
 
 
 ### TimeSeries (namespace EasyMLCore.TimeSeries)
-Contains implementation of recurrent Reservoir and the Reservoir Computer to solve ML tasks where input is univariate or multivariate time series.
-Reservoir is a classic ESN, but here with one unique essential feature, which is the ability of an analog neuron to spike in relation to the dynamics of changes in its activation.
+Contains implementation of [Reservoir](./EasyMLCore/TimeSeries/Preprocessing/Reservoir.cs) and the [Reservoir Computer](./EasyMLCore/TimeSeries/ResComp.cs) to solve ML tasks where input is univariate or multivariate time series.
+<br />
+#### Reservoir
+Reservoir is a neural preprocessor consisting of hidden recurrent network as is schematically shown in the following figure. Hidden neurons have usually TanH activation.
+Reservoir is implemented as a classic ESN, but with one unique essential feature above, which is the ability of an Hidden neuron to spike in relation to the dynamics of changes in its activation.
 The Reservoir implemented here is therefore an ESN lightly combined with a LSM.
-The spikes of the analog neuron are used to generate its SpikesFadingTrace predictor.
-These predictors substantially improve time series classification and are what I contribute to Reservoir Computing.
-<br />
-<br />
-Recurrent Reservoir is shown schematically in the following figure.
 
 ![Reservoir](./EasyMLCore/Docs/Reservoir.png)
-<br />
-<br />
+
+Each Hidden neuron provides a set of predictors.
+
+|Predictor type|Description|
+|--|--|
+|Activation|Use it for Regression tasks. It is simply the current activation value on the hidden neuron.|
+|Squared Activation|Use it for Regression tasks (together with Activation or alone). It is the current activation value of Hidden neuron squared, but with the preserved sign.|
+|Spikes Fading Trace|Use it for Categorical and Binary tasks.The predictor is constructed as a gradually decaying trace of the history of spikes emitted by the Hidden neuron. The predictor is the result of my research and is my main contribution to Reservoir Computing.|
+
+The output of the Reservoir is all the predictors collected from all the hidden neurons as well as the original input to the Reservoir.
+In order to further work with the output, it is divided into sections: Activations, SquaredActivations, SpikesFadingTraces and ResInput.
+
+#### Reservoir Computer
 The Reservoir Computer is shown schematically in the following figure. 
 
 ![Reservoir Computer](./EasyMLCore/Docs/ResComp.png)
