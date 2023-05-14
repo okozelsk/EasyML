@@ -89,7 +89,8 @@ The Reservoir Computer is shown schematically in the following figure.
 
 ![Reservoir Computer](./EasyMLCore/Docs/ResComp.png)
 
-The Reservoir Computer connects the Reservoir and usually one MLP model solving a specific ML task (however, there can be any number of MLP models or ML tasks). The output from the Reservoir serves as an input to the relevant MLP model. Reservoir Computer has its own [ResCompConfig](./EasyMLCore/TimeSeries/ResCompConfig.cs) class, which is required by its Build method. The configuration consists of the Reservoir configuration and one or more [ResCompTaskConfig](./EasyMLCore/TimeSeries/ResCompTaskConfig.cs) configuration(s). ResCompTaskConfig consists of MLP model configuration and also specifies, what output sections from the Reservoir to use as input of the MLP model.
+The Reservoir Computer connects the Reservoir and usually one ML task (however, there can be any number of simultaneous ML tasks). ML task ([ResCompTask](./EasyMLCore/TimeSeries/ResCompTask.cs)) is an envelope of MLP model. Reservoir Computer routes the relevant output from the Reservoir as an input to the ML task.
+Reservoir Computer has its own [ResCompConfig](./EasyMLCore/TimeSeries/ResCompConfig.cs) class, which is required by its Build method. The configuration consists of the Reservoir configuration and one or more [ResCompTaskConfig](./EasyMLCore/TimeSeries/ResCompTaskConfig.cs) configuration(s). ResCompTaskConfig consists of MLP model configuration and also specifies, what output sections from the Reservoir to use as input of the MLP model.
 
 
 ## EasyMLEduApp (namespace EasyMLEduApp)
