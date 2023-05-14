@@ -90,6 +90,7 @@ Option "VarSequence" means, that variables of one time point are separated so it
 <br />
 <br />
 *"Density"*
+<br />
 This parameter is present in both ReservoirInputConfig and ReservoirHiddenLayerConfig.
 <br />
 In ReservoirInputConfig *"Density"* specifies, what portion of hidden neurons will receive one variable as an input (ie. how many hidden neurons will be connected to one input neuron). If you look at the Reservoir figure above, you see, that every input neuron is connected to two hidden neurons. Corresponding value of *"Density"* parameter is in that case 2/12 = 1.667. Default value is 1/4.
@@ -101,6 +102,7 @@ And one more thing. Instead of a fraction, you can enter an integer number. This
 <br />
 
 *"MaxDelay"*
+<br />
 This parameter is present in both ReservoirInputConfig and ReservoirHiddenLayerConfig.
 <br />
 It has the same meaning in both configurations. Neurons are connected via synapse supporting delay.
@@ -109,6 +111,7 @@ And this parameter says what the maximum delay will be. It is an integer value a
 <br />
 
 *"Retainment"*
+<br />
 This parameter is present only in ReservoirHiddenLayerConfig. It is a fraction between 0 and 1 and specifies, what portion of previous activation hidden neuron retains. Activation = (Retainment * OldActivation) + (1 - Retainment)*NewActivation.
 <br />
 Default value is 0, but. This parameter influences Reservoir's memory and dynamics. Depending on your data, it may play key role.
