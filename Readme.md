@@ -58,8 +58,8 @@ Contains implementation of [Reservoir](./EasyMLCore/TimeSeries/Preprocessing/Res
 <br />
 #### Reservoir
 Reservoir is a neural preprocessor consisting of hidden recurrent network as is schematically shown in the following figure. Hidden neurons have usually TanH activation.
-Reservoir is implemented as a classic ESN, but with one unique essential feature above, which is the ability of an Hidden neuron to spike in relation to the dynamics of changes in its activation.
-The Reservoir implemented here is therefore an ESN lightly combined with a LSM.
+Reservoir is implemented as a classic ESN, but with one unique essential feature on top, which is the ability of an Hidden neuron to spike in relation to the dynamics of changes in its activation.
+Here implemented Reservoir is therefore an ESN lightly combined with a LSM.
 
 ![Reservoir](./EasyMLCore/Docs/Reservoir.png)
 
