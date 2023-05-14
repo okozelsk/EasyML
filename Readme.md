@@ -2,6 +2,7 @@
 This repo is a successor of my [older repo](https://github.com/okozelsk/NET). 
 Now there is full [**MLP**](https://en.wikipedia.org/wiki/Multilayer_perceptron) support (many optimizers, standard regularization techniques and types of network models). There is also implemented the [**Reservoir Computer**](https://en.wikipedia.org/wiki/Reservoir_computing), which is now much easier to configure and has a more powerful spike-trace predictor for time series classifications. Overall, the components are much simpler to configure and easier to use than in the older solution. 
 Repo consists of the main library (**EasyMLCore**) and a small educational console application (**EasyMLEduApp**), where it is shown how to work with the library.
+The documentation is still being worked on and will be gradually added here.
 
 ## EasyMLCore (namespace EasyMLCore)
 The purpose is to support the usual machine-learning scenario in an easy way.
@@ -65,8 +66,10 @@ Here implemented Reservoir is therefore an ESN lightly combined with a LSM.
 
 *Reservoir configuration*
 <br />
-Reservoir has its own [Config class](./EasyMLCore/TimeSeries/Preprocessing/ReservoirConfig.cs). It is necessary to specify several parameters in the configuration (a default value is available for most of them).
-Reservoir's Config has two parts: [Input config](./EasyMLCore/TimeSeries/Preprocessing/ReservoirInputConfig.cs) and [Hidden layer config](./EasyMLCore/TimeSeries/Preprocessing/ReservoirHiddenLayerConfig.cs).
+Reservoir has its own [ReservoirConfig](./EasyMLCore/TimeSeries/Preprocessing/ReservoirConfig.cs) class. 
+Reservoir's Config has two parts: [ReservoirInputConfig](./EasyMLCore/TimeSeries/Preprocessing/ReservoirInputConfig.cs) and [ReservoirHiddenLayerConfig](./EasyMLCore/TimeSeries/Preprocessing/ReservoirHiddenLayerConfig.cs).
+It is necessary to specify several parameters in both configurations (a default value is available for most of them).
+
 
 *Reservoir's output*
 <br />
@@ -82,18 +85,12 @@ The output of the Reservoir is all the predictors collected from all the hidden 
 In order to further work with the output, it is divided into sections: Activations, SquaredActivations, SpikesFadingTraces and ResInput.
 
 #### Reservoir Computer
-The Reservoir Computer connects the Reservoir and usually one MLP model solving a specific ML task. The output from the Reservoir serves as input to the MLP model. The MLP model is wrapped by the ResCompTask class, which specifies the output sections from the Reservoir to be used as input to the MLP model.
 The Reservoir Computer is shown schematically in the following figure. 
 
 ![Reservoir Computer](./EasyMLCore/Docs/ResComp.png)
 
-|Main content|Description|
-|--|--|
-|[Reservoir](./EasyMLCore/TimeSeries/Preprocessing/Reservoir.cs)|...|
-|[ResCompTask](./EasyMLCore/TimeSeries/ResCompTask.cs)|...|
-|[ResComp](./EasyMLCore/TimeSeries/ResComp.cs)|...|
+The Reservoir Computer connects the Reservoir and usually one MLP model solving a specific ML task (however, there can be any number of MLP models or ML tasks). The output from the Reservoir serves as an input to the relevant MLP model. Reservoir Computer has its own [ResCompConfig](./EasyMLCore/TimeSeries/ResCompConfig.cs) class, which is required by its Build method. The configuration consists of the Reservoir configuration and one or more [ResCompTaskConfig](./EasyMLCore/TimeSeries/ResCompTaskConfig.cs) configuration(s). ResCompTaskConfig consists of MLP model configuration and also specifies, what output sections from the Reservoir to use as input of the MLP model.
 
-The detailed description is being worked on and will be added gradually and as soon as possible.
 
 ## EasyMLEduApp (namespace EasyMLEduApp)
 Contains a small console application (.net 6, C#10), where is shown how to work with EasyMLCore. Application has no startup parameters and walking through examples is solved as the menu.
