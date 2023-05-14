@@ -107,52 +107,6 @@ namespace EasyMLCore.MLP
         }
 
         /// <summary>
-        /// Creates an initialized instance
-        /// </summary>
-        /// <param name="modelConfig">Model configuration.</param>
-        /// <param name="name">Model name.</param>
-        /// <param name="outputFeatureNames">A collection of output feature names.</param>
-        /// <param name="engine">MLP network engine.</param>
-        /// <param name="inputFilters">Prepared input filters.</param>
-        /// <param name="outputFilters">Prepared output filters.</param>
-        /// <param name="trainingErrStat">Error statistics from the training.</param>
-        /// <param name="validationErrStat">Error statistics from the validation (can be null).</param>
-        private NetworkModel(NetworkModelConfig modelConfig,
-                             string name,
-                             IEnumerable<string> outputFeatureNames,
-                             MLPEngine engine,
-                             FeatureFilterBase[] inputFilters,
-                             FeatureFilterBase[] outputFilters,
-                             ModelErrStat trainingErrStat,
-                             ModelErrStat validationErrStat
-                             )
-            : base(modelConfig, name, engine.TaskType, outputFeatureNames)
-        {
-            if (OutputFeatureNames.Count != engine.NumOfOutputFeatures)
-            {
-                throw new ArgumentException("Number of feature names differs from number of network's output features.", nameof(outputFeatureNames));
-            }
-            Engine = engine.DeepClone();
-            _inputFilters = new FeatureFilterBase[inputFilters.Length];
-            for (int i = 0; i < _inputFilters.Length; i++)
-            {
-                _inputFilters[i] = inputFilters[i].DeepClone();
-            }
-            _outputFilters = new FeatureFilterBase[outputFilters.Length];
-            for (int i = 0; i < _outputFilters.Length; i++)
-            {
-                _outputFilters[i] = outputFilters[i].DeepClone();
-            }
-            //Training error statistics
-            TrainingErrorStat = trainingErrStat.DeepClone();
-            //Validation error statistics
-            ValidationErrorStat = validationErrStat?.DeepClone();
-            //Finalize model
-            FinalizeModel(new ModelConfidenceMetrics(TrainingErrorStat, ValidationErrorStat));
-            return;
-        }
-
-        /// <summary>
         /// Copy constructor.
         /// </summary>
         /// <param name="source">The source instance.</param>
@@ -335,7 +289,6 @@ namespace EasyMLCore.MLP
         {
             margin = Math.Max(margin, 0);
             StringBuilder sb = new StringBuilder($"{Name} [{GetType()}]{Environment.NewLine}");
-            sb.Append($"    Ready                   : {Ready.GetXmlCode()}{Environment.NewLine}");
             sb.Append($"    Task type               : {Engine.TaskType.ToString()}{Environment.NewLine}");
             sb.Append($"    Number of input features: {Engine.NumOfInputFeatures.ToString(CultureInfo.InvariantCulture)}{Environment.NewLine}");
             sb.Append($"    Output features info    : {Engine.NumOfOutputFeatures.ToString(CultureInfo.InvariantCulture)}");
@@ -417,7 +370,7 @@ namespace EasyMLCore.MLP
             {
                 NetworkModelConfig modelConfig = (NetworkModelConfig)cfg;
                 bool engageValidationData = validationData != null;
-                Random rand = new Random(RandomSeed);
+                Random rand = new Random(GetRandomSeed());
                 NetworkModel bestNet = null;
                 int bestNetAttempt = 0;
                 int bestNetAttemptEpoch = 0;

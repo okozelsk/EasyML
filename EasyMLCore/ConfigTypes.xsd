@@ -674,7 +674,7 @@
   <!-- Configuration of a stack of NetworkModel(s) configurations. -->
   <xs:complexType name="NetworkStackConfig">
     <xs:sequence minOccurs="1" maxOccurs="1">
-      <xs:element type="NetworkModelConfig" name="networkModel" minOccurs="2" maxOccurs="unbounded"/>
+      <xs:element type="NetworkModelConfig" name="networkModel" minOccurs="1" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
 
@@ -682,7 +682,7 @@
   <xs:complexType name="StackingModelConfig">
     <xs:sequence minOccurs="1" maxOccurs="1">
       <xs:element type="NetworkStackConfig" name="stack" minOccurs="1" maxOccurs="1"/>
-      <xs:choice minOccurs="1" maxOccurs="unbounded">
+      <xs:choice minOccurs="1" maxOccurs="1">
         <xs:element type="NetworkModelConfig" name="networkModel" minOccurs="0" maxOccurs="1"/>
         <xs:element type="CrossValModelConfig" name="crossValModel" minOccurs="0" maxOccurs="1"/>
         <xs:element type="StackingModelConfig" name="stackingModel" minOccurs="0" maxOccurs="1"/>

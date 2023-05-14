@@ -10,7 +10,7 @@ The purpose is to support the usual machine-learning scenario in an easy way.
 ![Typical ML scenario](./EasyMLCore/Docs/ML_scenario.png)
 
 The EasyMLCore namespace is a root namespace of the library. It contains some common elements but the main thing it contains is the [EasyML class with its Oper](./EasyMLCore/EasyML.cs) interface, which provides basic functionalities supporting the ML process in a user-friendly way. The EasyML.Oper interface is a singleton. It is immediately usable and its main methods are LoadSampleData, Report, Build and Test. Unless otherwise stated, the methods log the progress of the operation in the system console by default. To redirect logs elsewhere, it is sufficient to set any instance of a custom object implementing the trivial [IOutputLog](./EasyMLCore/Log/IOutputLog.cs) interface using the EasyML.Oper.ChangeOutputLog method.
-If you want to write anything of your own to the active log, use the EasyML.Oper.Log.Write method.
+If you want to write anything of your own to the log, use the EasyML.Oper.Log.Write method.
 <br />
 <br />
 **General characteristics and limitations**
@@ -20,6 +20,8 @@ If you want to write anything of your own to the active log, use the EasyML.Oper
 * Each ML model class provides static method Build, which creates valid and trained instance (there is no public constructors). The Build method always requires an instance of the appropriate Config class. Config class specifies model's properties, ensures the basic consistency and has constructor(s) for setup from scratch and also the constructor accepting XElement. Config class of any type always provides GetXml method
 * Each ML model provides a Compute method (respectively the IComputable interface). The method expects a 1D array of doubles on input and returns the result as a 1D array of doubles as well
 * Each ML model provides a Test method that computes a test dataset and returns the results along with error statistics
+* It is not necessary to standardize/normalize the input data in advance. ML models take care of this themselves
+* EasyML does not include data preprocessing tools such as filling in missing values in samples
 * Almost every component is derived from [SerializableObject](./EasyMLCore/SerializableObject.cs) base class and is easily serializable/deserializable using methods of that base class. Serialization uses the BinaryFormatter
 * EasyML does not support the use of distributed resources and is intended for the preparation of models solving small to medium-sized tasks. It is not intended for massive ML tasks with hundreds of thousands of samples
 * Supported ML task types are: Categorical (multi-class classification), Binary (single or multiple decisions) and Regression (single or multiple forecasting)
@@ -69,6 +71,19 @@ Here implemented Reservoir is therefore an ESN lightly combined with a LSM.
 Reservoir has its own [ReservoirConfig](./EasyMLCore/TimeSeries/Preprocessing/ReservoirConfig.cs) class. 
 Reservoir's Config has two parts: [ReservoirInputConfig](./EasyMLCore/TimeSeries/Preprocessing/ReservoirInputConfig.cs) and [ReservoirHiddenLayerConfig](./EasyMLCore/TimeSeries/Preprocessing/ReservoirHiddenLayerConfig.cs).
 It is necessary to specify several parameters in both configurations (a default value is available for most of them).
+<br />
+<br />
+*"Variables", "VarSchema", "Feeding" and their relation*
+<br />
+These parameters are essential and must be specified in ReservoirInputConfig. They determine how the submitted input will be understood and processed.
+"Variables" parameter simply specifies, how many variables your time series has. Univariate has 1 variable. Multivariate has more than 1 variable. For example if your time series describes evolving of position in space, you have 3 variables (X, Y and Z coordinate) at each time series point.
+"Feeding" parameter has two options: "Pattern" and "TimePoint".
+"Pattern" option mens, that input 1D array of doubles (vector) is a time series and hence it contains several time points. Individual input vector is independent of each other. In that case, Reservoir is always reseted before the next input vector to be processed.
+"TimePoint" option mens, that input 1D array of doubles (vector) contains data of single time point of time series. So order of the input vectors is important. In that case, Reservoir is never reseted and is continuously evolving.
+"VarSchema" parameter specifies schema of variables organization in an input 1D array of doubles (vector).
+This parameter does matter only in case of multivariate "Pattern" feeding and has two options: "Groupped" and "VarSequence".
+"Groupped" option means, that variables of one time point are together (v1[t1]v2[t1]v1[t2]v2[t2]v1[t3]v2[t3],...).
+Option "VarSequence" means, that variables of one time point are separated so it looks like noodles (v1[t1]v1[t2]v1[t3]v2[t1]v2[t2]v2[t3],...).
 
 
 *Reservoir's output*

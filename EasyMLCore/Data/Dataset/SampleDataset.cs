@@ -399,11 +399,6 @@ namespace EasyMLCore.Data
             return dataset;
         }
 
-        private static int StdDevComparer(Tuple<double, int> item1, Tuple<double, int> item2)
-        {
-            return Math.Sign((double)(item1.Item1 - item2.Item1));
-        }
-
         //Methods
         /// <summary>
         /// Adds specified sample instance directly.

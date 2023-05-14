@@ -29,7 +29,7 @@ namespace EasyMLCore.MLP
         /// <summary>
         /// A number used to initialize pseudo random numbers.
         /// </summary>
-        protected static int RandomSeed = Common.DefaultRandomSeed;
+        private static int RandomSeed = Common.DefaultRandomSeed;
 
         //Events
         /// <summary>
@@ -118,11 +118,6 @@ namespace EasyMLCore.MLP
         //Properties
         /// <inheritdoc/>
         public int NumOfOutputFeatures { get { return OutputFeatureNames.Count; } }
-
-        /// <summary>
-        /// Indicates model readiness for usage.
-        /// </summary>
-        public bool Ready { get { return ConfidenceMetrics != null; } }
 
         //Static methods
         /// <summary>
@@ -250,10 +245,6 @@ namespace EasyMLCore.MLP
                                  ModelTestProgressChangedHandler progressInfoSubscriber = null
                                  )
         {
-            if (!Ready)
-            {
-                throw new InvalidOperationException("Model is not built. Build the model first.");
-            }
             if (progressInfoSubscriber != null)
             {
                 ModelTestProgressChanged += progressInfoSubscriber;

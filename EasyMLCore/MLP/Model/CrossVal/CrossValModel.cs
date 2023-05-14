@@ -123,13 +123,8 @@ namespace EasyMLCore.MLP
         /// <inheritdoc/>
         public override string GetInfoText(bool detail = false, int margin = 0)
         {
-            if(!Ready)
-            {
-                throw new InvalidOperationException("Model is not built yet.");
-            }
             margin = Math.Max(margin, 0);
             StringBuilder sb = new StringBuilder($"{Name} [{GetType()}]{Environment.NewLine}");
-            sb.Append($"    Ready                  : {Ready.GetXmlCode()}{Environment.NewLine}");
             sb.Append($"    Task type              : {TaskType.ToString()}{Environment.NewLine}");
             sb.Append($"    Output features info   : {OutputFeatureNames.Count.ToString(CultureInfo.InvariantCulture)}");
             int fIdx = 0;
@@ -198,7 +193,7 @@ namespace EasyMLCore.MLP
                                                     outputFeatureNames
                                                     );
             //Reshuffle local data
-            localDataset.Shuffle(new Random(RandomSeed));
+            localDataset.Shuffle(new Random(GetRandomSeed()));
             //Split data to folds
             List<SampleDataset> foldCollection = localDataset.Folderize(modelConfig.FoldDataRatio, taskType);
             //Member's training
