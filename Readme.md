@@ -73,7 +73,7 @@ Reservoir's Config has two parts: [ReservoirInputConfig](./EasyMLCore/TimeSeries
 It is necessary to specify several parameters in both configurations (a default value is available for most of them).
 <br />
 <br />
-*"Variables", "VarSchema", "Feeding" and their relation*
+*"Variables", "VarSchema", "Feeding" parameters and their relation*
 <br />
 These parameters are essential and must be specified in ReservoirInputConfig. They determine how the submitted input will be understood and processed.
 <br />
@@ -87,7 +87,33 @@ These parameters are essential and must be specified in ReservoirInputConfig. Th
 This parameter does matter only in case of multivariate "Pattern" feeding and has two options: "Groupped" and "VarSequence".
 "Groupped" option means, that variables of one time point are together (v1[t1]v2[t1]v1[t2]v2[t2]v1[t3]v2[t3],...).
 Option "VarSequence" means, that variables of one time point are separated so it looks like noodles (v1[t1]v1[t2]v1[t3]v2[t1]v2[t2]v2[t3],...).
+<br />
+<br />
+*"Density"*
+This parameter is present in both ReservoirInputConfig and ReservoirHiddenLayerConfig.
+<br />
+In ReservoirInputConfig *"Density"* specifies, what portion of hidden neurons will receive one variable as an input (ie. how many hidden neurons will be connected to one input neuron). If you look at the Reservoir figure above, you see, that every input neuron is connected to two hidden neurons. Corresponding value of *"Density"* parameter is in that case 2/12 = 1.667. Default value is 1/4.
+<br />
+In ReservoirHiddenLayerConfig *"Density"* specifies, how many other hidden neurons will be connected to one hidden neuron. Default value is 1/10.
+<br />
+And one more thing. Instead of a fraction, you can enter an integer number. This is then understood as the exact number of neurons.
+<br />
+<br />
 
+*"MaxDelay"*
+This parameter is present in both ReservoirInputConfig and ReservoirHiddenLayerConfig.
+<br />
+It has the same meaning in both configurations. Neurons are connected via synapse supporting delay.
+And this parameter says what the maximum delay will be. It is an integer value and the default value is 0, which means no delay. If you specify 1, half of the synapses will have delay 0 and half will have delay 1. If you specify 2, a third of the synapses will have delay 0, a third will have delay 1, and a third will have delay 2. And so on...
+<br />
+<br />
+
+*"Retainment"*
+This parameter is present only in ReservoirHiddenLayerConfig. It is a fraction between 0 and 1 and specifies, what portion of previous activation hidden neuron retains. Activation = (Retainment * OldActivation) + (1 - Retainment)*NewActivation.
+<br />
+Default value is 0, but. This parameter influences Reservoir's memory and dynamics. Depending on your data, it may play key role.
+<br />
+<br />
 
 *Reservoir's output*
 <br />
