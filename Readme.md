@@ -128,6 +128,14 @@ Each Reservoir's Hidden neuron provides a set of predictors.
 
 The output of the Reservoir is all the predictors collected from all the hidden neurons as well as the original input to the Reservoir.
 In order to further work with the output, it is divided into sections: Activations, SquaredActivations, SpikesFadingTraces and ResInput.
+<br />
+<br />
+*Booting*
+<br />
+It happens only in case of "TimePoint" feeding mode.
+Reservoir boots several cycles and does not generate predictors. This is so that the initial predictors are not affected by the initial state of the Reservoir. The number of boot cycles is equal to the number of hidden neurons.
+<br />
+<br />
 
 #### Reservoir Computer
 The Reservoir Computer is shown schematically in the following figure. 
