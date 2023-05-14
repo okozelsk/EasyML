@@ -66,11 +66,9 @@ Here implemented Reservoir is therefore an ESN lightly combined with a LSM.
 
 ![Reservoir](./EasyMLCore/Docs/Reservoir.png)
 
-*Reservoir configuration*
+***Reservoir configuration***
 <br />
-Reservoir has its own [ReservoirConfig](./EasyMLCore/TimeSeries/Preprocessing/ReservoirConfig.cs) class. 
-Reservoir's Config has two parts: [ReservoirInputConfig](./EasyMLCore/TimeSeries/Preprocessing/ReservoirInputConfig.cs) and [ReservoirHiddenLayerConfig](./EasyMLCore/TimeSeries/Preprocessing/ReservoirHiddenLayerConfig.cs).
-It is necessary to specify several parameters in both configurations (a default value is available for most of them).
+Reservoir has its own [ReservoirConfig](./EasyMLCore/TimeSeries/Preprocessing/ReservoirConfig.cs) class which consists of two parts: [ReservoirInputConfig](./EasyMLCore/TimeSeries/Preprocessing/ReservoirInputConfig.cs) and [ReservoirHiddenLayerConfig](./EasyMLCore/TimeSeries/Preprocessing/ReservoirHiddenLayerConfig.cs).
 <br />
 <br />
 *"Variables", "VarSchema", "Feeding" parameters and their relation*
@@ -118,7 +116,7 @@ Default value is 0, but. This parameter influences Reservoir's memory and dynami
 <br />
 <br />
 
-*Reservoir's output*
+***Reservoir's output***
 <br />
 Each Reservoir's Hidden neuron provides a set of predictors.
 
