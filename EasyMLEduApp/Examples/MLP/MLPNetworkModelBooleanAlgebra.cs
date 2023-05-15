@@ -15,17 +15,10 @@ namespace EasyMLDemoApp.Examples.MLP
     /// 
     /// </summary>
     /// <seealso cref="EasyML"/>
-    public class MLPNetworkModelBooleanAlgebra
+    public static class MLPNetworkModelBooleanAlgebra
     {
         private static readonly List<string> _outputFeatureNames =
             new List<string>() { "AND", "OR", "XOR" };
-
-        //Constructor
-        public MLPNetworkModelBooleanAlgebra()
-        {
-            return;
-        }
-
 
         //Methods
         /// <summary>
@@ -84,7 +77,7 @@ namespace EasyMLDemoApp.Examples.MLP
             return new NetworkModelConfig(XElement.Parse(xmlStr));
         }
 
-        private void CalculateAndReportOutputs(ModelBase model)
+        private static void CalculateAndReportOutputs(ModelBase model)
         {
             for (int b1 = 0; b1 <= 1; b1++)
             {
@@ -104,7 +97,7 @@ namespace EasyMLDemoApp.Examples.MLP
         /// This version uses CreateNetworkConfig() method which directly
         /// sets configuration parameters.
         /// </summary>
-        private void ModelConfigFromSourceCodeExample()
+        private static void ModelConfigFromSourceCodeExample()
         {
             EasyML.Oper.Log.Write("Example of NetworkModel solving boolean algebra:");
             //Call method to create network model configuration from scratch in its source code.
@@ -121,11 +114,11 @@ namespace EasyMLDemoApp.Examples.MLP
                                                 );
             //Test model
             ModelErrStat errStat = EasyML.Oper.Test(model, //Our built model
-                                                      samples, //Testing samples (here the same as training samples)
-                                                      out ResultDataset resultData, //Original testing samples together with computed data
-                                                      true, //We want to report progress and results
-                                                      true //We want to report max detail
-                                                      );
+                                                    samples, //Testing samples (here the same as training samples)
+                                                    out ResultDataset resultData, //Original testing samples together with computed data
+                                                    true, //We want to report progress and results
+                                                    true //We want to report max detail
+                                                    );
 
             //Finally, let's try calling the model calculations and displaying the results.
             CalculateAndReportOutputs(model);
@@ -137,7 +130,7 @@ namespace EasyMLDemoApp.Examples.MLP
         /// This version uses CreateNetworkConfigFromXml() method which creates
         /// configuration from parameters in a XML.
         /// </summary>
-        private void ModelConfigFromXMLExample()
+        private static void ModelConfigFromXMLExample()
         {
             EasyML.Oper.Log.Write("Example of NetworkModel solving boolean algebra:");
             //Call method to create network model configuration from from xml
@@ -168,7 +161,7 @@ namespace EasyMLDemoApp.Examples.MLP
         /// <summary>
         /// Runs the example code.
         /// </summary>
-        public void Run()
+        public static void Run()
         {
             Console.Clear();
             ModelConfigFromSourceCodeExample();

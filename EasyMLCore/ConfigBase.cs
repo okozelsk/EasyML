@@ -60,10 +60,8 @@ namespace EasyMLCore
         {
             //Load an instance of ConfigTypes.xsd
             Assembly assemblyEasyMLCore = Assembly.GetExecutingAssembly();
-            using (Stream schemaStream = assemblyEasyMLCore.GetManifestResourceStream("EasyMLCore.ConfigTypes.xsd"))
-            {
-                return XmlSchema.Read(schemaStream, null);
-            }
+            using Stream schemaStream = assemblyEasyMLCore.GetManifestResourceStream("EasyMLCore.ConfigTypes.xsd");
+            return XmlSchema.Read(schemaStream, null);
         }
 
         /// <summary>

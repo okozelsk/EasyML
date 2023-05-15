@@ -16,6 +16,12 @@ namespace EasyMLCore.MLP
     [Serializable]
     public class NetworkModel : ModelBase
     {
+        //Static params
+        /// <summary>
+        /// Specifies whether to try additional fine tuning when achieved 100% accuracy
+        /// </summary>
+        private static readonly bool EnabledFineTuning = true;
+
         //Constants
         /// <summary>
         /// Short identifier in context path.
@@ -26,11 +32,6 @@ namespace EasyMLCore.MLP
         /// Default training total RMSE treshold.
         /// </summary>
         private const double RMSETreshold = 1E-6d;
-        
-        /// <summary>
-        /// Specifies whether to try additional fine tuning when achieved 100% accuracy
-        /// </summary>
-        private const bool EnabledFineTuning = true;
         
         //Attribute properties
         /// <summary>

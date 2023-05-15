@@ -18,16 +18,10 @@ namespace EasyMLDemoApp.Examples.MLP
     ///   BeetleFly_train.csv and BeetleFly_test.csv
     /// </summary>
     /// <seealso cref="MLPModelConfigs"/>
-    public class MLPModelsBinaryCompetition
+    public static class MLPModelsBinaryCompetition
     {
-        //Constructor
-        public MLPModelsBinaryCompetition()
-        {
-            return;
-        }
-
         //Methods
-        private void ExecuteBeetleFlyCompetition()
+        private static void ExecuteBeetleFlyCompetition()
         {
             string taskName = "Beetle (1) or Fly (0)";
             //Output feature names of binary decision task
@@ -119,7 +113,7 @@ namespace EasyMLDemoApp.Examples.MLP
             return;
         }
 
-        private void ReportBeetleFlyCompetitionResults()
+        private static void ReportBeetleFlyCompetitionResults()
         {
             //Deserialize previously serialized objects
             string fileNamePrefix = "./Temp/BeetleFly_winner_";
@@ -158,7 +152,7 @@ namespace EasyMLDemoApp.Examples.MLP
         /// <summary>
         /// Runs the example code.
         /// </summary>
-        public void Run()
+        public static void Run()
         {
             Console.Clear();
             ExecuteBeetleFlyCompetition();

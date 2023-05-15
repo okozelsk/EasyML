@@ -19,16 +19,11 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
     ///   TTOO_patterns_train.csv and TTOO_patterns_test.csv
     /// </summary>
     /// <seealso cref="MLPModelConfigs"/>
-    public class ResCompPFRegressionTasks
+    public static class ResCompPFRegressionTasks
     {
-        //Constructor
-        public ResCompPFRegressionTasks()
-        {
-            return;
-        }
 
         //Methods
-        private void ExecuteResCompTTOOExample()
+        private static void ExecuteResCompTTOOExample()
         {
             string taskName = "TTOO Biosystems Share Prices";
             //Output feature names of TTOO Biosystems Share Prices regression task
@@ -96,7 +91,7 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
         /// <summary>
         /// Runs the example code.
         /// </summary>
-        public void Run()
+        public static void Run()
         {
             Console.Clear();
             ExecuteResCompTTOOExample();

@@ -77,10 +77,8 @@ namespace EasyMLCore.Data
         /// <param name="delimiter">Data items delimiter. If CsvDataHolder.AutoDetectDelimiter is specified then delimiter is recognized automatically from the data.</param>
         public CsvDataHolder(string fileName, bool header, char delimiter = AutoDetectDelimiter)
         {
-            using (StreamReader streamReader = new StreamReader(new FileStream(fileName, FileMode.Open)))
-            {
-                InitFromStream(streamReader, header, delimiter);
-            }
+            using StreamReader streamReader = new StreamReader(new FileStream(fileName, FileMode.Open));
+            InitFromStream(streamReader, header, delimiter);
             return;
         }
 
@@ -93,10 +91,8 @@ namespace EasyMLCore.Data
         {
             var dir = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
             fileName = Path.Combine(dir, fileName);
-            using (StreamReader streamReader = new StreamReader(new FileStream(fileName, FileMode.Open)))
-            {
-                InitFromStream(streamReader, delimiter);
-            }
+            using StreamReader streamReader = new StreamReader(new FileStream(fileName, FileMode.Open));
+            InitFromStream(streamReader, delimiter);
             return;
         }
 
@@ -296,10 +292,8 @@ namespace EasyMLCore.Data
         /// <param name="fileName">The name of the file in which to save the content.</param>
         public void Save(string fileName)
         {
-            using (StreamWriter streamWriter = new StreamWriter(new FileStream(fileName, FileMode.Create)))
-            {
-                Write(streamWriter);
-            }
+            using StreamWriter streamWriter = new StreamWriter(new FileStream(fileName, FileMode.Create));
+            Write(streamWriter);
             return;
         }
 

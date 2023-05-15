@@ -351,6 +351,7 @@ namespace EasyMLDemoApp.Examples.MLP
         }
 
 
-    }//ExampleConfigs
+    }//MLPModelConfigs
+
 } //Namespace
 

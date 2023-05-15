@@ -16,15 +16,10 @@ namespace EasyMLDemoApp.Examples.MLP
     ///   TTOO_patterns_train.csv and TTOO_patterns_test.csv
     /// </summary>
     /// <seealso cref="MLPModelConfigs"/>
-    public class MLPModelsRegressionCompetition
+    public static class MLPModelsRegressionCompetition
     {
-        //Constructor
-        public MLPModelsRegressionCompetition()
-        {
-            return;
-        }
-
-        private void ReportDetailOfFirst10Computations(ModelBase model, SampleDataset data)
+        //Methods
+        private static void ReportDetailOfFirst10Computations(ModelBase model, SampleDataset data)
         {
             for (int i = 0; i < 10 && i < data.Count; i++)
             {
@@ -43,7 +38,7 @@ namespace EasyMLDemoApp.Examples.MLP
         }
 
         //Methods
-        private void ExecuteTTOOCompetition()
+        private static void ExecuteTTOOCompetition()
         {
             string taskName = "TTOO Biosystems Share Prices";
             //Output feature names of TTOO Biosystems Share Prices regression task
@@ -125,7 +120,7 @@ namespace EasyMLDemoApp.Examples.MLP
         /// <summary>
         /// Runs the example code.
         /// </summary>
-        public void Run()
+        public static void Run()
         {
             Console.Clear();
             ExecuteTTOOCompetition();

@@ -18,16 +18,11 @@ namespace EasyMLDemoApp.Examples.MLP
     /// </summary>
     /// <seealso cref="MLPModelConfigs"/>
     /// <seealso cref="EasyML"/>
-    public class MLPModelsCategoricalCompetition
+    public static class MLPModelsCategoricalCompetition
     {
-        //Constructor
-        public MLPModelsCategoricalCompetition()
-        {
-            return;
-        }
 
         //Methods
-        private void ReportDetailOfFirst10Computations(ModelBase model, SampleDataset data)
+        private static void ReportDetailOfFirst10Computations(ModelBase model, SampleDataset data)
         {
             for (int i = 0; i < 10 && i < data.Count; i++)
             {
@@ -45,7 +40,7 @@ namespace EasyMLDemoApp.Examples.MLP
             return;
         }
 
-        private void ExecuteLibrasMovementCompetition()
+        private static void ExecuteLibrasMovementCompetition()
         {
             string taskName = "Libras Movement";
             //Output class labels of Libras Movement classification task
@@ -141,7 +136,7 @@ namespace EasyMLDemoApp.Examples.MLP
             return;
         }
 
-        private void ExecuteProximalPhalanxOutlineAgeGroupCompetition()
+        private static void ExecuteProximalPhalanxOutlineAgeGroupCompetition()
         {
             string taskName = "Age Group";
             //Output class labels of Proximal Phalanx Outline Age Group classification task
@@ -229,7 +224,7 @@ namespace EasyMLDemoApp.Examples.MLP
         /// <summary>
         /// Runs the example code.
         /// </summary>
-        public void Run()
+        public static void Run()
         {
             Console.Clear();
             ExecuteLibrasMovementCompetition();

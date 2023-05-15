@@ -20,16 +20,11 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
     ///   Earthquakes_train.csv and Earthquakes_test.csv
     /// </summary>
     /// <seealso cref="MLPModelConfigs"/>
-    public class ResCompPFBinaryTasks
+    public static class ResCompPFBinaryTasks
     {
-        //Constructor
-        public ResCompPFBinaryTasks()
-        {
-            return;
-        }
 
         //Methods
-        private void ExecuteResCompBeetleFlyExample()
+        private static void ExecuteResCompBeetleFlyExample()
         {
             string taskName = "Beetle (1) or Fly (0)";
             //Output feature names of binary decision task
@@ -96,7 +91,7 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
             return;
         }
 
-        private void ExecuteResCompEarthquakesExample()
+        private static void ExecuteResCompEarthquakesExample()
         {
             string taskName = "Earthquakes";
             //Output feature names of binary decision task
@@ -170,10 +165,10 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
         /// <summary>
         /// Runs the example code.
         /// </summary>
-        public void Run()
+        public static void Run()
         {
             Console.Clear();
-            //ExecuteResCompBeetleFlyExample();
+            ExecuteResCompBeetleFlyExample();
             ExecuteResCompEarthquakesExample();
             return;
         }

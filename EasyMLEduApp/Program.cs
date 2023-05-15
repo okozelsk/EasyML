@@ -107,7 +107,7 @@ namespace EasyMLDemoApp
                     case "1":
                         try
                         {
-                            (new MLPNetworkModelBooleanAlgebra()).Run();
+                            MLPNetworkModelBooleanAlgebra.Run();
                         }
                         catch (Exception e)
                         {
@@ -118,7 +118,7 @@ namespace EasyMLDemoApp
                     case "2":
                         try
                         {
-                            (new MLPModelsCategoricalCompetition()).Run();
+                            MLPModelsCategoricalCompetition.Run();
                         }
                         catch (Exception e)
                         {
@@ -129,7 +129,7 @@ namespace EasyMLDemoApp
                     case "3":
                         try
                         {
-                            (new MLPModelsBinaryCompetition()).Run();
+                            MLPModelsBinaryCompetition.Run();
                         }
                         catch (Exception e)
                         {
@@ -140,7 +140,7 @@ namespace EasyMLDemoApp
                     case "4":
                         try
                         {
-                            (new MLPModelsRegressionCompetition()).Run();
+                            MLPModelsRegressionCompetition.Run();
                         }
                         catch (Exception e)
                         {
@@ -199,7 +199,7 @@ namespace EasyMLDemoApp
                     case "1":
                         try
                         {
-                            (new ResCompPFCategoricalTasks()).Run();
+                            ResCompPFCategoricalTasks.Run();
                         }
                         catch (Exception e)
                         {
@@ -210,7 +210,7 @@ namespace EasyMLDemoApp
                     case "2":
                         try
                         {
-                            (new ResCompPFBinaryTasks()).Run();
+                            ResCompPFBinaryTasks.Run();
                         }
                         catch (Exception e)
                         {
@@ -221,7 +221,7 @@ namespace EasyMLDemoApp
                     case "3":
                         try
                         {
-                            (new ResCompPFRegressionTasks()).Run();
+                            ResCompPFRegressionTasks.Run();
                         }
                         catch (Exception e)
                         {
@@ -232,7 +232,7 @@ namespace EasyMLDemoApp
                     case "4":
                         try
                         {
-                            (new ResCompPFSimultaneousTasks()).Run();
+                            ResCompPFSimultaneousTasks.Run();
                         }
                         catch (Exception e)
                         {
@@ -243,7 +243,7 @@ namespace EasyMLDemoApp
                     case "5":
                         try
                         {
-                            (new ResCompPFDeepTests()).Run();
+                            ResCompPFDeepTests.Run();
                         }
                         catch (Exception e)
                         {
@@ -254,7 +254,7 @@ namespace EasyMLDemoApp
                     case "6":
                         try
                         {
-                            (new ResCompTPRegressionTasks()).Run();
+                            ResCompTPRegressionTasks.Run();
                         }
                         catch (Exception e)
                         {

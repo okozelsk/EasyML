@@ -26,21 +26,15 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
     ///   CricketX_train.csv and CricketX_test.csv
     ///   Worms_train.csv and Worms_test.csv
     /// </summary>
-    public class ResCompPFDeepTests
+    public static class ResCompPFDeepTests
     {
         /// <summary>
         /// Specifies number of deep test rounds.
         /// </summary>
         public const int DeepTestRounds = 30;
         
-        //Constructor
-        public ResCompPFDeepTests()
-        {
-            return;
-        }
-
         //Methods
-        private ModelErrStat ExecuteResCompLibrasMovementDeepTest()
+        private static ModelErrStat ExecuteResCompLibrasMovementDeepTest()
         {
             string taskName = "Libras Movement";
             //Output class labels of classification task
@@ -120,7 +114,7 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
             return EasyML.Oper.DeepTestSingleTask(resCompCfg, trainingData, testingData, DeepTestRounds);
         }
 
-        private ModelErrStat ExecuteResCompProximalPhalanxOutlineAgeGroupDeepTest()
+        private static ModelErrStat ExecuteResCompProximalPhalanxOutlineAgeGroupDeepTest()
         {
             string taskName = "Age Group";
             //Output class labels of Proximal Phalanx Outline Age Group classification task
@@ -186,7 +180,7 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
             return EasyML.Oper.DeepTestSingleTask(resCompCfg, trainingData, testingData, DeepTestRounds);
         }
 
-        private ModelErrStat ExecuteResCompLargeKitchenAppliancesDeepTest()
+        private static ModelErrStat ExecuteResCompLargeKitchenAppliancesDeepTest()
         {
             //Our task name
             string taskName = "Kitchen Appliance";
@@ -253,7 +247,7 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
             return EasyML.Oper.DeepTestSingleTask(resCompCfg, trainingData, testingData, DeepTestRounds);
         }
 
-        private ModelErrStat ExecuteResCompCricketXDeepTest()
+        private static ModelErrStat ExecuteResCompCricketXDeepTest()
         {
             string taskName = "CricketX";
             //Output class labels of classification task
@@ -329,7 +323,7 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
             return EasyML.Oper.DeepTestSingleTask(resCompCfg, trainingData, testingData, DeepTestRounds);
         }
 
-        private ModelErrStat ExecuteResCompWormsDeepTest()
+        private static ModelErrStat ExecuteResCompWormsDeepTest()
         {
             string taskName = "Worms";
             //Output class labels of classification task
@@ -398,7 +392,7 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
             return EasyML.Oper.DeepTestSingleTask(resCompCfg, trainingData, testingData, DeepTestRounds);
         }
 
-        private ModelErrStat ExecuteResCompBeetleFlyDeepTest()
+        private static ModelErrStat ExecuteResCompBeetleFlyDeepTest()
         {
             string taskName = "Beetle (1) or Fly (0)";
             //Output feature names of binary decision task
@@ -464,7 +458,7 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
             return EasyML.Oper.DeepTestSingleTask(resCompCfg, trainingData, testingData, DeepTestRounds);
         }
 
-        private ModelErrStat ExecuteResCompEarthquakesDeepTest()
+        private static ModelErrStat ExecuteResCompEarthquakesDeepTest()
         {
             string taskName = "Earthquakes";
             //Output feature names of binary decision task
@@ -537,7 +531,7 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
         /// <summary>
         /// Runs the example code.
         /// </summary>
-        public void Run()
+        public static void Run()
         {
             Console.Clear();
             Stopwatch stopwatch = Stopwatch.StartNew();

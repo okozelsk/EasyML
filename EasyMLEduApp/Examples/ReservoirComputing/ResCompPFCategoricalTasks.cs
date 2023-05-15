@@ -22,16 +22,11 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
     ///   CricketX_train.csv and CricketX_test.csv
     /// </summary>
     /// <seealso cref="MLPModelConfigs"/>
-    public class ResCompPFCategoricalTasks
+    public static class ResCompPFCategoricalTasks
     {
-        //Constructor
-        public ResCompPFCategoricalTasks()
-        {
-            return;
-        }
 
         //Methods
-        private void ExecuteResCompLibrasMovementExample()
+        private static void ExecuteResCompLibrasMovementExample()
         {
             string taskName = "Libras Movement";
             //Output class labels of classification task
@@ -117,7 +112,7 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
             return;
         }
 
-        private void ExecuteResCompProximalPhalanxOutlineAgeGroupExample()
+        private static void ExecuteResCompProximalPhalanxOutlineAgeGroupExample()
         {
             string taskName = "Age Group";
             //Output class labels of Proximal Phalanx Outline Age Group classification task
@@ -190,7 +185,7 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
             return;
         }
 
-        private void ExecuteResCompLargeKitchenAppliancesExample()
+        private static void ExecuteResCompLargeKitchenAppliancesExample()
         {
             //Our task name
             string taskName = "Kitchen Appliance";
@@ -261,7 +256,7 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
             return;
         }
 
-        private void ExecuteResCompCricketXExample()
+        private static void ExecuteResCompCricketXExample()
         {
             string taskName = "CricketX";
             //Output class labels of classification task
@@ -341,7 +336,7 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
             return;
         }
 
-        private void ExecuteResCompWormsExample()
+        private static void ExecuteResCompWormsExample()
         {
             string taskName = "Worms";
             //Output class labels of classification task
@@ -418,7 +413,7 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
         /// <summary>
         /// Runs the example code.
         /// </summary>
-        public void Run()
+        public static void Run()
         {
             Console.Clear();
             ExecuteResCompLibrasMovementExample();

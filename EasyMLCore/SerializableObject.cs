@@ -31,10 +31,8 @@ namespace EasyMLCore
         /// <returns>Deserialized object instance.</returns>
         public static SerializableObject Deserialize(string fileName)
         {
-            using (Stream stream = File.Open(fileName, FileMode.Open))
-            {
-                return Deserialize(stream);
-            }
+            using Stream stream = File.Open(fileName, FileMode.Open);
+            return Deserialize(stream);
         }
 
         //Methods
@@ -45,9 +43,9 @@ namespace EasyMLCore
         public void Serialize(Stream stream)
         {
             BinaryFormatter formatter = new();
-#pragma warning disable SYSLIB0011 // Typ nebo člen je zastaralý.
+            #pragma warning disable SYSLIB0011 // Typ nebo člen je zastaralý.
             formatter.Serialize(stream, this);
-#pragma warning restore SYSLIB0011 // Typ nebo člen je zastaralý.
+            #pragma warning restore SYSLIB0011 // Typ nebo člen je zastaralý.
             return;
         }
 
@@ -57,10 +55,8 @@ namespace EasyMLCore
         /// <param name="fileName">File name.</param>
         public void Serialize(string fileName)
         {
-            using (Stream stream = File.Create(fileName))
-            {
-                Serialize(stream);
-            }
+            using Stream stream = File.Create(fileName);
+            Serialize(stream);
             return;
         }
 

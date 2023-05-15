@@ -19,16 +19,11 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
     ///   MultiTaskPPOutlineAgeGroup_train.csv and MultiTaskPPOutlineAgeGroup_test.csv
     /// </summary>
     /// <seealso cref="MLPModelConfigs"/>
-    public class ResCompPFSimultaneousTasks
+    public static class ResCompPFSimultaneousTasks
     {
-        //Constructor
-        public ResCompPFSimultaneousTasks()
-        {
-            return;
-        }
 
         //Methods
-        private void ExecuteResCompSimultaneousTasksExample()
+        private static void ExecuteResCompSimultaneousTasksExample()
         {
             //Output class labels of classification task
             List<string> outputClassLabels = new List<string>()
@@ -129,7 +124,7 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
             ////////////////////////////////////////////////////////////////////////////
             //Build and testing
             //Build
-            EasyMLCore.TimeSeries.ResComp resComp =
+            ResComp resComp =
                 EasyML.Oper.Build(resCompCfg, //Reservoir computer configuration
                                   trainingData, //Training samples
                                   out ReservoirStat resStat, //Stat data of the reservoir
@@ -150,7 +145,7 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
         /// <summary>
         /// Runs the example code.
         /// </summary>
-        public void Run()
+        public static void Run()
         {
             Console.Clear();
             ExecuteResCompSimultaneousTasksExample();

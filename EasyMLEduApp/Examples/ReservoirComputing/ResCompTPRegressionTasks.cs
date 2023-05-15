@@ -19,16 +19,11 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
     /// See txt files related to csv files for more info.
     /// </summary>
     /// <seealso cref="MLPModelConfigs"/>
-    public class ResCompTPRegressionTasks
+    public static class ResCompTPRegressionTasks
     {
-        //Constructor
-        public ResCompTPRegressionTasks()
-        {
-            return;
-        }
 
         //Methods
-        private void ExecuteResCompTSLAExample()
+        private static void ExecuteResCompTSLAExample()
         {
             string taskName = "Tesla Share Prices Forecast";
             EasyML.Oper.Log.Write($"Example {taskName} started.");
@@ -108,7 +103,7 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
             return;
         }
 
-        private void ExecuteResCompMackeyGlassExample()
+        private static void ExecuteResCompMackeyGlassExample()
         {
             string taskName = "Mackey Glass Forecast";
             EasyML.Oper.Log.Write($"Example {taskName} started.");
@@ -221,7 +216,7 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
         /// <summary>
         /// Runs the example code.
         /// </summary>
-        public void Run()
+        public static void Run()
         {
             Console.Clear();
             ExecuteResCompTSLAExample();

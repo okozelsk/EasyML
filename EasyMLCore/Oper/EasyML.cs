@@ -54,6 +54,36 @@ namespace EasyMLCore
         /// </summary>
         public IOutputLog Log { get { lock (_monitor) { return _log; } } }
 
+        //Static methods
+
+        /// <summary>
+        /// Gets the appropriate instance of task specific detailed output.
+        /// </summary>
+        /// <param name="outputData">Computed or ideal data vector.</param>
+        /// <returns>The appropriate instance of task specific detailed output.</returns>
+        public static TaskOutputDetailBase GetTaskOutputDetail(OutputTaskType taskType,
+                                                               IEnumerable<string> outputFeatureNames,
+                                                               double[] outputData
+                                                               )
+        {
+            if (outputFeatureNames == null)
+            {
+                throw new ArgumentNullException(nameof(outputFeatureNames));
+            }
+            if (outputData == null)
+            {
+                throw new ArgumentNullException(nameof(outputData));
+            }
+            return taskType switch
+            {
+                OutputTaskType.Regression => new RegressionOutputDetail(outputFeatureNames.ToList(), outputData),
+                OutputTaskType.Binary => new BinaryOutputDetail(outputFeatureNames.ToList(), outputData),
+                OutputTaskType.Categorical => new CategoricalOutputDetail(outputFeatureNames.ToList(), outputData),
+                _ => null,
+            };
+        }
+
+
         //Methods
         /// <summary>
         /// Changes the output log.
@@ -74,33 +104,6 @@ namespace EasyMLCore
         }
 
         /// <summary>
-        /// Gets the appropriate instance of task specific detailed output.
-        /// </summary>
-        /// <param name="outputData">Computed or ideal data vector.</param>
-        /// <returns>The appropriate instance of task specific detailed output.</returns>
-        public TaskOutputDetailBase GetTaskOutputDetail(OutputTaskType taskType,
-                                                    IEnumerable<string> outputFeatureNames,
-                                                    double[] outputData
-                                                    )
-        {
-            if (outputFeatureNames == null)
-            {
-                throw new ArgumentNullException(nameof(outputFeatureNames));
-            }
-            if (outputData == null)
-            {
-                throw new ArgumentNullException(nameof(outputData));
-            }
-            return taskType switch
-            {
-                OutputTaskType.Regression => new RegressionOutputDetail(outputFeatureNames.ToList(), outputData),
-                OutputTaskType.Binary => new BinaryOutputDetail(outputFeatureNames.ToList(), outputData),
-                OutputTaskType.Categorical => new CategoricalOutputDetail(outputFeatureNames.ToList(), outputData),
-                _ => null,
-            };
-        }
-
-        /// <summary>
         /// Reports a text file.
         /// </summary>
         /// <param name="fileName">Path to text file to be reported.</param>
@@ -108,14 +111,12 @@ namespace EasyMLCore
         {
             try
             {
-                using (StreamReader streamReader = new StreamReader(new FileStream(fileName, FileMode.Open)))
+                using StreamReader streamReader = new StreamReader(new FileStream(fileName, FileMode.Open));
+                Log.Write($"Content of file {fileName}:");
+                while (!streamReader.EndOfStream)
                 {
-                    Log.Write($"Content of file {fileName}:");
-                    while (!streamReader.EndOfStream)
-                    {
-                        string line = streamReader.ReadLine();
-                        Log.Write(line);
-                    }
+                    string line = streamReader.ReadLine();
+                    Log.Write(line);
                 }
             }
             catch (Exception ex)
@@ -553,13 +554,13 @@ namespace EasyMLCore
                 ResComp resComp =
                     Oper.Build(cfg, //Reservoir computer configuration
                                newTrainingData, //Training samples
-                               out ReservoirStat resStat //Stat data of the reservoir
+                               out _ //Stat data of the reservoir
                                );
                 //Testing
                 List<ModelErrStat> roundErrStats =
                     EasyML.Oper.Test(resComp, //Our built reservoir computer
                                      newTestingData, //Testing data
-                                     out ResultDataset resultDataset //Original testing samples together with computed data
+                                     out _ //Original testing samples together with computed data
                                      );
                 if(aggregatedErrStat == null)
                 {
