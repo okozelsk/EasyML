@@ -1,8 +1,11 @@
 # Machine Learning Library for .NET (EasyML)
-This repo is a successor of my [older repo](https://github.com/okozelsk/NET). 
-Now there is full [**MLP**](https://en.wikipedia.org/wiki/Multilayer_perceptron) support (many optimizers, standard regularization techniques and types of network models). There is also implemented the [**Reservoir Computer**](https://en.wikipedia.org/wiki/Reservoir_computing), which is now much easier to configure and has a more powerful spike-trace predictor for time series classifications. Overall, the components are much simpler to configure and easier to use than in the older solution. 
-Repo consists of the main library (**EasyMLCore**) and a small educational console application (**EasyMLEduApp**), where it is shown how to work with the library.
-The documentation is still being worked on and will be gradually added here.
+The EasyML library offers standard [**MLP**](https://en.wikipedia.org/wiki/Multilayer_perceptron) models for common ML tasks as well as [**Reservoir Computer**](https://en.wikipedia.org/wiki/Reservoir_computing) for efficiently solving ML tasks on time series data.
+The RC Reservoir implementation is unique here and provides a very effective predictor for classification tasks on time series data.
+Throughout the solution, emphasis is placed on the simplest possible use.
+Repository consists of the main library (**EasyMLCore**) and a small educational console application (**EasyMLEduApp**), where it is shown how to work with the library.
+<br />
+
+*This repo is a successor of my [older archived repo](https://github.com/okozelsk/NET).*
 
 ## EasyMLCore (namespace EasyMLCore)
 The purpose is to support the usual machine-learning scenario in an easy way.
