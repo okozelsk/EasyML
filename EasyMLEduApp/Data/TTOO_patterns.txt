@@ -4,8 +4,7 @@
 Full dataset TTOO.csv contains time series of "T2 Biosystems, Inc. (TTOO)" real daily share prices
 downloaded from https://finance.yahoo.com/quote/TTOO/history?p=TTOO.
 Seven variables relate to each time point: Date, Open, High, Low, Close, Adj Close and Volume.
-Full dataset is here converted using:
-EasyMLCore.Data.CsvDataHolder.ConvertAndSaveContinuousTimeSeriesDataAsPatternizedDatasets
+Time-series dataset is here converted using EasyMLCore.Data.SampleDataset.LoadPatternizeAndSave method
 to train (TTOO_patterns_train.csv) and test (TTOO_patterns_test.csv) part.
 Converted dataset contains on each data row:
     15x3 features (High, Low, Adj Close)  =45 total input values

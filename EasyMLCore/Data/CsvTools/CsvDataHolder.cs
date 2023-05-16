@@ -99,27 +99,6 @@ namespace EasyMLCore.Data
             return;
         }
 
-        /// <summary>
-        /// Creates an initialized instance.
-        /// </summary>
-        /// <param name="dataset">Samples.</param>
-        /// <param name="delimiter">Data items delimiter.</param>
-        public CsvDataHolder(SampleDataset dataset, IEnumerable<string> colNames = null, char delimiter = DefaultDelimiter)
-            :this(delimiter, colNames, dataset.Count)
-        {
-            foreach (Sample sample in dataset.SampleCollection)
-            {
-                double[] data = (double[])sample.InputVector.Concat(sample.OutputVector);
-                DelimitedStringValues dsv = new DelimitedStringValues(DataDelimiter);
-                foreach (double value in data)
-                {
-                    dsv.AddValue(value.ToString(CultureInfo.InvariantCulture));
-                }
-                DataRowCollection.Add(dsv);
-            }
-            return;
-        }
-
         //Static methods
         private static bool ContainsDataItems(DelimitedStringValues dsv)
         {
@@ -248,70 +227,6 @@ namespace EasyMLCore.Data
             fileName = Path.Combine(dir, fileName);
             using StreamWriter streamWriter = new StreamWriter(new FileStream(fileName, FileMode.Create));
             Write(streamWriter);
-            return;
-        }
-
-        /// <summary>
-        /// Loads single csv datafile containing time-serie data where each row
-        /// contains variable(features) data of one time point.
-        /// Then converts loaded time-serie data so that input vector contains
-        /// features data from specified number of time points and
-        /// output vector contains features data from immediately followed time point.
-        /// Then splits data to the training and testing datasets and
-        /// saves them as two csv files (training and testing).
-        /// </summary>
-        /// <remarks>
-        /// Useable for regression tasks when you want to work with fixed-length patterns instead of continuous time-series.
-        /// </remarks>
-        /// <param name="timeSeriesDataFile">The name of a csv datafile containing the time-serie data.</param>
-        /// <param name="featureNames">The names of features to be used from every time-serie time-point (for both input and output vectors).</param>
-        /// <param name="numOfInputTimePoints">Specifies how many time-points of time-serie should constitute input vector.</param>
-        /// <param name="testDataRatio">Specifies what ratio from all data to use as the testing data.</param>
-        /// <param name="outputTrainDataFile">The name of a csv datafile where to save training data.</param>
-        /// <param name="outputTestDataFile">The name of a csv datafile where to save testing data.</param>
-        public static void ConvertAndSaveContinuousTimeSeriesDataAsPatternizedDatasets
-            (string timeSeriesDataFile,
-             List<string> featureNames,
-             int numOfInputTimePoints,
-             double testDataRatio,
-             string outputTrainDataFile,
-             string outputTestDataFile
-             )
-        {
-            //Load csv data and create datasets
-            //All data
-            CsvDataHolder csvData = new CsvDataHolder(timeSeriesDataFile);
-            SampleDataset allData = SampleDataset.LoadAndPatternize(csvData, numOfInputTimePoints, featureNames);
-            //Split data to training and testing data
-            int numOfTestingSamples = (int)Math.Round(allData.Count * testDataRatio, MidpointRounding.AwayFromZero);
-            if (numOfTestingSamples < 1)
-            {
-                throw new ArgumentException("Too low testDataRatio or few data samples.", nameof(testDataRatio));
-            }
-            SampleDataset trainingData = new SampleDataset();
-            SampleDataset testingData = new SampleDataset();
-            for (int i = 0; i < allData.Count; i++)
-            {
-                if (i < allData.Count - numOfTestingSamples)
-                {
-                    trainingData.AddSample(trainingData.Count,
-                                        (double[])allData.SampleCollection[i].InputVector.Clone(),
-                                        (double[])allData.SampleCollection[i].OutputVector.Clone()
-                                        );
-                }
-                else
-                {
-                    testingData.AddSample(testingData.Count,
-                                        (double[])allData.SampleCollection[i].InputVector.Clone(),
-                                        (double[])allData.SampleCollection[i].OutputVector.Clone()
-                                        );
-                }
-            }
-            //Save the data
-            CsvDataHolder outCsvHolder = new CsvDataHolder(trainingData);
-            outCsvHolder.Save(outputTrainDataFile);
-            outCsvHolder = new CsvDataHolder(testingData);
-            outCsvHolder.Save(outputTestDataFile);
             return;
         }
 
