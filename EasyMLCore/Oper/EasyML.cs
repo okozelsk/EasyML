@@ -342,6 +342,26 @@ namespace EasyMLCore
         }
 
         /// <summary>
+        /// Prepares default model configuration for given complexity.
+        /// </summary>
+        /// <param name="trainingData">Available training data.</param>
+        /// <param name="verbose">Specifies whether to report configuration.</param>
+        /// <returns>Default MLP model configuration for given task complexity.</returns>
+        public IModelConfig GetDefaultMLPModelConfig(SampleDataset trainingData, bool verbose = true)
+        {
+            NetworkModelConfig netCfg = GetDefaultNetworkModelConfig(trainingData, false);
+            CrossValModelConfig modelCfg =
+                new CrossValModelConfig(netCfg, CrossValModelConfig.DefaultFoldDataRatio);
+
+            if (verbose)
+            {
+                Log.Write($"Default model config for InpLength={trainingData.InputVectorLength}, OutpLength={trainingData.OutputVectorLength} and NumOfSamples={trainingData.Count} is:");
+                Report(modelCfg, false, 0);
+            }
+            return modelCfg;
+        }
+
+        /// <summary>
         /// Builds a model based on given configuration and given training data.
         /// </summary>
         /// <param name="modelCfg">Model configuration.</param>

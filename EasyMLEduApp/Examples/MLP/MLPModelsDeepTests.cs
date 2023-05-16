@@ -9,7 +9,7 @@ using System.Diagnostics;
 namespace EasyMLDemoApp.Examples.MLP
 {
     /// <summary>
-    /// Example code performs deep tests of MLP models on referential datasets.
+    /// Example code performs deep tests of default MLP models on referential datasets.
     /// A deep test consists of testing the model configuration on X times permuted training
     /// and testing data. The aggregated results of the tests performed in this way are more
     /// objective than the results on a single training and testing data set.
@@ -66,14 +66,8 @@ namespace EasyMLDemoApp.Examples.MLP
                                            outputFeatureNames.Count ////Number of output features (classes)
                                            );
             ////////////////////////////////////////////////////////////////////////////
-            //MLP model configuration
-            ////////////////////////////////////////////////////////////////////////////
-            IModelConfig modelCfg =
-                new CrossValModelConfig(EasyML.Oper.GetDefaultNetworkModelConfig(trainingData),
-                                        0.05d
-                                        );
-            //Deep test
-            return EasyML.Oper.DeepTest(modelCfg,
+            //Deep test - use default model configuration
+            return EasyML.Oper.DeepTest(EasyML.Oper.GetDefaultMLPModelConfig(trainingData),
                                         taskName,
                                         OutputTaskType.Categorical,
                                         outputFeatureNames,
@@ -106,15 +100,10 @@ namespace EasyMLDemoApp.Examples.MLP
                                            SampleDataset.CsvOutputFeaturesPresence.ClassesAsNumberFrom1,
                                            outputFeatureNames.Count //Number of output features (classes)
                                            );
+
             ////////////////////////////////////////////////////////////////////////////
-            //MLP model configuration
-            ////////////////////////////////////////////////////////////////////////////
-            IModelConfig modelCfg =
-                new CrossValModelConfig(EasyML.Oper.GetDefaultNetworkModelConfig(trainingData),
-                                        0.1d
-                                        );
-            //Deep test
-            return EasyML.Oper.DeepTest(modelCfg,
+            //Deep test - use default model configuration
+            return EasyML.Oper.DeepTest(EasyML.Oper.GetDefaultMLPModelConfig(trainingData),
                                         taskName,
                                         OutputTaskType.Categorical,
                                         outputFeatureNames,
