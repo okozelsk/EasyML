@@ -26,7 +26,7 @@ namespace EasyMLDemoApp.Examples.MLP
         /// <summary>
         /// Common ratio of non-improvement epochs to stop training attempt.
         /// </summary>
-        private const double NetStopAttemptPatiency = 0.5d;
+        private const double NetStopAttemptPatiency = 0.2d;
 
         //Static members
         //Dropout configuration
@@ -281,7 +281,7 @@ namespace EasyMLDemoApp.Examples.MLP
             //Model configuration
             StackingModelConfig cfg =
                 new StackingModelConfig(stackCfg,
-                                        CreateNetworkModelConfig(ActivationFnID.ReLU), //Meta-learner model configuration
+                                        CreateOutputOnlyNetworkModelConfig(), //Meta-learner model configuration
                                         foldDataRatio, //Specifies the ratio of training samples constituting one hold-out fold
                                         routeInput //Specifies whether to provide original input to meta-learner.
                                         );

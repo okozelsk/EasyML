@@ -14,6 +14,41 @@ namespace EasyMLCore.Data
     [Serializable]
     public class SampleDataset : SerializableObject
     {
+        //Enums
+        /// <summary>
+        /// Specifies where are output features in csv data row.
+        /// </summary>
+        public enum CsvOutputFeaturesPosition
+        {
+            /// <summary>
+            /// Csv data row begins with output features.
+            /// </summary>
+            First,
+            /// <summary>
+            /// Csv data row ends with output features.
+            /// </summary>
+            Last
+        }
+
+        /// <summary>
+        /// Specifies how are output features presented in csv data row.
+        /// </summary>
+        public enum CsvOutputFeaturesPresence
+        {
+            /// <summary>
+            /// Each output feature has its own output value. In case of classification task, each class has own 0/1 column.
+            /// </summary>
+            Separately,
+            /// <summary>
+            /// Task is a classification and classes are represented as a 0-based index.
+            /// </summary>
+            ClassesAsNumberFrom0,
+            /// <summary>
+            /// Task is a classification and classes are represented as a 1-based index.
+            /// </summary>
+            ClassesAsNumberFrom1
+        }
+
         //Constants
         /// <summary>
         /// The maximum ratio of one data fold.
@@ -172,13 +207,72 @@ namespace EasyMLCore.Data
 
         //Static methods
         /// <summary>
+        /// Loads a dataset from csv data.
+        /// </summary>
+        /// <param name="csvData">Csv data holder.</param>
+        /// <param name="outputFeaturesPosition">Specifies where are output features in csv data row.</param>
+        /// <param name="outputFeaturesPresence">Specifies how are output features presented in csv data row.</param>
+        /// <param name="numOfOutputFeatures">Number of output features.</param>
+        public static SampleDataset Load(CsvDataHolder csvData,
+                                         CsvOutputFeaturesPosition outputFeaturesPosition,
+                                         CsvOutputFeaturesPresence outputFeaturesPresence,
+                                         int numOfOutputFeatures
+                                         )
+        {
+            SampleDataset dataset = new SampleDataset();
+            int numOfOutputFeaturesInCsv = outputFeaturesPresence == CsvOutputFeaturesPresence.Separately ? numOfOutputFeatures : 1;
+            foreach (DelimitedStringValues dataRow in csvData.DataRowCollection)
+            {
+                int numOfInputValues = dataRow.NumOfStringValues - numOfOutputFeaturesInCsv;
+                //Check data length
+                if (numOfInputValues <= 0)
+                {
+                    throw new ArgumentException("Incorrect length of data row.", nameof(csvData));
+                }
+                //Input data
+                int inputDataOffset = outputFeaturesPosition == CsvOutputFeaturesPosition.First ? numOfOutputFeaturesInCsv : 0;
+                double[] inputData = new double[numOfInputValues];
+                for (int i = 0; i < numOfInputValues; i++)
+                {
+                    inputData[i] = dataRow.GetValueAt(inputDataOffset + i).ParseDouble(true, $"Can't parse double data value {dataRow.GetValueAt(inputDataOffset + i)}.");
+                }
+                //Output data
+                int outputDataOffset = outputFeaturesPosition == CsvOutputFeaturesPosition.First ? 0 : numOfInputValues;
+                double[] outputData = new double[numOfOutputFeatures];
+                if(outputFeaturesPresence == CsvOutputFeaturesPresence.Separately)
+                {
+                    for (int i = 0; i < numOfOutputFeaturesInCsv; i++)
+                    {
+                        outputData[i] = dataRow.GetValueAt(outputDataOffset + i).ParseDouble(true, $"Can't parse double data value {dataRow.GetValueAt(outputDataOffset + i)}.");
+                    }
+                }
+                else
+                {
+                    int classIndex = (int)dataRow.GetValueAt(outputDataOffset).ParseDouble(true, $"Can't parse class index {dataRow.GetValueAt(outputDataOffset)}.");
+                    if(outputFeaturesPresence == CsvOutputFeaturesPresence.ClassesAsNumberFrom1)
+                    {
+                        --classIndex;
+                    }
+                    if(classIndex < 0 || classIndex >= outputData.Length)
+                    {
+                        throw new ApplicationException($"Invalid class index {classIndex} at row {dataset.Count + 1}.");
+                    }
+                    outputData[classIndex] = 1d;
+                }
+                dataset.AddSample(dataset.Count, inputData, outputData);
+            }
+            return dataset;
+        }
+
+        /// <summary>
         /// Loads time-serie csv data (each row = 1 timepoint) and creates patternized sample dataset.
         /// </summary>
         /// <param name="csvData">Csv data holder.</param>
-        /// <param name="numOfInputTimePoints">Requested number of timepoints in the resulting input pattern.</param>
+        /// <param name="numOfInputTimePoints">Requested number of timepoints in an input pattern.</param>
         /// <param name="outputFieldNameCollection">Output field names.</param>
         /// <param name="inputFieldNameCollection">Input field names (when null, output field names are used).</param>
         /// <remarks>
+        /// Useable for time-series regression task.
         /// In resulting dataset, multivariate flat input vector is always in a groupped form:
         /// {v1[t1],v2[t1],v1[t2],v2[t2],v1[t3],v2[t3],...}
         /// where "v" means variable and "t" means time point.
@@ -258,6 +352,9 @@ namespace EasyMLCore.Data
         /// <param name="inputFieldNameCollection">Input field names.</param>
         /// <param name="outputFieldNameCollection">Output field names.</param>
         /// <param name="remainingInputVector">The last unused input vector (next input).</param>
+        /// <remarks>
+        /// Useable for time-series regression task.
+        /// </remarks>
         public static SampleDataset Load(CsvDataHolder csvData,
                                          List<string> inputFieldNameCollection,
                                          List<string> outputFieldNameCollection,
@@ -334,39 +431,6 @@ namespace EasyMLCore.Data
             }
             //Create and return dataset
             return new SampleDataset(inputVectorCollection, outputVectorCollection);
-        }
-
-        /// <summary>
-        /// Loads a dataset from csv data.
-        /// </summary>
-        /// <param name="csvData">Csv data holder.</param>
-        /// <param name="numOfOutputFields">Number of output fields.</param>
-        public static SampleDataset Load(CsvDataHolder csvData, int numOfOutputFields)
-        {
-            SampleDataset dataset = new SampleDataset();
-            foreach (DelimitedStringValues dataRow in csvData.DataRowCollection)
-            {
-                int numOfInputValues = dataRow.NumOfStringValues - numOfOutputFields;
-                //Check data length
-                if (numOfInputValues <= 0)
-                {
-                    throw new ArgumentException("Incorrect length of data row.", nameof(csvData));
-                }
-                //Input data
-                double[] inputData = new double[numOfInputValues];
-                for (int i = 0; i < numOfInputValues; i++)
-                {
-                    inputData[i] = dataRow.GetValueAt(i).ParseDouble(true, $"Can't parse double data value {dataRow.GetValueAt(i)}.");
-                }
-                //Output data
-                double[] outputData = new double[numOfOutputFields];
-                for (int i = 0; i < numOfOutputFields; i++)
-                {
-                    outputData[i] = dataRow.GetValueAt(numOfInputValues + i).ParseDouble(true, $"Can't parse double data value {dataRow.GetValueAt(numOfInputValues + i)}.");
-                }
-                dataset.AddSample(dataset.Count, inputData, outputData);
-            }
-            return dataset;
         }
 
         /// <summary>

@@ -34,17 +34,6 @@ Contains activation functions. Currently implemented [activations](./EasyMLCore/
 <br />
 ![TanH activation](./EasyMLCore/Docs/TanH.png)
 
-### Data (namespace EasyMLCore.Data)
-Contains data manipulation/evaluation/description components.
-
-|Main content|Description|
-|--|--|
-|[CsvDataHolder](./EasyMLCore/Data/CsvTools/CsvDataHolder.cs)|Provides easy reading and writing of data in csv format.|
-|[SampleDataset](./EasyMLCore/Data/Dataset/SampleDataset.cs)|Implements a set of samples, where each sample holds an input vector and corresponding output vector (vector is a 1D array of double numbers). Component provides samples for Build (training) and Test methods and can be initialized from a CsvDataHolder, another SampleDataset or directly by you, from your custom code.|
-|[ResultDataset](./EasyMLCore/Data/Dataset/ResultDataset.cs)|Holds triplets of vectors and usually it is an output from Test methods. Each triplet consists of sample input vector, sample output vector (ideal) and computed vector (computation output of tested model).|
-|[TaskErrStat](./EasyMLCore/Data/TaskErrStat)|A set of ML task-specific error statistics holders. Each ML task type has associated its root summary error statistics class, which inherits and/or encapsulates other more granular/detailed error statistics classes.|
-|[TaskOutputDetail](./EasyMLCore/Data/TaskOutputDetail)|A set of ML task-specific computed output descriptors. Each ML task type has associated its xxxOutputDetail class, which provides detailed information about computed values (also in textual form).|
-
 ### MLP (namespace EasyMLCore.MLP)
 Contains EasyML's MLP models. The mutual relationship is shown schematically in the following figure and will be described in more detail below.
 
@@ -94,9 +83,9 @@ Option "VarSequence" means, that variables of one time point are separated so it
 <br />
 This parameter is present in both ReservoirInputConfig and ReservoirHiddenLayerConfig.
 <br />
-In ReservoirInputConfig *"Density"* specifies, what portion of hidden neurons will receive one variable as an input (ie. how many hidden neurons will be connected to one input neuron). If you look at the Reservoir figure above, you see, that every input neuron is connected to two hidden neurons. Corresponding value of *"Density"* parameter is in that case 2/12 = 1.667. Default value is 1/4.
+In ReservoirInputConfig *"Density"* specifies, what portion of hidden neurons receive one variable as an input (ie. how many hidden neurons are connected by one input neuron). If you look at the Reservoir figure above, you see, that every input neuron is connected to two hidden neurons. Corresponding value of *"Density"* parameter is in that case 2/12 = 1.667. Default value of this parameter is 1/4.
 <br />
-In ReservoirHiddenLayerConfig *"Density"* specifies, how many other hidden neurons will be connected to one hidden neuron. Default value is 1/10.
+In ReservoirHiddenLayerConfig *"Density"* specifies, how many other hidden neurons to be connected to one hidden neuron. Default value is 1/10.
 <br />
 And one more thing. Instead of a fraction, you can enter an integer number. This is then understood as the exact number of neurons.
 <br />
@@ -106,8 +95,8 @@ And one more thing. Instead of a fraction, you can enter an integer number. This
 <br />
 This parameter is present in both ReservoirInputConfig and ReservoirHiddenLayerConfig.
 <br />
-It has the same meaning in both configurations. Neurons are connected via synapse supporting delay.
-And this parameter says what the maximum delay will be. It is an integer value and the default value is 0, which means no delay. If you specify 1, half of the synapses will have delay 0 and half will have delay 1. If you specify 2, a third of the synapses will have delay 0, a third will have delay 1, and a third will have delay 2. And so on...
+It has the same meaning in both configurations. Neurons are connected via synapse supporting delay. Delay is implemented as a FIFO queue on synapse. If the delay is, for example, 10, the synapse first fills its queue with 10 stimuli from the source neuron (=10 computational cycles of the Reservoir), and once the queue is full, it begins to pass stimuli from the queue to the target neuron while it continues to fill the queue with new stimuli. 
+This parameter specifies the maximum delay. It is an integer value and the default value is 0, which means no delay. If you specify 1, half of the synapses will have delay 0 and half will have delay 1. If you specify 2, a third of the synapses will have delay 0, a third will have delay 1, and a third will have delay 2. And so on...
 <br />
 <br />
 
@@ -136,7 +125,7 @@ In order to further work with the output, it is divided into sections: Activatio
 *Booting*
 <br />
 It happens only in case of "TimePoint" feeding mode.
-Reservoir boots several cycles and does not generate predictors. This is so that the initial predictors are not affected by the initial state of the Reservoir. The number of boot cycles is equal to the number of hidden neurons.
+Reservoir boots several cycles and does not generate predictors. This is so that the predictors are not affected by the initial state of the Reservoir. The number of boot cycles is equal to the number of hidden neurons.
 <br />
 <br />
 
@@ -147,6 +136,26 @@ The Reservoir Computer is shown schematically in the following figure.
 
 The Reservoir Computer connects the Reservoir and usually one ML task (however, there can be any number of simultaneous ML tasks). ML task ([ResCompTask](./EasyMLCore/TimeSeries/ResCompTask.cs)) is an envelope of MLP model. Reservoir Computer routes the relevant output from the Reservoir as an input to the ML task.
 Reservoir Computer has its own [ResCompConfig](./EasyMLCore/TimeSeries/ResCompConfig.cs) class, which is required by its Build method. The configuration consists of the Reservoir configuration and one or more [ResCompTaskConfig](./EasyMLCore/TimeSeries/ResCompTaskConfig.cs) configuration(s). ResCompTaskConfig consists of MLP model configuration and also specifies, what output sections from the Reservoir to use as input of the MLP model.
+
+### Data (namespace EasyMLCore.Data)
+Contains data manipulation/evaluation/description components.
+
+|Main content|Description|
+|--|--|
+|[CsvDataHolder](./EasyMLCore/Data/CsvTools/CsvDataHolder.cs)|Provides easy reading and writing of data in csv format.|
+|[SampleDataset](./EasyMLCore/Data/Dataset/SampleDataset.cs)|Implements a set of samples, where each sample holds an input vector and corresponding output vector (vector is a 1D array of double numbers). Component provides samples for Build (training) and Test methods and can be initialized from a CsvDataHolder, another SampleDataset or directly by you, from your custom code.|
+|[ResultDataset](./EasyMLCore/Data/Dataset/ResultDataset.cs)|Holds triplets of vectors and usually it is an output from Test methods. Each triplet consists of sample input vector, sample output vector (ideal) and computed vector (computation output of tested model).|
+|[TaskErrStat](./EasyMLCore/Data/TaskErrStat)|A set of ML task-specific error statistics holders. Each ML task type has associated its root summary error statistics class, which inherits and/or encapsulates other more granular/detailed error statistics classes.|
+|[TaskOutputDetail](./EasyMLCore/Data/TaskOutputDetail)|A set of ML task-specific computed output descriptors. Each ML task type has associated its xxxOutputDetail class, which provides detailed information about computed values (also in textual form).|
+
+<br />
+
+*Expected format of csv files*
+<br />
+For MLP models and "Pattern" feeding RC, a headerless file is expected where the data line contains the sample input and output data. The output data can be either at the beginning of the line or at the end of the line. If the task is classification, then each class can be listed separately as a binary value (n classes = n binary columns) or the corresponding class can be expressed as a single number (1...n or 0...n-1). How the data is arranged is specified in the parameters of the EasyML.Oper.LoadSampleData method.
+<br />
+For the "TimePoint" feeding RC a file is expected that has a header with all variable names on the first line. This is followed by the data lines. Each data line contains the values of all variables in the time point. The EasyML.Oper.LoadSampleData method takes parameters to specify which variables are to be input to the RC and which are to be regressed (output).
+
 
 
 ## EasyMLEduApp (namespace EasyMLEduApp)

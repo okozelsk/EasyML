@@ -8,6 +8,7 @@ using EasyMLCore.TimeSeries;
 using EasyMLCore.Extensions;
 using System.IO;
 using System.Diagnostics;
+using static EasyMLCore.Data.SampleDataset;
 
 namespace EasyMLCore
 {
@@ -262,12 +263,19 @@ namespace EasyMLCore
         }
 
         /// <summary>
-        /// Loads csv datafile (pattern format) and converts data to sample dataset.
+        /// Loads csv datafile containing the sample input and output data in a one row and converts data to sample dataset.
         /// </summary>
-        /// <param name="numOfOutputFeatures">Number of output features in sample data (output vector length).</param>
         /// <param name="csvFileName">The name of a csv dataset file containing the sample input and output data in a one row.</param>
+        /// <param name="outputFeaturesPosition">Specifies where are output features in csv data row.</param>
+        /// <param name="outputFeaturesPresence">Specifies how are output features presented in csv data row.</param>
+        /// <param name="numOfOutputFeatures">Number of output features. Important: in case of classification it is a number of classes.</param>
         /// <param name="verbose">Specifies whether to report progress.</param>
-        public SampleDataset LoadSampleData(int numOfOutputFeatures, string csvFileName, bool verbose = true)
+        public SampleDataset LoadSampleData(string csvFileName,
+                                            CsvOutputFeaturesPosition outputFeaturesPosition,
+                                            CsvOutputFeaturesPresence outputFeaturesPresence,
+                                            int numOfOutputFeatures,
+                                            bool verbose = true
+                                            )
         {
             //Load csv dataset and create dataset
             if (verbose)
@@ -275,7 +283,11 @@ namespace EasyMLCore
                 Log.Write($"Loading {csvFileName}...");
             }
             CsvDataHolder csvData = new CsvDataHolder(csvFileName);
-            SampleDataset dataset = SampleDataset.Load(csvData, numOfOutputFeatures);
+            SampleDataset dataset = SampleDataset.Load(csvData,
+                                                       outputFeaturesPosition,
+                                                       outputFeaturesPresence,
+                                                       numOfOutputFeatures
+                                                       );
             return dataset;
         }
 
@@ -306,6 +318,27 @@ namespace EasyMLCore
                                                        out remainingInputVector
                                                        );
             return dataset;
+        }
+
+        /// <summary>
+        /// Prepares default network model configuration for given complexity.
+        /// </summary>
+        /// <param name="trainingData">Available training data.</param>
+        /// <param name="verbose">Specifies whether to report configuration.</param>
+        /// <returns>Default network model configuration for given task complexity.</returns>
+        public NetworkModelConfig GetDefaultNetworkModelConfig(SampleDataset trainingData, bool verbose = true)
+        {
+            NetworkModelConfig config =
+                NetworkModelConfig.GetDefaultNetworkModelConfig(trainingData.InputVectorLength,
+                                                                trainingData.OutputVectorLength,
+                                                                trainingData.Count
+                                                                );
+            if (verbose)
+            {
+                Log.Write($"Default network config for InpLength={trainingData.InputVectorLength}, OutpLength={trainingData.OutputVectorLength} and NumOfSamples={trainingData.Count} is:");
+                Report(config, false, 0);
+            }
+            return config;
         }
 
         /// <summary>
@@ -429,6 +462,90 @@ namespace EasyMLCore
             return errStat;
         }
 
+
+        /// <summary>
+        /// Performs the deep test of the MLP model's configuration on given data.
+        /// For each round:
+        ///   Available sample data is shuffled and divided to new training and testing dataset.
+        ///   A new instance of MLP model is created, trained and tested. Error stat is collected.
+        /// </summary>
+        /// <param name="cfg">MLP model's configuration.</param>
+        /// <param name="taskName">Task name.</param>
+        /// <param name="taskType">Task type.</param>
+        /// <param name="outputFeatureNames">Output feature names.</param>
+        /// <param name="origTrainingData">Original training samples.</param>
+        /// <param name="origTestingData">Original testing samples.</param>
+        /// <param name="rounds">Specifies number of deep test rounds.</param>
+        /// <returns>Aggregated error stat.</returns>
+        public ModelErrStat DeepTest(IModelConfig cfg,
+                                     string taskName,
+                                     OutputTaskType taskType,
+                                     List<string> outputFeatureNames,
+                                     SampleDataset origTrainingData,
+                                     SampleDataset origTestingData,
+                                     int rounds = 10
+                                     )
+        {
+            if (cfg == null)
+            {
+                throw new ArgumentNullException(nameof(cfg));
+            }
+            if (rounds < 1)
+            {
+                throw new ArgumentException($"Number of deep test rounds must be GT 0.", nameof(rounds));
+            }
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            ModelErrStat aggregatedErrStat = null;
+            Random rand = new Random(0);
+            Log.Write($"DEEP TEST started...");
+            for (int round = 0; round < rounds; round++)
+            {
+                Log.Write($"Round {round + 1} of {rounds}");
+                Log.Write($"Creating new variant of data...");
+                SampleDataset.CreateShuffledSimilar(rand,
+                                                    taskType,
+                                                    origTrainingData,
+                                                    origTestingData,
+                                                    out SampleDataset newTrainingData,
+                                                    out SampleDataset newTestingData
+                                                    );
+                Log.Write($"Data prepared.");
+                ////////////////////////////////////////////////////////////////////////////
+                //Build and testing
+                //Build
+                ModelBase model =
+                    Oper.Build(cfg, //Model configuration
+                               taskName,
+                               taskType,
+                               outputFeatureNames,
+                               newTrainingData
+                               );
+                //Testing
+                ModelErrStat roundErrStats =
+                    Oper.Test(model, //Our built model
+                              newTestingData, //Testing data
+                              out _ //Testing samples together with computed data
+                              );
+                if (aggregatedErrStat == null)
+                {
+                    aggregatedErrStat = roundErrStats;
+                }
+                else
+                {
+                    aggregatedErrStat.Merge(roundErrStats);
+                }
+            }
+            stopwatch.Stop();
+            Log.Write(string.Empty);
+            Log.Write($"DEEP TEST finished in {stopwatch.Elapsed.Hours.ToString().PadLeft(2, '0')}:{stopwatch.Elapsed.Minutes.ToString().PadLeft(2, '0')}:{stopwatch.Elapsed.Seconds.ToString().PadLeft(2, '0')}");
+            Log.Write($"------------------------------");
+            Log.Write($"Task ({taskName})");
+            Report(aggregatedErrStat, false, 4);
+            Log.Write(string.Empty);
+            return aggregatedErrStat;
+        }
+
+
         /// <summary>
         /// Builds a reservoir computer based on given configuration and training data.
         /// </summary>
@@ -514,11 +631,11 @@ namespace EasyMLCore
         /// <param name="origTestingData">Original testing samples.</param>
         /// <param name="rounds">Specifies number of deep test rounds.</param>
         /// <returns>Aggregated error stat of the RC task.</returns>
-        public ModelErrStat DeepTestSingleTask(ResCompConfig cfg,
-                                               SampleDataset origTrainingData,
-                                               SampleDataset origTestingData,
-                                               int rounds = 10
-                                               )
+        public ModelErrStat DeepTest(ResCompConfig cfg,
+                                     SampleDataset origTrainingData,
+                                     SampleDataset origTestingData,
+                                     int rounds = 10
+                                     )
         {
             if (cfg == null)
             {

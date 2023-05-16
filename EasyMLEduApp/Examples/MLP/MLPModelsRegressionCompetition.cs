@@ -45,12 +45,16 @@ namespace EasyMLDemoApp.Examples.MLP
             List<string> outputFeatureNames = new List<string>() { "High", "Low", "Adj Close" };
             //Training and Testing data
             SampleDataset trainingData =
-                EasyML.Oper.LoadSampleData(outputFeatureNames.Count, ////Number of output features
-                                           "./Data/TTOO_patterns_train.csv"//Training csv data file name
+                EasyML.Oper.LoadSampleData("./Data/TTOO_patterns_train.csv", //Training csv data file name
+                                           SampleDataset.CsvOutputFeaturesPosition.Last,
+                                           SampleDataset.CsvOutputFeaturesPresence.Separately,
+                                           outputFeatureNames.Count //Number of output features
                                            );
             SampleDataset testingData =
-                EasyML.Oper.LoadSampleData(outputFeatureNames.Count, ////Number of output features
-                                           "./Data/TTOO_patterns_test.csv"//Testing csv data file name
+                EasyML.Oper.LoadSampleData("./Data/TTOO_patterns_test.csv", //Testing csv data file name
+                                           SampleDataset.CsvOutputFeaturesPosition.Last,
+                                           SampleDataset.CsvOutputFeaturesPresence.Separately,
+                                           outputFeatureNames.Count //Number of output features
                                            );
             //Model configurations to be applied one by one on TTOO Biosystems Share Prices data
             List<IModelConfig> modelConfigCollection = new List<IModelConfig>()

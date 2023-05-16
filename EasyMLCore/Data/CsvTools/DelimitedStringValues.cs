@@ -6,35 +6,14 @@ using System.Threading;
 namespace EasyMLCore.Data
 {
     /// <summary>
-    /// Implements the single row of delimited string values (csv format).
+    /// Implements the single row of delimited string values.
     /// </summary>
     [Serializable]
     public class DelimitedStringValues : SerializableObject
     {
         //Constants
-        //Delimiters
-        /// <summary>
-        /// The semicolon delimiter.
-        /// </summary>
-        public const char SemicolonDelimiter = ';';
-        /// <summary>
-        /// The comma delimiter.
-        /// </summary>
-        public const char CommaDelimiter = ',';
-        /// <summary>
-        /// The tabelator delimiter.
-        /// </summary>
-        public const char TabDelimiter = '\t';
-        /// <summary>
-        /// Default delimiter.
-        /// </summary>
-        public const char DefaultDelimiter = SemicolonDelimiter;
-
+        public const int DefaultExpectedNumOfValues = 1000;
         //Attribute properties
-        /// <summary>
-        /// Current delimiter.
-        /// </summary>
-        public char Delimiter { get; private set; }
         /// <summary>
         /// Collection of string values.
         /// </summary>
@@ -44,11 +23,10 @@ namespace EasyMLCore.Data
         /// <summary>
         /// Creates an empty instance.
         /// </summary>
-        /// <param name="delimiter">String values delimiter.</param>
-        public DelimitedStringValues(char delimiter = DefaultDelimiter)
+        /// <param name="expectedNumOfValues">Expected number of values.</param>
+        public DelimitedStringValues(int expectedNumOfValues = DefaultExpectedNumOfValues)
         {
-            Delimiter = delimiter;
-            StringValueCollection = new List<string>();
+            StringValueCollection = new List<string>(expectedNumOfValues);
             return;
         }
 
@@ -56,23 +34,20 @@ namespace EasyMLCore.Data
         /// Creates an initialized instance.
         /// </summary>
         /// <param name="data">A data row consisting of delimited values.</param>
-        /// <param name="delimiter">String values delimiter.</param>
+        /// <param name="delimiter">Values delimiter.</param>
         public DelimitedStringValues(string data, char delimiter)
         {
-            Delimiter = delimiter;
-            StringValueCollection = new List<string>();
-            LoadFromString(data, false, false);
+            StringValueCollection = new List<string>(data.Split(new char[] { delimiter }, StringSplitOptions.None));
             return;
         }
 
         /// <summary>
         /// Creates an initialized instance.
         /// </summary>
-        /// <param name="data">A data row consisting of delimited values.</param>
-        public DelimitedStringValues(string data)
+        /// <param name="data">Collection of data.</param>
+        public DelimitedStringValues(IEnumerable<string> data)
         {
-            StringValueCollection = new List<string>();
-            LoadFromString(data, false, true);
+            StringValueCollection = new List<string>(data);
             return;
         }
 
@@ -82,101 +57,6 @@ namespace EasyMLCore.Data
         /// </summary>
         public int NumOfStringValues { get { return StringValueCollection.Count; } }
 
-        //Methods
-        //Static methods
-        /// <summary>
-        /// Tries to recognize a delimiter used in the sample data.
-        /// </summary>
-        /// <param name="sampleDelimitedData">Row of sample data.</param>
-        /// <returns>The recognized delimiter or the default delimiter.</returns>
-        public static char RecognizeDelimiter(string sampleDelimitedData)
-        {
-            //Check of the presence of candidate chars
-            //Is "tab" char the candidate?
-            if (sampleDelimitedData.IndexOf(TabDelimiter) != -1)
-            {
-                //If tab is present then it is the most probable delimiter
-                return TabDelimiter;
-            }
-            //Is "semicolon" char the candidate?
-            if (sampleDelimitedData.IndexOf(SemicolonDelimiter) != -1)
-            {
-                //If semicolon is present then it is the next most probable delimiter
-                return SemicolonDelimiter;
-            }
-            //Recognize a floating point char
-            char floatingPointChar = Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator[0];
-            if (sampleDelimitedData.IndexOf('.') != -1)
-            {
-                int index = sampleDelimitedData.IndexOf('.');
-                if (index > 0 && index < sampleDelimitedData.Length - 1)
-                {
-                    char charBefore = sampleDelimitedData[index - 1];
-                    if (charBefore >= '0' && charBefore <= '9')
-                    {
-                        char charAfter = sampleDelimitedData[index + 1];
-                        if (charAfter >= '0' && charAfter <= '9')
-                        {
-                            floatingPointChar = '.';
-                        }
-                    }
-                }
-            }
-            //Is "comma" char the candidate?
-            if (sampleDelimitedData.IndexOf(CommaDelimiter) != -1 && floatingPointChar != CommaDelimiter)
-            {
-                //Comma is the probable delimiter
-                return CommaDelimiter;
-            }
-            else
-            {
-                //Remaining default delimiter
-                return DefaultDelimiter;
-            }
-        }
-
-        /// <summary>
-        /// Builds a single string consisting of delimited string values.
-        /// </summary>
-        /// <param name="stringValueCollection">A collection of alone string values.</param>
-        /// <param name="delimiter">Delimiter to be used.</param>
-        /// <returns>Built string.</returns>
-        public static string ToString(IEnumerable<string> stringValueCollection,
-                                      char delimiter = DefaultDelimiter
-                                      )
-        {
-            StringBuilder output = new StringBuilder();
-            bool firstVal = true;
-            foreach (string value in stringValueCollection)
-            {
-                if (!firstVal)
-                {
-                    output.Append(delimiter);
-                }
-                output.Append(value);
-                firstVal = false;
-            }
-            return output.ToString();
-        }
-
-        /// <summary>
-        /// Splits a data row consisting of delimited values.
-        /// </summary>
-        /// <param name="data">A data row consisting of delimited values.</param>
-        /// <param name="delimiter">Used delimiter.</param>
-        /// <returns>Collection of alone string values.</returns>
-        public static List<string> ToList(string data, char delimiter = DefaultDelimiter)
-        {
-            List<string> values = new List<string>();
-            if (data.Length > 0)
-            {
-                char[] allowedDelims = new char[1];
-                allowedDelims[0] = delimiter;
-                values.AddRange(data.Split(allowedDelims, StringSplitOptions.None));
-            }
-            return values;
-        }
-
         //Instance methods
         /// <summary>
         /// Clears the internal collection of string values.
@@ -184,16 +64,6 @@ namespace EasyMLCore.Data
         public void Reset()
         {
             StringValueCollection.Clear();
-            return;
-        }
-
-        /// <summary>
-        /// Changes the string values delimiter.
-        /// </summary>
-        /// <param name="delimiter">New delimiter to be used.</param>
-        public void ChangeDelimiter(char delimiter)
-        {
-            Delimiter = delimiter;
             return;
         }
 
@@ -236,24 +106,6 @@ namespace EasyMLCore.Data
         }
 
         /// <summary>
-        /// Loads string values into the internal collection.
-        /// </summary>
-        /// <param name="data">A data row consisting of delimited values.</param>
-        /// <param name="reset">Specifies whether to clear the internal collection before the load.</param>
-        /// <param name="recognizeDelimiter">Specifies whether to try to recognize data delimiter used in data row. If not then current delimiter is used.</param>
-        /// <returns>The resulting number of string values in the internal collection.</returns>
-        public int LoadFromString(string data, bool reset = true, bool recognizeDelimiter = false)
-        {
-            if (reset)
-            {
-                Reset();
-            }
-            Delimiter = recognizeDelimiter ? RecognizeDelimiter(data) : Delimiter;
-            StringValueCollection.AddRange(ToList(data, Delimiter));
-            return StringValueCollection.Count;
-        }
-
-        /// <summary>
         /// Gets a string value from the internal collection at specified zero-based position (an index).
         /// </summary>
         /// <param name="idx">Zero-based position (an index).</param>
@@ -269,10 +121,24 @@ namespace EasyMLCore.Data
             return StringValueCollection.IndexOf(item);
         }
 
-        ///<inheritdoc/>
-        public override string ToString()
+        /// <summary>
+        /// Builds single row from inner collection of values.
+        /// </summary>
+        /// <param name="delimiter">Values delimiter.</param>
+        public string ToSingleRow(char delimiter)
         {
-            return ToString(StringValueCollection, Delimiter);
+            StringBuilder output = new StringBuilder();
+            bool firstVal = true;
+            foreach (string value in StringValueCollection)
+            {
+                if (!firstVal)
+                {
+                    output.Append(delimiter);
+                }
+                output.Append(value);
+                firstVal = false;
+            }
+            return output.ToString();
         }
 
     }//DelimitedStringValues

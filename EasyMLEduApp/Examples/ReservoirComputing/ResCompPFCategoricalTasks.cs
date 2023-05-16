@@ -50,12 +50,16 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
             };
             //Training and Testing data
             SampleDataset trainingData =
-                EasyML.Oper.LoadSampleData(outputFeatureNames.Count, ////Number of output classes
-                                           "./Data/LibrasMovement_train.csv"//Training csv data file name
+                EasyML.Oper.LoadSampleData("./Data/LibrasMovement_train.csv", //Training csv data file name
+                                           SampleDataset.CsvOutputFeaturesPosition.Last,
+                                           SampleDataset.CsvOutputFeaturesPresence.ClassesAsNumberFrom1,
+                                           outputFeatureNames.Count ////Number of output features (classes)
                                            );
             SampleDataset testingData =
-                EasyML.Oper.LoadSampleData(outputFeatureNames.Count, ////Number of output classes
-                                           "./Data/LibrasMovement_test.csv"//Testing csv data file name
+                EasyML.Oper.LoadSampleData("./Data/LibrasMovement_test.csv",//Testing csv data file name
+                                           SampleDataset.CsvOutputFeaturesPosition.Last,
+                                           SampleDataset.CsvOutputFeaturesPresence.ClassesAsNumberFrom1,
+                                           outputFeatureNames.Count ////Number of output features (classes)
                                            );
             ////////////////////////////////////////////////////////////////////////////
             //Reservoir config
@@ -124,12 +128,16 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
             };
             //Training and Testing data
             SampleDataset trainingData =
-                EasyML.Oper.LoadSampleData(outputFeatureNames.Count, ////Number of output classes
-                                           "./Data/ProximalPhalanxOutlineAgeGroup_train.csv"//Training csv data file name
+                EasyML.Oper.LoadSampleData("./Data/ProximalPhalanxOutlineAgeGroup_train.csv", //Training csv data file name
+                                           SampleDataset.CsvOutputFeaturesPosition.First,
+                                           SampleDataset.CsvOutputFeaturesPresence.ClassesAsNumberFrom1,
+                                           outputFeatureNames.Count //Number of output features (classes)
                                            );
             SampleDataset testingData =
-                EasyML.Oper.LoadSampleData(outputFeatureNames.Count, ////Number of output classes
-                                           "./Data/ProximalPhalanxOutlineAgeGroup_test.csv"//Testing csv data file name
+                EasyML.Oper.LoadSampleData("./Data/ProximalPhalanxOutlineAgeGroup_test.csv", //Testing csv data file name
+                                           SampleDataset.CsvOutputFeaturesPosition.First,
+                                           SampleDataset.CsvOutputFeaturesPresence.ClassesAsNumberFrom1,
+                                           outputFeatureNames.Count //Number of output features (classes)
                                            );
             ////////////////////////////////////////////////////////////////////////////
             //Reservoir config
@@ -198,12 +206,16 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
             };
             //Training and Testing data
             SampleDataset trainingData =
-                EasyML.Oper.LoadSampleData(outputFeatureNames.Count, ////Number of output classes
-                                           "./Data/LargeKitchenAppliances_train.csv"//Training csv data file name
+                EasyML.Oper.LoadSampleData("./Data/LargeKitchenAppliances_train.csv", //Training csv data file name
+                                           SampleDataset.CsvOutputFeaturesPosition.Last,
+                                           SampleDataset.CsvOutputFeaturesPresence.ClassesAsNumberFrom1,
+                                           outputFeatureNames.Count //Number of output classes
                                            );
             SampleDataset testingData =
-                EasyML.Oper.LoadSampleData(outputFeatureNames.Count, ////Number of output classes
-                                           "./Data/LargeKitchenAppliances_test.csv"//Testing csv data file name
+                EasyML.Oper.LoadSampleData("./Data/LargeKitchenAppliances_test.csv", //Testing csv data file name
+                                           SampleDataset.CsvOutputFeaturesPosition.Last,
+                                           SampleDataset.CsvOutputFeaturesPresence.ClassesAsNumberFrom1,
+                                           outputFeatureNames.Count //Number of output classes
                                            );
             ////////////////////////////////////////////////////////////////////////////
             //Reservoir config
@@ -277,12 +289,16 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
             };
             //Training and Testing data
             SampleDataset trainingData =
-                EasyML.Oper.LoadSampleData(outputFeatureNames.Count, ////Number of output classes
-                                           "./Data/CricketX_train.csv"//Training csv data file name
+                EasyML.Oper.LoadSampleData("./Data/CricketX_train.csv", //Training csv data file name
+                                           SampleDataset.CsvOutputFeaturesPosition.Last,
+                                           SampleDataset.CsvOutputFeaturesPresence.ClassesAsNumberFrom1,
+                                           outputFeatureNames.Count //Number of output classes
                                            );
             SampleDataset testingData =
-                EasyML.Oper.LoadSampleData(outputFeatureNames.Count, ////Number of output classes
-                                           "./Data/CricketX_test.csv"//Testing csv data file name
+                EasyML.Oper.LoadSampleData("./Data/CricketX_test.csv", //Testing csv data file name
+                                           SampleDataset.CsvOutputFeaturesPosition.Last,
+                                           SampleDataset.CsvOutputFeaturesPresence.ClassesAsNumberFrom1,
+                                           outputFeatureNames.Count //Number of output classes
                                            );
             ////////////////////////////////////////////////////////////////////////////
             ////////////////////////////////////////////////////////////////////////////
@@ -350,12 +366,16 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
             };
             //Training and Testing data
             SampleDataset trainingData =
-                EasyML.Oper.LoadSampleData(outputFeatureNames.Count, ////Number of output classes
-                                           "./Data/Worms_train.csv"//Training csv data file name
+                EasyML.Oper.LoadSampleData("./Data/Worms_train.csv", //Training csv data file name
+                                           SampleDataset.CsvOutputFeaturesPosition.Last,
+                                           SampleDataset.CsvOutputFeaturesPresence.ClassesAsNumberFrom1,
+                                           outputFeatureNames.Count //Number of output classes
                                            );
             SampleDataset testingData =
-                EasyML.Oper.LoadSampleData(outputFeatureNames.Count, ////Number of output classes
-                                           "./Data/Worms_test.csv"//Testing csv data file name
+                EasyML.Oper.LoadSampleData("./Data/Worms_test.csv", //Testing csv data file name
+                                           SampleDataset.CsvOutputFeaturesPosition.Last,
+                                           SampleDataset.CsvOutputFeaturesPresence.ClassesAsNumberFrom1,
+                                           outputFeatureNames.Count //Number of output classes
                                            );
             ////////////////////////////////////////////////////////////////////////////
             ////////////////////////////////////////////////////////////////////////////

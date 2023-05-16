@@ -47,12 +47,16 @@ namespace EasyMLDemoApp.Examples.MLP
             //Load Training and Testing data
             EasyML.Oper.Report("./Data/BeetleFly.txt");
             SampleDataset trainingData =
-                EasyML.Oper.LoadSampleData(outputFeatureNames.Count, ////Number of output features
-                                           "./Data/BeetleFly_train.csv"//Training csv data file name
+                EasyML.Oper.LoadSampleData("./Data/BeetleFly_train.csv", //Training csv data file name
+                                           SampleDataset.CsvOutputFeaturesPosition.Last,
+                                           SampleDataset.CsvOutputFeaturesPresence.Separately,
+                                           outputFeatureNames.Count //Number of output features
                                            );
             SampleDataset testingData =
-                EasyML.Oper.LoadSampleData(outputFeatureNames.Count, ////Number of output features
-                                           "./Data/BeetleFly_test.csv"//Testing csv data file name
+                EasyML.Oper.LoadSampleData("./Data/BeetleFly_test.csv", //Testing csv data file name
+                                           SampleDataset.CsvOutputFeaturesPosition.Last,
+                                           SampleDataset.CsvOutputFeaturesPresence.Separately,
+                                           outputFeatureNames.Count //Number of output features
                                            );
             EasyML.Oper.Log.Write(string.Empty);
             ModelBase bestModel = null;

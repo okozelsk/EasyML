@@ -34,12 +34,16 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
             };
             //Training and Testing data
             SampleDataset trainingData =
-                EasyML.Oper.LoadSampleData(outputFeatureNames.Count, ////Number of output binary features
-                                           "./Data/BeetleFly_train.csv"//Training csv data file name
+                EasyML.Oper.LoadSampleData("./Data/BeetleFly_train.csv", //Training csv data file name
+                                           SampleDataset.CsvOutputFeaturesPosition.Last,
+                                           SampleDataset.CsvOutputFeaturesPresence.Separately,
+                                           outputFeatureNames.Count //Number of output features
                                            );
             SampleDataset testingData =
-                EasyML.Oper.LoadSampleData(outputFeatureNames.Count, ////Number of output binary features
-                                           "./Data/BeetleFly_test.csv"//Testing csv data file name
+                EasyML.Oper.LoadSampleData("./Data/BeetleFly_test.csv", //Testing csv data file name
+                                           SampleDataset.CsvOutputFeaturesPosition.Last,
+                                           SampleDataset.CsvOutputFeaturesPresence.Separately,
+                                           outputFeatureNames.Count //Number of output features
                                            );
             ////////////////////////////////////////////////////////////////////////////
             //Reservoir config
@@ -101,12 +105,16 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
             };
             //Training and Testing data
             SampleDataset trainingData =
-                EasyML.Oper.LoadSampleData(outputFeatureNames.Count, ////Number of output binary features
-                                           "./Data/Earthquakes_train.csv"//Training csv data file name
+                EasyML.Oper.LoadSampleData("./Data/Earthquakes_train.csv", //Training csv data file name
+                                           SampleDataset.CsvOutputFeaturesPosition.Last,
+                                           SampleDataset.CsvOutputFeaturesPresence.Separately,
+                                           outputFeatureNames.Count //Number of output features
                                            );
             SampleDataset testingData =
-                EasyML.Oper.LoadSampleData(outputFeatureNames.Count, ////Number of output binary features
-                                           "./Data/Earthquakes_test.csv"//Testing csv data file name
+                EasyML.Oper.LoadSampleData("./Data/Earthquakes_test.csv", //Testing csv data file name
+                                           SampleDataset.CsvOutputFeaturesPosition.Last,
+                                           SampleDataset.CsvOutputFeaturesPresence.Separately,
+                                           outputFeatureNames.Count //Number of output features
                                            );
             ////////////////////////////////////////////////////////////////////////////
             //Reservoir config

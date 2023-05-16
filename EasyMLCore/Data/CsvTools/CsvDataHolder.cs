@@ -1,8 +1,10 @@
 ﻿using EasyMLCore.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
 
 namespace EasyMLCore.Data
 {
@@ -13,10 +15,25 @@ namespace EasyMLCore.Data
     public class CsvDataHolder : SerializableObject
     {
         //Constants
+        public const int DefaultExpectedNumOfDataRows = 10000;
+        //Delimiters
         /// <summary>
-        /// A special char code identifying the requirement for automatic detection of data delimiter.
+        /// The semicolon delimiter.
         /// </summary>
-        public const char AutoDetectDelimiter = (char)0;
+        public const char SemicolonDelimiter = ';';
+        /// <summary>
+        /// The comma delimiter.
+        /// </summary>
+        public const char CommaDelimiter = ',';
+        /// <summary>
+        /// The tabelator delimiter.
+        /// </summary>
+        public const char TabDelimiter = '\t';
+        /// <summary>
+        /// Default delimiter.
+        /// </summary>
+        public const char DefaultDelimiter = SemicolonDelimiter;
+
 
         //Attribute properties
         /// <summary>
@@ -35,37 +52,26 @@ namespace EasyMLCore.Data
         public List<DelimitedStringValues> DataRowCollection { get; private set; }
 
         /// <summary>
-        /// Creates an uninitialized instance.
+        /// Creates an initialized instance with empty data.
         /// </summary>
-        /// <param name="delimiter">Data items delimiter.</param>
-        public CsvDataHolder(char delimiter)
+        /// <param name="delimiter">Columns delimiter.</param>
+        /// <param name="colNames">Column names.</param>
+        public CsvDataHolder(char delimiter = DefaultDelimiter, IEnumerable<string> colNames = null, int expectedNumOfDataRows = DefaultExpectedNumOfDataRows)
         {
+            if(delimiter != TabDelimiter && delimiter != SemicolonDelimiter &&  delimiter != CommaDelimiter)
+            {
+                throw new ArgumentException($"Unsupported delimiter '{delimiter}'.", nameof(delimiter));
+            }
             DataDelimiter = delimiter;
-            ColNameCollection = new DelimitedStringValues(DataDelimiter);
-            DataRowCollection = new List<DelimitedStringValues>();
-            return;
-        }
-
-        /// <summary>
-        /// Creates an initialized instance.
-        /// </summary>
-        /// <param name="streamReader">Data stream reader.</param>
-        /// <param name="header">Specifies whether the first row contains the column names.</param>
-        /// <param name="delimiter">Data items delimiter. If CsvDataHolder.AutoDetectDelimiter is specified then delimiter is recognized automatically from the data.</param>
-        public CsvDataHolder(StreamReader streamReader, bool header, char delimiter = AutoDetectDelimiter)
-        {
-            InitFromStream(streamReader, header, delimiter);
-            return;
-        }
-
-        /// <summary>
-        /// Creates an initialized instance.
-        /// </summary>
-        /// <param name="streamReader">Data stream reader.</param>
-        /// <param name="delimiter">Data items delimiter. If CsvDataHolder.AutoDetectDelimiter is specified then delimiter is recognized automatically from the data.</param>
-        public CsvDataHolder(StreamReader streamReader, char delimiter = AutoDetectDelimiter)
-        {
-            InitFromStream(streamReader, delimiter);
+            if (colNames != null)
+            {
+                ColNameCollection = new DelimitedStringValues(colNames);
+            }
+            else
+            {
+                ColNameCollection = new DelimitedStringValues(DataDelimiter);
+            }
+            DataRowCollection = new List<DelimitedStringValues>(expectedNumOfDataRows);
             return;
         }
 
@@ -73,26 +79,23 @@ namespace EasyMLCore.Data
         /// Creates an initialized instance.
         /// </summary>
         /// <param name="fileName">Name of the file containing data to be loaded.</param>
-        /// <param name="header">Specifies whether the first row contains the column names.</param>
-        /// <param name="delimiter">Data items delimiter. If CsvDataHolder.AutoDetectDelimiter is specified then delimiter is recognized automatically from the data.</param>
-        public CsvDataHolder(string fileName, bool header, char delimiter = AutoDetectDelimiter)
+        public CsvDataHolder(string fileName)
         {
-            using StreamReader streamReader = new StreamReader(new FileStream(fileName, FileMode.Open));
-            InitFromStream(streamReader, header, delimiter);
-            return;
-        }
-
-        /// <summary>
-        /// Creates an initialized instance.
-        /// </summary>
-        /// <param name="fileName">Name of the file containing data to be loaded.</param>
-        /// <param name="delimiter">Data items delimiter. If CsvDataHolder.AutoDetectDelimiter is specified then delimiter is recognized automatically from the data.</param>
-        public CsvDataHolder(string fileName, char delimiter = AutoDetectDelimiter)
-        {
-            var dir = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            string dir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
             fileName = Path.Combine(dir, fileName);
+            Investigate(fileName, out bool header, out char delimiter);
+            DataDelimiter = delimiter;
+            DataRowCollection = new List<DelimitedStringValues>();
             using StreamReader streamReader = new StreamReader(new FileStream(fileName, FileMode.Open));
-            InitFromStream(streamReader, delimiter);
+            if(header)
+            {
+                ColNameCollection = new DelimitedStringValues(streamReader.ReadLine(), DataDelimiter);
+            }
+            while (!streamReader.EndOfStream)
+            {
+                //Known delimiter
+                DataRowCollection.Add(new DelimitedStringValues(streamReader.ReadLine(), DataDelimiter));
+            }
             return;
         }
 
@@ -101,66 +104,23 @@ namespace EasyMLCore.Data
         /// </summary>
         /// <param name="dataset">Samples.</param>
         /// <param name="delimiter">Data items delimiter.</param>
-        public CsvDataHolder(SampleDataset dataset, char delimiter = DelimitedStringValues.DefaultDelimiter)
+        public CsvDataHolder(SampleDataset dataset, IEnumerable<string> colNames = null, char delimiter = DefaultDelimiter)
+            :this(delimiter, colNames, dataset.Count)
         {
-            InitFromSampleDataset(dataset, delimiter);
-            return;
-        }
-
-        //Methods
-        private void InitFromStream(StreamReader streamReader, bool header, char delimiter = AutoDetectDelimiter)
-        {
-            DataRowCollection = new List<DelimitedStringValues>();
-            DataDelimiter = delimiter;
-            AppendFromStream(streamReader);
-            if (header && DataRowCollection.Count > 0)
-            {
-                ColNameCollection = DataRowCollection[0];
-                DataRowCollection.RemoveAt(0);
-            }
-            else
-            {
-                ColNameCollection = new DelimitedStringValues(DataDelimiter);
-            }
-            return;
-        }
-
-        private void InitFromStream(StreamReader streamReader, char delimiter = AutoDetectDelimiter)
-        {
-            DataRowCollection = new List<DelimitedStringValues>();
-            DataDelimiter = delimiter;
-            AppendFromStream(streamReader);
-            InitColNames();
-            return;
-        }
-
-        private void InitFromSampleDataset(SampleDataset dataset, char delimiter = AutoDetectDelimiter)
-        {
-            DataRowCollection = new List<DelimitedStringValues>();
-            //Set delimiter
-            DataDelimiter = delimiter;
-            //No col names
-            ColNameCollection = new DelimitedStringValues(DataDelimiter);
-            //Append data
-            AppendFromSampleDataset(dataset);
-            return;
-        }
-
-        private void AppendFromSampleDataset(SampleDataset dataset)
-        {
-            foreach(Sample sample in dataset.SampleCollection)
+            foreach (Sample sample in dataset.SampleCollection)
             {
                 double[] data = (double[])sample.InputVector.Concat(sample.OutputVector);
                 DelimitedStringValues dsv = new DelimitedStringValues(DataDelimiter);
-                foreach(double value in data)
+                foreach (double value in data)
                 {
-                    dsv.AddValue(value.ToString());
+                    dsv.AddValue(value.ToString(CultureInfo.InvariantCulture));
                 }
                 DataRowCollection.Add(dsv);
             }
             return;
         }
 
+        //Static methods
         private static bool ContainsDataItems(DelimitedStringValues dsv)
         {
             foreach (string item in dsv.StringValueCollection)
@@ -196,79 +156,71 @@ namespace EasyMLCore.Data
         }
 
         /// <summary>
-        /// Initializes column names.
+        /// Investigates given csv file.
         /// </summary>
-        private void InitColNames()
+        /// <param name="fileName">File name.</param>
+        /// <param name="header">Indicates that file contains header.</param>
+        /// <param name="delimiter">Recognized columns delimiter.</param>
+        public static void Investigate(string fileName, out bool header, out char delimiter)
         {
-            if (DataRowCollection.Count == 0)
+            //Read first two rows
+            string dir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            fileName = Path.Combine(dir, fileName);
+            using StreamReader streamReader = new StreamReader(new FileStream(fileName, FileMode.Open));
+            List<string> lines = new List<string>(2);
+            while (!streamReader.EndOfStream && lines.Count < 2)
             {
-                //No data
-                ColNameCollection = new DelimitedStringValues(DataDelimiter);
+                lines.Add(streamReader.ReadLine());
             }
-            if (ContainsDataItems(DataRowCollection[0]))
+            if(lines.Count < 1 || lines[0].Length == 0)
             {
-                //First row contains data -> Empty column names
-                ColNameCollection = new DelimitedStringValues(DataRowCollection[0].Delimiter);
+                throw new ApplicationException($"File {fileName} contains no data or it has invalid format.");
+            }
+            //Delimiter
+            //Check of the presence of candidate chars
+            string sampleDelimitedData = lines[0];
+            //Is "tab" char the candidate?
+            if (sampleDelimitedData.IndexOf(TabDelimiter) != -1)
+            {
+                //If tab is present then it is the most probable delimiter
+                delimiter = TabDelimiter;
+            }
+            //Is "semicolon" char the candidate?
+            else if (sampleDelimitedData.IndexOf(SemicolonDelimiter) != -1)
+            {
+                //If semicolon is present then it is the next most probable delimiter
+                delimiter = SemicolonDelimiter;
+            }
+            //Is "comma" char the candidate?
+            else if (sampleDelimitedData.IndexOf(CommaDelimiter) != -1)
+            {
+                //Comma is the probable delimiter
+                delimiter = CommaDelimiter;
             }
             else
             {
-                //First row probably contains column names
-                ColNameCollection = DataRowCollection[0];
-                DataRowCollection.RemoveAt(0);
+                //Remaining default delimiter
+                delimiter = DefaultDelimiter;
+            }
+
+            //Header?
+            header = false;
+            DelimitedStringValues firstRowDSV = new DelimitedStringValues(lines[0], delimiter);
+            header = !ContainsDataItems(firstRowDSV);
+            if(header && lines.Count == 2)
+            {
+                //Check that the second row contains data
+                DelimitedStringValues secondRowDSV = new DelimitedStringValues(lines[1], delimiter);
+                bool containsData = ContainsDataItems(secondRowDSV);
+                if(!containsData)
+                {
+                    throw new ApplicationException($"File {fileName} has invalid format.");
+                }
             }
             return;
         }
 
-        /// <summary>
-        /// Appends data rows from given stream reader.
-        /// </summary>
-        /// <param name="streamReader">Data stream reader.</param>
-        /// <param name="maxRows">Maximum rows to be loaded. If GT 0 is specified then loading stops when maxRows is reached.</param>
-        /// <returns>Number of rows loaded.</returns>
-        public int AppendFromStream(StreamReader streamReader, int maxRows = 0)
-        {
-            int numOfLoadedRows = 0;
-            while (!streamReader.EndOfStream)
-            {
-                //Add data row
-                if (DataDelimiter == AutoDetectDelimiter)
-                {
-                    //Unknown delimiter
-                    DelimitedStringValues dsv = new DelimitedStringValues(streamReader.ReadLine());
-                    //Set recognized delimiter
-                    DataDelimiter = dsv.Delimiter;
-                    DataRowCollection.Add(dsv);
-                }
-                else
-                {
-                    //Known delimiter
-                    DataRowCollection.Add(new DelimitedStringValues(streamReader.ReadLine(), DataDelimiter));
-                }
-                ++numOfLoadedRows;
-                if (maxRows > 0 && numOfLoadedRows == maxRows)
-                {
-                    //Maximim limit reached
-                    break;
-                }
-            }
-            return numOfLoadedRows;
-        }
-
-        /// <summary>
-        /// Changes the data items delimiter for whole content.
-        /// </summary>
-        /// <param name="delimiter">New data items delimiter.</param>
-        public void SetDataDelimiter(char delimiter)
-        {
-            DataDelimiter = delimiter;
-            ColNameCollection.ChangeDelimiter(DataDelimiter);
-            foreach (DelimitedStringValues dsv in DataRowCollection)
-            {
-                dsv.ChangeDelimiter(DataDelimiter);
-            }
-            return;
-        }
-
+        //Methods
         /// <summary>
         /// Writes all content to the specified stream.
         /// </summary>
@@ -277,11 +229,11 @@ namespace EasyMLCore.Data
         {
             if (ColNameCollection.NumOfStringValues > 0)
             {
-                streamWriter.WriteLine(ColNameCollection.ToString());
+                streamWriter.WriteLine(ColNameCollection.ToSingleRow(DataDelimiter));
             }
             foreach (DelimitedStringValues dsv in DataRowCollection)
             {
-                streamWriter.WriteLine(dsv.ToString());
+                streamWriter.WriteLine(dsv.ToSingleRow(DataDelimiter));
             }
             return;
         }
@@ -292,6 +244,8 @@ namespace EasyMLCore.Data
         /// <param name="fileName">The name of the file in which to save the content.</param>
         public void Save(string fileName)
         {
+            string dir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            fileName = Path.Combine(dir, fileName);
             using StreamWriter streamWriter = new StreamWriter(new FileStream(fileName, FileMode.Create));
             Write(streamWriter);
             return;
@@ -299,13 +253,16 @@ namespace EasyMLCore.Data
 
         /// <summary>
         /// Loads single csv datafile containing time-serie data where each row
-        /// contains variable(features) data of one time-point.
+        /// contains variable(features) data of one time point.
         /// Then converts loaded time-serie data so that input vector contains
-        /// features data from specified number of time-points and
-        /// output vector contains features data from immediately followed time-point.
+        /// features data from specified number of time points and
+        /// output vector contains features data from immediately followed time point.
         /// Then splits data to the training and testing datasets and
         /// saves them as two csv files (training and testing).
         /// </summary>
+        /// <remarks>
+        /// Useable for regression tasks when you want to work with fixed-length patterns instead of continuous time-series.
+        /// </remarks>
         /// <param name="timeSeriesDataFile">The name of a csv datafile containing the time-serie data.</param>
         /// <param name="featureNames">The names of features to be used from every time-serie time-point (for both input and output vectors).</param>
         /// <param name="numOfInputTimePoints">Specifies how many time-points of time-serie should constitute input vector.</param>

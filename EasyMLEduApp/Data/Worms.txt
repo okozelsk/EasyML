@@ -27,6 +27,14 @@ The data were extracted from the {\em C. elegans} behavioural database~\cite{wor
 The formatted classification problems are available from the website associated with this
 paper~\cite{tscWeb}.
 
+Classes at the end of datarow as number 1-5:
+    1: Wild
+    2: Mutant-goa-1
+    3: Mutant-unc-1
+    4: Mutant-unc-38
+    5: Mutant-unc-63
+
+
 Source:
 https://timeseriesclassification.com/description.php?Dataset=Worms
 UEA & UCR Time Series Classification Repository

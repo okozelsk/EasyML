@@ -64,12 +64,16 @@ namespace EasyMLDemoApp.Examples.MLP
             };
             //Training and Testing data
             SampleDataset trainingData =
-                EasyML.Oper.LoadSampleData(outputClassLabels.Count, ////Number of output features (classes)
-                                           "./Data/LibrasMovement_train.csv"//Training csv data file name
+                EasyML.Oper.LoadSampleData("./Data/LibrasMovement_train.csv", //Training csv data file name
+                                           SampleDataset.CsvOutputFeaturesPosition.Last,
+                                           SampleDataset.CsvOutputFeaturesPresence.ClassesAsNumberFrom1,
+                                           outputClassLabels.Count ////Number of output features (classes)
                                            );
             SampleDataset testingData =
-                EasyML.Oper.LoadSampleData(outputClassLabels.Count, ////Number of output features (classes)
-                                           "./Data/LibrasMovement_test.csv"//Testing csv data file name
+                EasyML.Oper.LoadSampleData("./Data/LibrasMovement_test.csv",//Testing csv data file name
+                                           SampleDataset.CsvOutputFeaturesPosition.Last,
+                                           SampleDataset.CsvOutputFeaturesPresence.ClassesAsNumberFrom1,
+                                           outputClassLabels.Count ////Number of output features (classes)
                                            );
             //Model configurations to be applied one by one on Libras Movement data
             List<IModelConfig> modelConfigCollection = new List<IModelConfig>()
@@ -148,12 +152,16 @@ namespace EasyMLDemoApp.Examples.MLP
             };
             //Training and Testing data
             SampleDataset trainingData =
-                EasyML.Oper.LoadSampleData(outputClassLabels.Count, ////Number of output features (classes)
-                                           "./Data/ProximalPhalanxOutlineAgeGroup_train.csv"//Training csv data file name
+                EasyML.Oper.LoadSampleData("./Data/ProximalPhalanxOutlineAgeGroup_train.csv", //Training csv data file name
+                                           SampleDataset.CsvOutputFeaturesPosition.First,
+                                           SampleDataset.CsvOutputFeaturesPresence.ClassesAsNumberFrom1,
+                                           outputClassLabels.Count //Number of output features (classes)
                                            );
             SampleDataset testingData =
-                EasyML.Oper.LoadSampleData(outputClassLabels.Count, ////Number of output features (classes)
-                                           "./Data/ProximalPhalanxOutlineAgeGroup_test.csv"//Testing csv data file name
+                EasyML.Oper.LoadSampleData("./Data/ProximalPhalanxOutlineAgeGroup_test.csv", //Testing csv data file name
+                                           SampleDataset.CsvOutputFeaturesPosition.First,
+                                           SampleDataset.CsvOutputFeaturesPresence.ClassesAsNumberFrom1,
+                                           outputClassLabels.Count //Number of output features (classes)
                                            );
             //Model configurations to be applied one by one on Proximal Phalanx Outline Age Group data
             List<IModelConfig> modelConfigCollection = new List<IModelConfig>()

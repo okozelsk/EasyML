@@ -5,6 +5,11 @@ These problems were taken from data recorded as part of government sponsored stu
 The intention was to collect behavioural data about how consumers use electricity within the home to help reduce the UK's carbon footprint. 
 The data contains readings from 251 households, sampled in two-minute intervals over a month. Each series is length 720 (24 hours of readings taken every 2
  minutes). Classes are Washing Machine, Tumble Dryer and Dishwasher.
+ 
+Classes at the end of datarow as number 1-3:
+	1: Washing Machine
+	2: Tumble Dryer
+	3: Dishwasher
 
 Source:
 https://timeseriesclassification.com/description.php?Dataset=LargeKitchenAppliances

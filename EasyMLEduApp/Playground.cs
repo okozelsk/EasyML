@@ -28,46 +28,6 @@ namespace EasyMLDemoApp
         }
 
         //Methods
-        private void TestFolderization(string dataFile, int numOfClasses)
-        {
-            //Load csv data
-            CsvDataHolder csvData = new CsvDataHolder(dataFile);
-            //Load csv data to a Dataset
-            SampleDataset dataset = SampleDataset.Load(csvData, numOfClasses);
-            double[] foldDataRatios = { -1d, 0d, 0.1d, 0.5d, 0.75d, 1d, 2d };
-            Console.WriteLine($"Folderization test of {dataFile}. NumOfSamples={dataset.Count.ToString(CultureInfo.InvariantCulture)}, NumOfFoldDataRatios={foldDataRatios.Length.ToString(CultureInfo.InvariantCulture)}");
-            foreach (double foldDataRatio in foldDataRatios)
-            {
-                Console.WriteLine($"  Testing fold data ratio = {foldDataRatio.ToString(CultureInfo.InvariantCulture)}");
-                List<SampleDataset> folds = dataset.Folderize(foldDataRatio, (numOfClasses > 1) ? OutputTaskType.Categorical : OutputTaskType.Binary);
-                Console.WriteLine($"    Number of resulting folds = {folds.Count.ToString(CultureInfo.InvariantCulture)}");
-                for (int foldIdx = 0; foldIdx < folds.Count; foldIdx++)
-                {
-                    int numOfFoldSamples = folds[foldIdx].Count;
-                    Console.WriteLine($"      FoldIdx={foldIdx.ToString(CultureInfo.InvariantCulture),-4} FoldSize={numOfFoldSamples.ToString(CultureInfo.InvariantCulture),-4}");
-                    int[] classesBin1Counts = new int[numOfClasses];
-                    Array.Fill(classesBin1Counts, 0);
-                    for (int sampleIdx = 0; sampleIdx < numOfFoldSamples; sampleIdx++)
-                    {
-                        for (int classIdx = 0; classIdx < numOfClasses; classIdx++)
-                        {
-                            if (folds[foldIdx].SampleCollection[sampleIdx].OutputVector[classIdx] >= BinFeatureFilter.GetBinaryBorder(FeatureFilterBase.FeatureUse.Output))
-                            {
-                                ++classesBin1Counts[classIdx];
-                            }
-                        }
-                    }
-                    Console.WriteLine($"        Number of positive samples per class");
-                    for (int classIdx = 0; classIdx < numOfClasses; classIdx++)
-                    {
-                        Console.WriteLine($"          ClassID={classIdx.ToString(CultureInfo.InvariantCulture),-3}, Bin1Samples={classesBin1Counts[classIdx].ToString(CultureInfo.InvariantCulture)}");
-                    }
-                }
-                Console.WriteLine("Press enter to leave TestFolderization...");
-                Console.ReadLine();
-            }
-            return;
-        }
 
         private void TestGaussianRandom()
         {
@@ -179,8 +139,6 @@ namespace EasyMLDemoApp
         {
             Console.Clear();
             //TODO - place your code here
-            //TestFolderization("./Data/Yoga_train.csv", 1);
-            //TestFolderization("./Data/ProximalPhalanxOutlineAgeGroup_train.csv", 3);
             //TestGaussianRandom();
             //TestThrottleValve();
             //TestParallelEfficiency();

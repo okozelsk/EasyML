@@ -21,6 +21,23 @@ Recognition for Brazilian Sign Language: A Study Using Distance-Based Neural Net
 In: 2009 International Joint Conference on Neural Networks, 2009, Atlanta, GA. Proceedings
 of 2009 International Joint Conference on Neural Networks
 
+Classes at the end of datarow as number 1-15:
+	1: curved swing
+	2: horizontal swing
+	3: vertical swing
+	4: anti-clockwise arc
+	5: clockwise arc
+	6: circle
+	7: horizontal straight-line
+	8: vertical straight-line
+	9: horizontal zigzag
+	10: vertical zigzag
+	11: horizontal wavy
+	12: vertical wavy
+	13: face-up curve
+	14: face-down curve 
+	15: tremble
+
 Source:
 https://timeseriesclassification.com/description.php?Dataset=Libras
 UEA & UCR Time Series Classification Repository

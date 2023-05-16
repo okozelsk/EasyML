@@ -58,12 +58,16 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
             };
             //Training and Testing data
             SampleDataset trainingData =
-                EasyML.Oper.LoadSampleData(outputFeatureNames.Count, ////Number of output classes
-                                           "./Data/LibrasMovement_train.csv"//Training csv data file name
+                EasyML.Oper.LoadSampleData("./Data/LibrasMovement_train.csv", //Training csv data file name
+                                           SampleDataset.CsvOutputFeaturesPosition.Last,
+                                           SampleDataset.CsvOutputFeaturesPresence.ClassesAsNumberFrom1,
+                                           outputFeatureNames.Count ////Number of output features (classes)
                                            );
             SampleDataset testingData =
-                EasyML.Oper.LoadSampleData(outputFeatureNames.Count, ////Number of output classes
-                                           "./Data/LibrasMovement_test.csv"//Testing csv data file name
+                EasyML.Oper.LoadSampleData("./Data/LibrasMovement_test.csv",//Testing csv data file name
+                                           SampleDataset.CsvOutputFeaturesPosition.Last,
+                                           SampleDataset.CsvOutputFeaturesPresence.ClassesAsNumberFrom1,
+                                           outputFeatureNames.Count ////Number of output features (classes)
                                            );
             ////////////////////////////////////////////////////////////////////////////
             //Reservoir config
@@ -89,14 +93,13 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
                 new ResCompTaskInputSectionsConfig(Reservoir.OutSection.SpikesFadingTraces
                                                    );
             NetworkModelConfig networkCfg =
-                new NetworkModelConfig(4, //Maximum number of training attempts
+                new NetworkModelConfig(3, //Maximum number of training attempts
                                        100, //Maximum number of epochs within a training attempt
-                                       new RPropConfig(), //Weights updater
-                                       new HiddenLayersConfig(new HiddenLayerConfig(45, ActivationFnID.TanH))
+                                       new RPropConfig() //Weights updater
                                        );
             CrossValModelConfig crossValCfg =
                 new CrossValModelConfig(networkCfg, //For every validation fold will be trained a cluster member network having this configuration
-                                        60d/180d //Validation fold data ratio
+                                        15d / 180d //Validation fold data ratio
                                         );
             ResCompTaskConfig taskConfig =
                 new ResCompTaskConfig(taskName,
@@ -104,14 +107,13 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
                                       inputSections,
                                       new FeaturesConfig(outputFeatureNames),
                                       crossValCfg //Model to be used
-                                      //MLPModelConfigs.CreateRPropOutputOnlyNetworkCrossValModelConfig(0.05d, 5, 200) //Model to be used
                                       );
             //Reservoir computer config
             ResCompConfig resCompCfg =
                 new ResCompConfig(reservoirCfg, taskConfig);
             ////////////////////////////////////////////////////////////////////////////
             //Deep test
-            return EasyML.Oper.DeepTestSingleTask(resCompCfg, trainingData, testingData, DeepTestRounds);
+            return EasyML.Oper.DeepTest(resCompCfg, trainingData, testingData, DeepTestRounds);
         }
 
         private static ModelErrStat ExecuteResCompProximalPhalanxOutlineAgeGroupDeepTest()
@@ -126,12 +128,16 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
             };
             //Training and Testing data
             SampleDataset trainingData =
-                EasyML.Oper.LoadSampleData(outputFeatureNames.Count, ////Number of output classes
-                                           "./Data/ProximalPhalanxOutlineAgeGroup_train.csv"//Training csv data file name
+                EasyML.Oper.LoadSampleData("./Data/ProximalPhalanxOutlineAgeGroup_train.csv", //Training csv data file name
+                                           SampleDataset.CsvOutputFeaturesPosition.First,
+                                           SampleDataset.CsvOutputFeaturesPresence.ClassesAsNumberFrom1,
+                                           outputFeatureNames.Count //Number of output features (classes)
                                            );
             SampleDataset testingData =
-                EasyML.Oper.LoadSampleData(outputFeatureNames.Count, ////Number of output classes
-                                           "./Data/ProximalPhalanxOutlineAgeGroup_test.csv"//Testing csv data file name
+                EasyML.Oper.LoadSampleData("./Data/ProximalPhalanxOutlineAgeGroup_test.csv", //Testing csv data file name
+                                           SampleDataset.CsvOutputFeaturesPosition.First,
+                                           SampleDataset.CsvOutputFeaturesPresence.ClassesAsNumberFrom1,
+                                           outputFeatureNames.Count //Number of output features (classes)
                                            );
             ////////////////////////////////////////////////////////////////////////////
             //Reservoir config
@@ -177,7 +183,7 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
                 new ResCompConfig(reservoirCfg, taskConfig);
             ////////////////////////////////////////////////////////////////////////////
             //Deep test
-            return EasyML.Oper.DeepTestSingleTask(resCompCfg, trainingData, testingData, DeepTestRounds);
+            return EasyML.Oper.DeepTest(resCompCfg, trainingData, testingData, DeepTestRounds);
         }
 
         private static ModelErrStat ExecuteResCompLargeKitchenAppliancesDeepTest()
@@ -193,12 +199,16 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
             };
             //Training and Testing data
             SampleDataset trainingData =
-                EasyML.Oper.LoadSampleData(outputFeatureNames.Count, ////Number of output classes
-                                           "./Data/LargeKitchenAppliances_train.csv"//Training csv data file name
+                EasyML.Oper.LoadSampleData("./Data/LargeKitchenAppliances_train.csv", //Training csv data file name
+                                           SampleDataset.CsvOutputFeaturesPosition.Last,
+                                           SampleDataset.CsvOutputFeaturesPresence.ClassesAsNumberFrom1,
+                                           outputFeatureNames.Count //Number of output classes
                                            );
             SampleDataset testingData =
-                EasyML.Oper.LoadSampleData(outputFeatureNames.Count, ////Number of output classes
-                                           "./Data/LargeKitchenAppliances_test.csv"//Testing csv data file name
+                EasyML.Oper.LoadSampleData("./Data/LargeKitchenAppliances_test.csv", //Testing csv data file name
+                                           SampleDataset.CsvOutputFeaturesPosition.Last,
+                                           SampleDataset.CsvOutputFeaturesPresence.ClassesAsNumberFrom1,
+                                           outputFeatureNames.Count //Number of output classes
                                            );
             ////////////////////////////////////////////////////////////////////////////
             //Reservoir config
@@ -244,7 +254,7 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
                 new ResCompConfig(reservoirCfg, taskConfig);
             ////////////////////////////////////////////////////////////////////////////
             //Deep test
-            return EasyML.Oper.DeepTestSingleTask(resCompCfg, trainingData, testingData, DeepTestRounds);
+            return EasyML.Oper.DeepTest(resCompCfg, trainingData, testingData, DeepTestRounds);
         }
 
         private static ModelErrStat ExecuteResCompCricketXDeepTest()
@@ -268,12 +278,16 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
             };
             //Training and Testing data
             SampleDataset trainingData =
-                EasyML.Oper.LoadSampleData(outputFeatureNames.Count, ////Number of output classes
-                                           "./Data/CricketX_train.csv"//Training csv data file name
+                EasyML.Oper.LoadSampleData("./Data/CricketX_train.csv", //Training csv data file name
+                                           SampleDataset.CsvOutputFeaturesPosition.Last,
+                                           SampleDataset.CsvOutputFeaturesPresence.ClassesAsNumberFrom1,
+                                           outputFeatureNames.Count //Number of output classes
                                            );
             SampleDataset testingData =
-                EasyML.Oper.LoadSampleData(outputFeatureNames.Count, ////Number of output classes
-                                           "./Data/CricketX_test.csv"//Testing csv data file name
+                EasyML.Oper.LoadSampleData("./Data/CricketX_test.csv", //Testing csv data file name
+                                           SampleDataset.CsvOutputFeaturesPosition.Last,
+                                           SampleDataset.CsvOutputFeaturesPresence.ClassesAsNumberFrom1,
+                                           outputFeatureNames.Count //Number of output classes
                                            );
             ////////////////////////////////////////////////////////////////////////////
             ////////////////////////////////////////////////////////////////////////////
@@ -320,7 +334,7 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
                 new ResCompConfig(reservoirCfg, taskConfig);
             ////////////////////////////////////////////////////////////////////////////
             //Deep test
-            return EasyML.Oper.DeepTestSingleTask(resCompCfg, trainingData, testingData, DeepTestRounds);
+            return EasyML.Oper.DeepTest(resCompCfg, trainingData, testingData, DeepTestRounds);
         }
 
         private static ModelErrStat ExecuteResCompWormsDeepTest()
@@ -337,12 +351,16 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
             };
             //Training and Testing data
             SampleDataset trainingData =
-                EasyML.Oper.LoadSampleData(outputFeatureNames.Count, ////Number of output classes
-                                           "./Data/Worms_train.csv"//Training csv data file name
+                EasyML.Oper.LoadSampleData("./Data/Worms_train.csv", //Training csv data file name
+                                           SampleDataset.CsvOutputFeaturesPosition.Last,
+                                           SampleDataset.CsvOutputFeaturesPresence.ClassesAsNumberFrom1,
+                                           outputFeatureNames.Count //Number of output classes
                                            );
             SampleDataset testingData =
-                EasyML.Oper.LoadSampleData(outputFeatureNames.Count, ////Number of output classes
-                                           "./Data/Worms_test.csv"//Testing csv data file name
+                EasyML.Oper.LoadSampleData("./Data/Worms_test.csv", //Testing csv data file name
+                                           SampleDataset.CsvOutputFeaturesPosition.Last,
+                                           SampleDataset.CsvOutputFeaturesPresence.ClassesAsNumberFrom1,
+                                           outputFeatureNames.Count //Number of output classes
                                            );
             ////////////////////////////////////////////////////////////////////////////
             ////////////////////////////////////////////////////////////////////////////
@@ -389,7 +407,7 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
                 new ResCompConfig(reservoirCfg, taskConfig);
             ////////////////////////////////////////////////////////////////////////////
             //Deep test
-            return EasyML.Oper.DeepTestSingleTask(resCompCfg, trainingData, testingData, DeepTestRounds);
+            return EasyML.Oper.DeepTest(resCompCfg, trainingData, testingData, DeepTestRounds);
         }
 
         private static ModelErrStat ExecuteResCompBeetleFlyDeepTest()
@@ -402,12 +420,16 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
             };
             //Training and Testing data
             SampleDataset trainingData =
-                EasyML.Oper.LoadSampleData(outputFeatureNames.Count, ////Number of output binary features
-                                           "./Data/BeetleFly_train.csv"//Training csv data file name
+                EasyML.Oper.LoadSampleData("./Data/BeetleFly_train.csv", //Training csv data file name
+                                           SampleDataset.CsvOutputFeaturesPosition.Last,
+                                           SampleDataset.CsvOutputFeaturesPresence.Separately,
+                                           outputFeatureNames.Count //Number of output features
                                            );
             SampleDataset testingData =
-                EasyML.Oper.LoadSampleData(outputFeatureNames.Count, ////Number of output binary features
-                                           "./Data/BeetleFly_test.csv"//Testing csv data file name
+                EasyML.Oper.LoadSampleData("./Data/BeetleFly_test.csv", //Testing csv data file name
+                                           SampleDataset.CsvOutputFeaturesPosition.Last,
+                                           SampleDataset.CsvOutputFeaturesPresence.Separately,
+                                           outputFeatureNames.Count //Number of output features
                                            );
             ////////////////////////////////////////////////////////////////////////////
             //Reservoir config
@@ -455,7 +477,7 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
                 new ResCompConfig(reservoirCfg, taskConfig);
             ////////////////////////////////////////////////////////////////////////////
             //Deep test
-            return EasyML.Oper.DeepTestSingleTask(resCompCfg, trainingData, testingData, DeepTestRounds);
+            return EasyML.Oper.DeepTest(resCompCfg, trainingData, testingData, DeepTestRounds);
         }
 
         private static ModelErrStat ExecuteResCompEarthquakesDeepTest()
@@ -468,12 +490,16 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
             };
             //Training and Testing data
             SampleDataset trainingData =
-                EasyML.Oper.LoadSampleData(outputFeatureNames.Count, ////Number of output binary features
-                                           "./Data/Earthquakes_train.csv"//Training csv data file name
+                EasyML.Oper.LoadSampleData("./Data/Earthquakes_train.csv", //Training csv data file name
+                                           SampleDataset.CsvOutputFeaturesPosition.Last,
+                                           SampleDataset.CsvOutputFeaturesPresence.Separately,
+                                           outputFeatureNames.Count //Number of output features
                                            );
             SampleDataset testingData =
-                EasyML.Oper.LoadSampleData(outputFeatureNames.Count, ////Number of output binary features
-                                           "./Data/Earthquakes_test.csv"//Testing csv data file name
+                EasyML.Oper.LoadSampleData("./Data/Earthquakes_test.csv", //Testing csv data file name
+                                           SampleDataset.CsvOutputFeaturesPosition.Last,
+                                           SampleDataset.CsvOutputFeaturesPresence.Separately,
+                                           outputFeatureNames.Count //Number of output features
                                            );
             ////////////////////////////////////////////////////////////////////////////
             //Reservoir config
@@ -524,7 +550,7 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
                 new ResCompConfig(reservoirCfg, taskConfig);
             ////////////////////////////////////////////////////////////////////////////
             //Deep test
-            return EasyML.Oper.DeepTestSingleTask(resCompCfg, trainingData, testingData, DeepTestRounds);
+            return EasyML.Oper.DeepTest(resCompCfg, trainingData, testingData, DeepTestRounds);
         }
 
 

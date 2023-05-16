@@ -10,6 +10,21 @@ Taken together the data is a multivariate time series classification problem, bu
 current format cannot be used as such Originally used in Ko et al. "Online Context Recognition in Multisensor Systems
 using Dynamic Time Warping"
 
+Classes at the end of datarow as number 1-12:
+    1: Cancel Call
+    2: Dead Ball
+    3: Four
+    4: Last Hour
+    5: Leg Bye
+    6: No Ball
+    7: One Short
+    8: Out
+    9: Penalty Runs
+    10: Six
+    11: TV Replay
+    12: Wide
+
+
 Source:
 https://timeseriesclassification.com/description.php?Dataset=CricketX
 UEA & UCR Time Series Classification Repository

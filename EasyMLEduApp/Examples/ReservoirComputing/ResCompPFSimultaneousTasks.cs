@@ -45,12 +45,16 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
             //Training and Testing data
             int totalNumOfOutputFeatures = outputClassLabels.Count + outputRegrFeatureNames.Count + outputBinFeatureNames.Count;
             SampleDataset trainingData =
-                EasyML.Oper.LoadSampleData(totalNumOfOutputFeatures, ////Total number of output features
-                                           "./Data/MultiTaskPPOutlineAgeGroup_train.csv"//Training csv data file name
+                EasyML.Oper.LoadSampleData("./Data/MultiTaskPPOutlineAgeGroup_train.csv", //Training csv data file name
+                                           SampleDataset.CsvOutputFeaturesPosition.Last,
+                                           SampleDataset.CsvOutputFeaturesPresence.Separately,
+                                           totalNumOfOutputFeatures //Total number of output features
                                            );
             SampleDataset testingData =
-                EasyML.Oper.LoadSampleData(totalNumOfOutputFeatures, ////Total number of output features
-                                           "./Data/MultiTaskPPOutlineAgeGroup_test.csv"//Testing csv data file name
+                EasyML.Oper.LoadSampleData("./Data/MultiTaskPPOutlineAgeGroup_test.csv", //Testing csv data file name
+                                           SampleDataset.CsvOutputFeaturesPosition.Last,
+                                           SampleDataset.CsvOutputFeaturesPresence.Separately,
+                                           totalNumOfOutputFeatures //Total number of output features
                                            );
             ////////////////////////////////////////////////////////////////////////////
             //Reservoir config

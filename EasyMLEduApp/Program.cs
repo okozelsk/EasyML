@@ -97,6 +97,7 @@ namespace EasyMLDemoApp
                 Console.WriteLine("  2. NetworkModel, CrossValModel, StackingModel and CompositeModel competition in the Categorical tasks.");
                 Console.WriteLine("  3. NetworkModel, CrossValModel, StackingModel and CompositeModel competition in the Binary tasks (plus example of serialization/deserialization).");
                 Console.WriteLine("  4. NetworkModel, CrossValModel, StackingModel and CompositeModel competition in the Regression tasks.");
+                Console.WriteLine("  5. Models deep tests.");
                 Console.WriteLine("  X. Back to Root menu");
                 Console.WriteLine();
                 Console.WriteLine("  Press the digit or letter of your choice...");
@@ -141,6 +142,17 @@ namespace EasyMLDemoApp
                         try
                         {
                             MLPModelsRegressionCompetition.Run();
+                        }
+                        catch (Exception e)
+                        {
+                            ReportException(e);
+                        }
+                        break;
+
+                    case "5":
+                        try
+                        {
+                            MLPModelsDeepTests.Run();
                         }
                         catch (Exception e)
                         {
