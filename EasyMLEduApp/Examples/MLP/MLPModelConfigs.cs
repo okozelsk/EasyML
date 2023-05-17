@@ -1,7 +1,7 @@
 ﻿using EasyMLCore.MLP;
 using EasyMLCore;
 
-namespace EasyMLDemoApp.Examples.MLP
+namespace EasyMLEduApp.Examples.MLP
 {
     /// <summary>
     /// Shows how to create configurations of the NetworkModel, CrossValModel, StackingModel and CompositeModel.

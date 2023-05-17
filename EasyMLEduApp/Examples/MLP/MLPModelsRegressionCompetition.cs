@@ -4,7 +4,7 @@ using EasyMLCore.MLP;
 using System;
 using System.Collections.Generic;
 
-namespace EasyMLDemoApp.Examples.MLP
+namespace EasyMLEduApp.Examples.MLP
 {
     /// <summary>
     /// Example code demonstrates use of

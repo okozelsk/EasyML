@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace EasyMLDemoApp.Examples.MLP
+namespace EasyMLEduApp.Examples.MLP
 {
     /// <summary>
     /// Example code performs deep tests of default MLP models on referential datasets.

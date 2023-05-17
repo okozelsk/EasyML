@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Xml.Linq;
 
-namespace EasyMLDemoApp.Examples.MLP
+namespace EasyMLEduApp.Examples.MLP
 {
     /// <summary>
     /// This code example shows how to simply build and test MLP NetworkModel

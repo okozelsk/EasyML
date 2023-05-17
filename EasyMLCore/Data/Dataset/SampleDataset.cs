@@ -493,7 +493,7 @@ namespace EasyMLCore.Data
             }
             //Save the data
             trainingData.SaveAsCsv(outputTrainDataFile, CsvOutputFeaturesPosition.Last, CsvOutputFeaturesPresence.Separately, delimiter);
-            testingData.SaveAsCsv(outputTrainDataFile, CsvOutputFeaturesPosition.Last, CsvOutputFeaturesPresence.Separately, delimiter);
+            testingData.SaveAsCsv(outputTestDataFile, CsvOutputFeaturesPosition.Last, CsvOutputFeaturesPresence.Separately, delimiter);
             return;
         }
 

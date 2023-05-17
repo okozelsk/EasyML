@@ -2,11 +2,11 @@
 using EasyMLCore.Data;
 using EasyMLCore.MLP;
 using EasyMLCore.TimeSeries;
-using EasyMLDemoApp.Examples.MLP;
+using EasyMLEduApp.Examples.MLP;
 using System;
 using System.Collections.Generic;
 
-namespace EasyMLDemoApp.Examples.ReservoirComputing
+namespace EasyMLEduApp.Examples.ReservoirComputing
 {
     /// <summary>
     /// Example code demonstrates use of the ResComp component for simultaneous

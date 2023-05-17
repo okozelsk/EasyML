@@ -1,8 +1,8 @@
-﻿using EasyMLDemoApp.Examples.MLP;
-using EasyMLDemoApp.Examples.ReservoirComputing;
+﻿using EasyMLEduApp.Examples.MLP;
+using EasyMLEduApp.Examples.ReservoirComputing;
 using System;
 
-namespace EasyMLDemoApp
+namespace EasyMLEduApp
 {
     class Program
     {
@@ -52,7 +52,7 @@ namespace EasyMLDemoApp
                     case "P":
                         try
                         {
-                            (new Playground()).Run();
+                            Playground.Run();
                         }
                         catch (Exception e)
                         {

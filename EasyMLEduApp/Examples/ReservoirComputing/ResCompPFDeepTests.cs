@@ -2,12 +2,12 @@
 using EasyMLCore.Data;
 using EasyMLCore.MLP;
 using EasyMLCore.TimeSeries;
-using EasyMLDemoApp.Examples.MLP;
+using EasyMLEduApp.Examples.MLP;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace EasyMLDemoApp.Examples.ReservoirComputing
+namespace EasyMLEduApp.Examples.ReservoirComputing
 {
     /// <summary>
     /// Example code performs deep tests of Reservoir Computer on referential datasets.

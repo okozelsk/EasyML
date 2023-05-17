@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace EasyMLDemoApp.Examples.MLP
+namespace EasyMLEduApp.Examples.MLP
 {
     /// <summary>
     /// Example code demonstrates use of NetworkModel, CrossValModel, StackingModel
