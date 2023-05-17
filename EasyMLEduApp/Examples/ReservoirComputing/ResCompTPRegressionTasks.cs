@@ -166,7 +166,7 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
                                   out ReservoirStat resStat //Stat data of the reservoir
                                   );
             //Store RC at this point for later use
-            resComp.Serialize("./Temp/MackeyGlassSavedRC.dat");
+            resComp.Serialize("./Temp/MackeyGlassSavedRC.bin");
             //Classical testing
             List<ModelErrStat> errStats =
                 EasyML.Oper.Test(resComp, //Our built reservoir computer
@@ -175,7 +175,7 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
                                  );
 
             //Show computed and ideal values
-            EasyML.Oper.Log.Write($"Here are computed MackeyGlass values using input from testing samples...");
+            EasyML.Oper.Log.Write($"Here are computed MackeyGlass values using continuous input from testing samples...");
             for (int i = 0; i < resultDataset.ComputedVectorCollection.Count; i++)
             {
                 //Report ideal value from testing data
@@ -192,7 +192,7 @@ namespace EasyMLDemoApp.Examples.ReservoirComputing
             EasyML.Oper.Log.Write($"And now let's try to compute testing samples without the feed of samples.");
             EasyML.Oper.Log.Write($"Instead of samples, we use directly RC's computed output as the next input (aka feedback).");
             //Restore RC back at the point after training
-            resComp = (ResComp)SerializableObject.Deserialize("./Temp/MackeyGlassSavedRC.dat");
+            resComp = (ResComp)SerializableObject.Deserialize("./Temp/MackeyGlassSavedRC.bin");
             //The first input is the last output vector from training samples
             double[] inputVector = trainingData.SampleCollection[trainingData.Count - 1].OutputVector;
             for(int i = 0; i < testingData.Count; i++)
