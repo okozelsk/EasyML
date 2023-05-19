@@ -14,16 +14,17 @@ namespace EasyMLCore.MLP
     /// <summary>
     /// Implements a model of the meta-learner, which is trained on outputs of NetworkModel(s)
     /// defined in a stack.
-    /// Model output is an output of trained meta-learner. Meta-Learner can be any kind of model.
+    /// Model output is an output of trained meta-learner. Meta-Learner can be any kind of model except HSModel.
+    /// This model serves as a part of BHS model and is not intended to be used for the final predictions.
     /// </summary>
     [Serializable]
-    public class StackingModel : ModelBase
+    public class HSModel : ModelBase
     {
         //Constants
         /// <summary>
         /// Short identifier in context path.
         /// </summary>
-        public const string ContextPathID = "Stacking";
+        public const string ContextPathID = "HSM";
 
         //Attributes
         private readonly List<NetworkModel> _stack;
@@ -39,12 +40,12 @@ namespace EasyMLCore.MLP
         /// <param name="taskType">Output task.</param>
         /// <param name="outputFeatureNames">Names of output features.</param>
         /// <param name="routeInput">Specifies whether to provide original input to meta-learner.</param>
-        private StackingModel(StackingModelConfig modelConfig,
-                              string name,
-                              OutputTaskType taskType,
-                              IEnumerable<string> outputFeatureNames,
-                              bool routeInput
-                              )
+        private HSModel(HSModelConfig modelConfig,
+                        string name,
+                        OutputTaskType taskType,
+                        IEnumerable<string> outputFeatureNames,
+                        bool routeInput
+                        )
             : base(modelConfig, name, taskType, outputFeatureNames)
         {
             _stack = new List<NetworkModel>();
@@ -57,7 +58,7 @@ namespace EasyMLCore.MLP
         /// Deep copy constructor.
         /// </summary>
         /// <param name="source">The source instance.</param>
-        public StackingModel(StackingModel source)
+        public HSModel(HSModel source)
             : base(source)
         {
             _stack = new List<NetworkModel>(source._stack.Count);
@@ -177,143 +178,105 @@ namespace EasyMLCore.MLP
         /// <inheritdoc/>
         public override ModelBase DeepClone()
         {
-            return new StackingModel(this);
+            return new HSModel(this);
         }
 
         //Static methods
         /// <summary>
-        /// Builds a StackingModel.
+        /// Builds a HSModel.
         /// </summary>
         /// <param name="cfg">Model configuration.</param>
         /// <param name="name">Model name.</param>
         /// <param name="taskType">Output task type.</param>
         /// <param name="outputFeatureNames">Names of output features.</param>
         /// <param name="trainingData">Training samples.</param>
+        /// <param name="validationData">Validation samples.</param>
         /// <param name="progressInfoSubscriber">Subscriber will receive notification event about progress. (Parameter can be null).</param>
         /// <returns>Built model.</returns>
-        public static StackingModel Build(IModelConfig cfg,
-                                          string name,
-                                          OutputTaskType taskType,
-                                          List<string> outputFeatureNames,
-                                          SampleDataset trainingData,
-                                          ModelBuildProgressChangedHandler progressInfoSubscriber = null
-                                          )
+        public static HSModel Build(IModelConfig cfg,
+                                    string name,
+                                    OutputTaskType taskType,
+                                    List<string> outputFeatureNames,
+                                    SampleDataset trainingData,
+                                    SampleDataset validationData,
+                                    ModelBuildProgressChangedHandler progressInfoSubscriber = null
+                                    )
         {
             //Checks
             if (cfg == null)
             {
                 throw new ArgumentNullException(nameof(cfg));
             }
-            if (cfg.GetType() != typeof(StackingModelConfig))
+            if (cfg.GetType() != typeof(HSModelConfig))
             {
-                throw new ArgumentException($"Wrong type of configuration. Expected {typeof(StackingModelConfig)} but received {cfg.GetType()}.", nameof(cfg));
+                throw new ArgumentException($"Wrong type of configuration. Expected {typeof(HSModelConfig)} but received {cfg.GetType()}.", nameof(cfg));
             }
             //Model instance
-            StackingModelConfig modelConfig = (StackingModelConfig)cfg;
-            StackingModel model = new StackingModel(modelConfig, (name + StackingModel.ContextPathID), taskType, outputFeatureNames, modelConfig.RouteInput);
+            HSModelConfig modelConfig = (HSModelConfig)cfg;
+            HSModel model = new HSModel(modelConfig, (name + HSModel.ContextPathID), taskType, outputFeatureNames, modelConfig.RouteInput);
             //Copy the data locally
-            SampleDataset localDataset = new SampleDataset(trainingData.Count);
-            for(int sampleID = 0; sampleID < trainingData.Count; sampleID ++)
+            SampleDataset localTrainDataset = new SampleDataset(trainingData.Count);
+            for (int sampleID = 0; sampleID < trainingData.Count; sampleID++)
             {
-                localDataset.AddSample(sampleID, trainingData.SampleCollection[sampleID].InputVector, trainingData.SampleCollection[sampleID].OutputVector);
+                localTrainDataset.AddSample(sampleID, trainingData.SampleCollection[sampleID].InputVector, trainingData.SampleCollection[sampleID].OutputVector);
+            }
+            SampleDataset localValDataset = new SampleDataset(validationData.Count);
+            for (int sampleID = 0; sampleID < validationData.Count; sampleID++)
+            {
+                localValDataset.AddSample(sampleID, validationData.SampleCollection[sampleID].InputVector, validationData.SampleCollection[sampleID].OutputVector);
             }
             //Shuffle local data
-            localDataset.Shuffle(new Random(GetRandomSeed()));
-            //Folderize local data
-            List<SampleDataset> foldCollection = localDataset.Folderize(modelConfig.FoldDataRatio, taskType);
-            //Weak networks
-            //Array of weak networks
-            NetworkModel[][] weakNetworks = new NetworkModel[modelConfig.StackCfg.NetworkModelCfgCollection.Count][];
-            for (int i = 0; i < modelConfig.StackCfg.NetworkModelCfgCollection.Count; i++)
-            {
-                weakNetworks[i] = new NetworkModel[foldCollection.Count];
-            }
-            //Weak networks validation outputs storage
-            double[][][][] weakNetsOutputs = new double[foldCollection.Count][][][];
-            for (int i = 0; i < foldCollection.Count; i++)
-            {
-                weakNetsOutputs[i] = new double[modelConfig.StackCfg.NetworkModelCfgCollection.Count][][];
-            }
-            //Build stack's weak networks and prepare input data for meta model
-            for (int holdOutFoldIdx = 0; holdOutFoldIdx < foldCollection.Count; holdOutFoldIdx++)
-            {
-                string holdOutFoldNumStr = "F" + (holdOutFoldIdx + 1).ToLeftPaddedString(foldCollection.Count, '0');
-                //Prepare training data
-                SampleDataset weakNetTrainingData = new SampleDataset(localDataset.Count);
-                for (int foldIdx = 0; foldIdx < foldCollection.Count; foldIdx++)
-                {
-                    if (foldIdx != holdOutFoldIdx)
-                    {
-                        weakNetTrainingData.Add(foldCollection[foldIdx]);
-                    }
-                }
-                //Build weak networks on training data and prepare hold-out fold data as an input for meta model
-                for (int stackNetIdx = 0; stackNetIdx < modelConfig.StackCfg.NetworkModelCfgCollection.Count; stackNetIdx++)
-                {
-                    string netNumStr = (stackNetIdx + 1).ToLeftPaddedString(modelConfig.StackCfg.NetworkModelCfgCollection.Count, '0');
-                    //Build weak network
-                    NetworkModel weakNetwork =
-                        NetworkModel.Build(modelConfig.StackCfg.NetworkModelCfgCollection[stackNetIdx],
-                                           $"{model.Name}.{holdOutFoldNumStr}-Weak{netNumStr}-",
-                                           taskType,
-                                           outputFeatureNames,
-                                           weakNetTrainingData,
-                                           foldCollection[holdOutFoldIdx],
-                                           progressInfoSubscriber
-                                           );
-                    weakNetworks[stackNetIdx][holdOutFoldIdx] = weakNetwork;
-                    weakNetsOutputs[holdOutFoldIdx][stackNetIdx] =
-                        weakNetwork.ComputeSampleDataset(foldCollection[holdOutFoldIdx], out _);
-                }//stackNetIdx
-            }//holdOutFoldIdx
-            //Build stack's strong networks on whole data and add them into the model's stack
-            NetworkModel[] strongNetworks = new NetworkModel[modelConfig.StackCfg.NetworkModelCfgCollection.Count];
+            localTrainDataset.Shuffle(new Random(GetRandomSeed()));
+            localValDataset.Shuffle(new Random(GetRandomSeed()));
+            //Build stack's networks and prepare input data for meta model
+            double[][][] weakNetsOutputs = new double[modelConfig.StackCfg.NetworkModelCfgCollection.Count][][];
             for (int stackNetIdx = 0; stackNetIdx < modelConfig.StackCfg.NetworkModelCfgCollection.Count; stackNetIdx++)
             {
                 string netNumStr = (stackNetIdx + 1).ToLeftPaddedString(modelConfig.StackCfg.NetworkModelCfgCollection.Count, '0');
-                //Build strong network
-                NetworkModel strongNetwork =
+                //Build network
+                NetworkModel stackNetwork =
                     NetworkModel.Build(modelConfig.StackCfg.NetworkModelCfgCollection[stackNetIdx],
-                                       $"{model.Name}.Strong{netNumStr}-",
-                                       taskType,
-                                       outputFeatureNames,
-                                       localDataset,
-                                       null,
-                                       progressInfoSubscriber
-                                       );
-                strongNetworks[stackNetIdx] = strongNetwork;
-                //Add strong network into the model's stack
-                model.AddStackMember(strongNetwork);
+                                        $"{model.Name}.StackNet{netNumStr}-",
+                                        taskType,
+                                        outputFeatureNames,
+                                        localTrainDataset,
+                                        localValDataset,
+                                        progressInfoSubscriber
+                                        );
+                weakNetsOutputs[stackNetIdx] =
+                    stackNetwork.ComputeSampleDataset(localValDataset, out _);
+                model.AddStackMember(stackNetwork);
             }//stackNetIdx
             //Prepare data for meta-learner model
-            Sample[] metaLearnerTrainingDataArray = new Sample[localDataset.Count];
-            const double WeakMixWeight = 1d;
-            const double StrongMixWeight = 0d;
-            Parallel.For(0, foldCollection.Count, foldIdx =>
+            SampleDataset metaLearnerTrainingData = new SampleDataset(localValDataset.Count);
+            for (int sampleIdx = 0; sampleIdx < localValDataset.Count; sampleIdx++)
             {
-                for (int sampleIdx = 0; sampleIdx < foldCollection[foldIdx].Count; sampleIdx++)
+                double[][] stackNetsOutputs = new double[modelConfig.StackCfg.NetworkModelCfgCollection.Count][];
+                for (int netIdx = 0; netIdx < modelConfig.StackCfg.NetworkModelCfgCollection.Count; netIdx++)
                 {
-                    Sample sample = foldCollection[foldIdx].SampleCollection[sampleIdx];
-                    double[][] stackNetsOutputs = new double[modelConfig.StackCfg.NetworkModelCfgCollection.Count][];
-                    for (int netIdx = 0; netIdx < modelConfig.StackCfg.NetworkModelCfgCollection.Count; netIdx++)
-                    {
-                        stackNetsOutputs[netIdx] = (double[])weakNetsOutputs[foldIdx][netIdx][sampleIdx].Clone();
-                        //Mix weak and strong
-                        double[] strongNetOutput = strongNetworks[netIdx].Compute(sample.InputVector);
-                        for (int i = 0; i < stackNetsOutputs[netIdx].Length; i++)
-                        {
-                            stackNetsOutputs[netIdx][i] = (WeakMixWeight * stackNetsOutputs[netIdx][i] + StrongMixWeight * strongNetOutput[i]) / (WeakMixWeight + StrongMixWeight);
-                        }
-                    }//netIdx
-                    metaLearnerTrainingDataArray[sample.ID] =
-                        new Sample(sample.ID,
-                                   modelConfig.RouteInput ? (double[])sample.InputVector.Concat(stackNetsOutputs.Flattenize()) : stackNetsOutputs.Flattenize(),
-                                   sample.OutputVector
-                                   );
-                }//sampleIdx
-            });//foldIdx
-            SampleDataset metaLearnerTrainingData = new SampleDataset(metaLearnerTrainingDataArray);
-            //Build a meta-learner
+                    stackNetsOutputs[netIdx] = weakNetsOutputs[netIdx][sampleIdx];
+                }//netIdx
+                Sample sample = localValDataset.SampleCollection[sampleIdx];
+                metaLearnerTrainingData.AddSample(sample.ID,
+                                                  modelConfig.RouteInput ? (double[])sample.InputVector.Concat(stackNetsOutputs.Flattenize()) : stackNetsOutputs.Flattenize(),
+                                                  sample.OutputVector
+                                                  );
+            }//sampleIdx
+            SampleDataset metaLearnerValidationData = new SampleDataset(localTrainDataset.Count);
+            for (int sampleIdx = 0; sampleIdx < localTrainDataset.Count; sampleIdx++)
+            {
+                double[][] stackNetsOutputs = new double[modelConfig.StackCfg.NetworkModelCfgCollection.Count][];
+                for (int netIdx = 0; netIdx < modelConfig.StackCfg.NetworkModelCfgCollection.Count; netIdx++)
+                {
+                    stackNetsOutputs[netIdx] = model._stack[netIdx].Compute(localTrainDataset.SampleCollection[sampleIdx].InputVector);
+                }//netIdx
+                Sample sample = localTrainDataset.SampleCollection[sampleIdx];
+                metaLearnerValidationData.AddSample(sample.ID,
+                                                    modelConfig.RouteInput ? (double[])sample.InputVector.Concat(stackNetsOutputs.Flattenize()) : stackNetsOutputs.Flattenize(),
+                                                    sample.OutputVector
+                                                    );
+            }//sampleIdx
+            //Build the meta-learner
             Type metaLearnerCfgType = modelConfig.MetaLearnerCfg.GetType();
             string metaLearnerModelStr = $"{model.Name}.Meta-Learner-";
             ModelBase metaLearnerModel = null;
@@ -324,7 +287,7 @@ namespace EasyMLCore.MLP
                                                       taskType,
                                                       outputFeatureNames,
                                                       metaLearnerTrainingData,
-                                                      null,
+                                                      metaLearnerValidationData,
                                                       progressInfoSubscriber
                                                       );
             }
@@ -374,7 +337,7 @@ namespace EasyMLCore.MLP
             return model;
         }
 
-        
-    }//StackingModel
+
+    }//HSModel
 
 }//Namespace

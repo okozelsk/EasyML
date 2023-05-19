@@ -173,7 +173,7 @@ namespace EasyMLCore.MLP
             }
             if (network.ValidationErrorStat != null)
             {
-                text.Append(", Test ");
+                text.Append(", Val ");
                 text.Append(((MultiplePrecisionErrStat)network.ValidationErrorStat.StatData).TotalPrecisionStat.RootMeanSquare.ToString("E3", CultureInfo.InvariantCulture));
                 if (network.TaskType == OutputTaskType.Binary)
                 {

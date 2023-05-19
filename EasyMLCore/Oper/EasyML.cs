@@ -9,6 +9,7 @@ using EasyMLCore.Extensions;
 using System.IO;
 using System.Diagnostics;
 using static EasyMLCore.Data.SampleDataset;
+using EasyMLCore.MLP.Model;
 
 namespace EasyMLCore
 {
@@ -425,6 +426,16 @@ namespace EasyMLCore
                                             verbose ? Handlers.OnModelBuildProgressChanged : null
                                             );
             }
+            else if (modelCfgType == typeof(BHSModelConfig))
+            {
+                model = BHSModel.Build(modelCfg,
+                                       modelNamePrefix,
+                                       taskType,
+                                       outputFeatureNames,
+                                       trainingData,
+                                       verbose ? Handlers.OnModelBuildProgressChanged : null
+                                       );
+            }
             else if (modelCfgType == typeof(CompositeModelConfig))
             {
                 model = CompositeModel.Build(modelCfg,
@@ -480,6 +491,33 @@ namespace EasyMLCore
                 Log.Write(string.Empty);
             }
             return errStat;
+        }
+
+        /// <summary>
+        /// Performs diagnostic test of a model and all its sub-models on given data.
+        /// </summary>
+        /// <param name="model">Model to be tested.</param>
+        /// <param name="testingData">Testing samples.</param>
+        /// <param name="verbose">Specifies whether to report progress.</param>
+        /// <param name="detail">Specifies whether to report max available detail.</param>
+        /// <returns>Diagnostics data of the model and all its sub-models.</returns>
+        public ModelDiagnosticData DiagnosticTest(ModelBase model,
+                                                  SampleDataset testingData,
+                                                  bool verbose = true,
+                                                  bool detail = false
+                                                  )
+        {
+            if (verbose)
+            {
+                Log.Write($"Diagnostic test of the model {model.Name} is running...");
+            }
+            ModelDiagnosticData diagnosticData = model.DiagnosticTest(testingData, verbose ? Handlers.OnModelTestProgressChanged : null);
+            if (verbose)
+            {
+                Log.Write(diagnosticData.GetInfoText(detail, 0));
+                Log.Write(string.Empty);
+            }
+            return diagnosticData;
         }
 
 

@@ -55,7 +55,7 @@ namespace EasyMLCore.TimeSeries
         public string GetInputsInfoText()
         {
             StringBuilder text = new StringBuilder();
-            text.Append($"Processed inputs {PreprocessedInputsTracker.Current.ToString(CultureInfo.InvariantCulture)}");
+            text.Append($"Preprocessed inputs {PreprocessedInputsTracker.Current.ToString(CultureInfo.InvariantCulture)}");
             text.Append($"/{PreprocessedInputsTracker.Target.ToString(CultureInfo.InvariantCulture)}");
             return text.ToString();
         }

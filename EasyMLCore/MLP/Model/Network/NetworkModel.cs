@@ -1,6 +1,7 @@
 ﻿using EasyMLCore.Data;
 using EasyMLCore.Extensions;
 using EasyMLCore.MathTools;
+using EasyMLCore.MLP.Model;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -333,6 +334,16 @@ namespace EasyMLCore.MLP
             return infoText;
         }
 
+        /// <inheritdoc/>
+        public override ModelDiagnosticData DiagnosticTest(SampleDataset testingData, ModelTestProgressChangedHandler progressInfoSubscriber = null)
+        {
+            ModelErrStat errStat = Test(testingData, out _, progressInfoSubscriber);
+            ModelDiagnosticData diagData = new ModelDiagnosticData(Name, errStat);
+            diagData.SetFinalized();
+            return diagData;
+        }
+
+        //Static methods
         /// <summary>
         /// Builds a NetworkModel.
         /// </summary>
@@ -362,9 +373,10 @@ namespace EasyMLCore.MLP
             {
                 throw new ArgumentException($"Wrong type of configuration. Expected {typeof(NetworkModelConfig)} but received {cfg.GetType()}.", nameof(cfg));
             }
+            BuildChangedEventDisp eventDisp = new BuildChangedEventDisp();
             if (progressInfoSubscriber != null)
             {
-                BuildProgressChanged += progressInfoSubscriber;
+                eventDisp.BuildProgressChanged += progressInfoSubscriber;
             }
             //Build
             try
@@ -469,7 +481,7 @@ namespace EasyMLCore.MLP
                                                    stopCurrAttempt
                                                    );
                     //Raise notification event
-                    InvokeBuildProgressChanged(progressInfo);
+                    eventDisp.InvokeBuildProgressChanged(progressInfo);
                     //Stop?
                     if (stopAllAttempts)
                     {
@@ -489,15 +501,33 @@ namespace EasyMLCore.MLP
             }
             finally
             {
-                //Unsubscibe from static event
+                //Unsubscibe from event
                 if (progressInfoSubscriber != null)
                 {
-                    BuildProgressChanged -= progressInfoSubscriber;
+                    eventDisp.BuildProgressChanged -= progressInfoSubscriber;
                 }
             }
         }
 
+        //Inner classes
+        internal class BuildChangedEventDisp
+        {
+            /// <summary>
+            /// This informative event occurs each time the progress of the build process takes a step forward.
+            /// </summary>
+            [field: NonSerialized]
+            internal event ModelBuildProgressChangedHandler BuildProgressChanged;
 
+            /// <summary>
+            /// Invokes BuildProgressChanged.
+            /// </summary>
+            /// <param name="progressInfo">Progress info.</param>
+            internal void InvokeBuildProgressChanged(ModelBuildProgressInfo progressInfo)
+            {
+                BuildProgressChanged?.Invoke(progressInfo);
+                return;
+            }
+        }//BuildChangedEventDisp
 
 
     }//NetworkModel

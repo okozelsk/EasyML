@@ -87,7 +87,7 @@ namespace EasyMLCore.TimeSeries
         /// This informative event occurs each time the progress of the reservoir's init process takes a step forward.
         /// </summary>
         [field: NonSerialized]
-        public event ReservoirInitProgressChangedHandler InitProgressChanged;
+        private event ReservoirInitProgressChangedHandler InitProgressChanged;
 
         //Attribute properties
         /// <summary>
@@ -122,7 +122,7 @@ namespace EasyMLCore.TimeSeries
         private readonly ReservoirNeuron[] _inputNeurons;
         private readonly ActivationBase _hiddenActivationFn;
         private readonly ReservoirNeuron[] _hiddenNeurons;
-        private readonly double[] _hiddenStimuli;
+        private readonly double[] _hiddenBiases;
         private readonly int _numOfOutputSections;
         private readonly int _predictorSectionFullLength;
         private readonly List<string> _outputSectionNames;
@@ -227,9 +227,9 @@ namespace EasyMLCore.TimeSeries
             {
                 hiddenNeuron.ScaleHiddenSynapsesWeight(_cfg.HiddenLayerCfg.SpectralRadius / eigenVal);
             }
-            //Setup hidden stimuli
-            _hiddenStimuli = new double[_hiddenNeurons.Length];
-            FillExtStimuli(0.1d, _hiddenStimuli);
+            //Setup biases
+            _hiddenBiases = new double[_hiddenNeurons.Length];
+            FillBias(0.1d, _hiddenBiases);
 
             //Input
             NumOfInputSynapses = 0;
@@ -317,13 +317,13 @@ namespace EasyMLCore.TimeSeries
 
         //Methods
         /// <summary>
-        /// Prepares ext stimuli for hidden neurons.
+        /// Prepares biases for hidden neurons.
         /// </summary>
         /// <param name="magnitude">Max strength in magnitude.</param>
-        /// <param name="stimuli">Array to be filled.</param>
-        private static void FillExtStimuli(double magnitude, double[] stimuli)
+        /// <param name="biases">Array to be filled.</param>
+        private static void FillBias(double magnitude, double[] biases)
         {
-            new Random(0).FillUniform(stimuli, -magnitude, +magnitude, false);
+            new Random(0).FillUniform(biases, -magnitude, +magnitude, false);
             return;
         }
 
@@ -443,7 +443,7 @@ namespace EasyMLCore.TimeSeries
                 {
                     for (int i = range.Item1; i < range.Item2; i++)
                     {
-                        _hiddenNeurons[i].CollectStimuli(_hiddenStimuli[_hiddenNeurons[i].Index]);
+                        _hiddenNeurons[i].CollectStimuli(_hiddenBiases[_hiddenNeurons[i].Index]);
                     }
                 });
             }
@@ -452,7 +452,7 @@ namespace EasyMLCore.TimeSeries
                 //Single thread version
                 foreach (ReservoirNeuron neuron in _hiddenNeurons)
                 {
-                    neuron.CollectStimuli(_hiddenStimuli[neuron.Index]);
+                    neuron.CollectStimuli(_hiddenBiases[neuron.Index]);
                 }
             }
             //Recomputations and stats
@@ -686,74 +686,84 @@ namespace EasyMLCore.TimeSeries
             {
                 InitProgressChanged += progressInfoSubscriber;
             }
-            if (_initialized)
+            try
             {
-                Reset();
-            }
-            //Convert data to input patterns
-            TimeSeriesPattern[] patterns = new TimeSeriesPattern[inputData.Count];
-            Parallel.ForEach(Partitioner.Create(0, inputData.Count), range =>
-            {
-                for (int i = range.Item1; i < range.Item2; i++)
+                if (_initialized)
                 {
-                    patterns[i] = new TimeSeriesPattern(inputData[i], _inputFilters.Length, _cfg.InputCfg.VarSchema);
+                    Reset();
                 }
-            });
-            //Setup filters of input variables
-            Parallel.ForEach(Partitioner.Create(0, _inputFilters.Length), range =>
-            {
-                foreach (TimeSeriesPattern pattern in patterns)
+                //Convert data to input patterns
+                TimeSeriesPattern[] patterns = new TimeSeriesPattern[inputData.Count];
+                Parallel.ForEach(Partitioner.Create(0, inputData.Count), range =>
                 {
-                    for (int varIdx = range.Item1; varIdx < range.Item2; varIdx++)
+                    for (int i = range.Item1; i < range.Item2; i++)
                     {
-                        double[] varData = pattern.VariablesDataCollection[varIdx];
-                        for(int i = 0; i < varData.Length; i++)
+                        patterns[i] = new TimeSeriesPattern(inputData[i], _inputFilters.Length, _cfg.InputCfg.VarSchema);
+                    }
+                });
+                //Setup filters of input variables
+                Parallel.ForEach(Partitioner.Create(0, _inputFilters.Length), range =>
+                {
+                    foreach (TimeSeriesPattern pattern in patterns)
+                    {
+                        for (int varIdx = range.Item1; varIdx < range.Item2; varIdx++)
                         {
-                            _inputFilters[varIdx].Update(varData[i]);
+                            double[] varData = pattern.VariablesDataCollection[varIdx];
+                            for (int i = 0; i < varData.Length; i++)
+                            {
+                                _inputFilters[varIdx].Update(varData[i]);
+                            }
                         }
                     }
+                });
+                //Preapare neurons stats
+                stat = null;
+                ReservoirNeuronStat[] neuronsStats = new ReservoirNeuronStat[_hiddenNeurons.Length];
+                for (int i = 0; i < _hiddenNeurons.Length; i++)
+                {
+                    neuronsStats[i] = new ReservoirNeuronStat();
                 }
-            });
-            //Preapare neurons stats
-            stat = null;
-            ReservoirNeuronStat[] neuronsStats = new ReservoirNeuronStat[_hiddenNeurons.Length];
-            for(int i = 0; i < _hiddenNeurons.Length; i++)
-            {
-                neuronsStats[i] = new ReservoirNeuronStat();
+                //Process flat input data [second patternization :-( ]
+                bulkResOutSectionsData = new List<List<Tuple<string, double[]>>>(inputData.Count);
+                List<double[]> flatOutputs = new List<double[]>(inputData.Count);
+                int numOfProcessedInputs = 0;
+                foreach (double[] input in inputData)
+                {
+                    bool theLast = (numOfProcessedInputs == inputData.Count - 1);
+                    if (_bootingCountdown == 0 && !_initialized)
+                    {
+                        _initialized = true;
+                    }
+                    double[] output = ComputeInternal(input, out List<Tuple<string, double[]>> outSectionsData, _initialized ? neuronsStats : null);
+                    if (output != null)
+                    {
+                        bulkResOutSectionsData.Add(outSectionsData);
+                        flatOutputs.Add(output);
+                    }
+                    if (theLast)
+                    {
+                        //Stat and output finalization
+                        stat = FinalizeOutput(neuronsStats, bulkResOutSectionsData);
+                    }
+                    //Progress
+                    ReservoirInitProgressInfo progressInfo =
+                        new ReservoirInitProgressInfo(++numOfProcessedInputs,
+                                                      inputData.Count,
+                                                      flatOutputs.Count,
+                                                      stat
+                                                      );
+                    //Raise notification event
+                    InitProgressChanged?.Invoke(progressInfo);
+                }
+                return flatOutputs;
             }
-            //Process flat input data [second patternization :-( ]
-            bulkResOutSectionsData = new List<List<Tuple<string, double[]>>>(inputData.Count);
-            List<double[]> flatOutputs = new List<double[]>(inputData.Count);
-            int numOfProcessedInputs = 0;
-            foreach (double[] input in inputData)
+            finally
             {
-                bool theLast = (numOfProcessedInputs == inputData.Count - 1);
-                if(_bootingCountdown == 0 && !_initialized)
+                if (progressInfoSubscriber != null)
                 {
-                    _initialized = true;
+                    InitProgressChanged -= progressInfoSubscriber;
                 }
-                double[] output = ComputeInternal(input, out List<Tuple<string, double[]>> outSectionsData, _initialized ? neuronsStats : null);
-                if (output != null)
-                {
-                    bulkResOutSectionsData.Add(outSectionsData);
-                    flatOutputs.Add(output);
-                }
-                if(theLast)
-                {
-                    //Stat and output finalization
-                    stat = FinalizeOutput(neuronsStats, bulkResOutSectionsData);
-                }
-                //Progress
-                ReservoirInitProgressInfo progressInfo =
-                    new ReservoirInitProgressInfo(++numOfProcessedInputs,
-                                                  inputData.Count,
-                                                  flatOutputs.Count,
-                                                  stat
-                                                  );
-                //Raise notification event
-                InitProgressChanged?.Invoke(progressInfo);
             }
-            return flatOutputs;
         }
 
         /// <summary>

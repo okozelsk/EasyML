@@ -93,10 +93,10 @@ namespace EasyMLEduApp
                 //Menu
                 Console.Clear();
                 Console.WriteLine("EasyMLCore.MLP components code examples:");
-                Console.WriteLine("  1. NetworkModel solves Boolean algebra.");
-                Console.WriteLine("  2. NetworkModel, CrossValModel, StackingModel and CompositeModel competition in the Categorical tasks.");
-                Console.WriteLine("  3. NetworkModel, CrossValModel, StackingModel and CompositeModel competition in the Binary tasks (plus example of serialization/deserialization).");
-                Console.WriteLine("  4. NetworkModel, CrossValModel, StackingModel and CompositeModel competition in the Regression tasks.");
+                Console.WriteLine("  1. Network model solves Boolean algebra.");
+                Console.WriteLine("  2. Network, CrossVal, BHS, Stacking and Composite models competition in the Categorical tasks (plus DiagnosticTest).");
+                Console.WriteLine("  3. Network, CrossVal, BHS, Stacking and Composite models competition in the Binary tasks (plus serialization/deserialization).");
+                Console.WriteLine("  4. Network, CrossVal, BHS, Stacking and Composite models competition in the Regression tasks.");
                 Console.WriteLine("  5. Models deep tests.");
                 Console.WriteLine("  X. Back to Root menu");
                 Console.WriteLine();

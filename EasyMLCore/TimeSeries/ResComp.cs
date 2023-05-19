@@ -39,14 +39,15 @@ namespace EasyMLCore.TimeSeries
         /// <summary>
         /// This informative event occurs each time the progress of the reservoir's build process takes a step forward.
         /// </summary>
-        public static event ResCompBuildProgressChangedHandler BuildProgressChanged;
+        [field: NonSerialized]
+        private event ResCompBuildProgressChangedHandler BuildProgressChanged;
 
         /// <summary>
         /// This informative event occurs each time the progress of the reservoir computer
         /// test process takes a step forward.
         /// </summary>
         [field: NonSerialized]
-        public event ResCompTestProgressChangedHandler TestProgressChanged;
+        private event ResCompTestProgressChangedHandler TestProgressChanged;
 
         //Attribute properties
         /// <summary>
@@ -103,7 +104,7 @@ namespace EasyMLCore.TimeSeries
         }
 
         //Methods
-        private static void OnReservoirInitProgressChanged(ReservoirInitProgressInfo progressInfo)
+        private void OnReservoirInitProgressChanged(ReservoirInitProgressInfo progressInfo)
         {
             progressInfo.ExtendContextPath(ContextPathID);
             ResCompBuildProgressInfo trainProgressInfo =
@@ -112,7 +113,7 @@ namespace EasyMLCore.TimeSeries
             return;
         }
 
-        private static void OnModelBuildProgressChanged(ModelBuildProgressInfo progressInfo)
+        private void OnModelBuildProgressChanged(ModelBuildProgressInfo progressInfo)
         {
             progressInfo.ExtendContextPath(ContextPathID);
             ResCompBuildProgressInfo trainingProgressInfo =
@@ -165,19 +166,19 @@ namespace EasyMLCore.TimeSeries
                                     ResCompBuildProgressChangedHandler progressInfoSubscriber = null
                                     )
         {
+            ResComp resComp = new ResComp(cfg);
             reservoirStat = null;
             if (progressInfoSubscriber != null)
             {
-                BuildProgressChanged += progressInfoSubscriber;
+                resComp.BuildProgressChanged += progressInfoSubscriber;
             }
             try
             {
-                ResComp resComp = new ResComp(cfg);
                 //Init reservoir and obtain inputs for build tasks' models
                 resComp.Res.Init((from sample in trainingData.SampleCollection select sample.InputVector).ToList(),
                                   out List<List<Tuple<string, double[]>>> bulkResOutSectionsData,
                                   out reservoirStat,
-                                  OnReservoirInitProgressChanged
+                                  resComp.OnReservoirInitProgressChanged
                                   );
                 //Not all input samples are available for tasks training
                 int trainingDataStartIdx = trainingData.Count - bulkResOutSectionsData.Count;
@@ -199,7 +200,7 @@ namespace EasyMLCore.TimeSeries
                                               );
                     }
                     //Build task
-                    resComp.Tasks.Add(ResCompTask.Build(cfg.TaskCfgCollection[taskIdx], taskDataset, OnModelBuildProgressChanged));
+                    resComp.Tasks.Add(ResCompTask.Build(cfg.TaskCfgCollection[taskIdx], taskDataset, resComp.OnModelBuildProgressChanged));
                     taskOutputFeaturesStartIdx += cfg.TaskCfgCollection[taskIdx].OutputFeaturesCfg.FeatureCfgCollection.Count;
                 }
                 return resComp;
@@ -208,7 +209,7 @@ namespace EasyMLCore.TimeSeries
             {
                 if(progressInfoSubscriber != null)
                 {
-                    BuildProgressChanged -= progressInfoSubscriber;
+                    resComp.BuildProgressChanged -= progressInfoSubscriber;
                 }
             }
         }
@@ -255,48 +256,58 @@ namespace EasyMLCore.TimeSeries
             {
                 TestProgressChanged += progressInfoSubscriber;
             }
-            //Prepare specific datasets for tasks
-            List<SampleDataset> taskTestDatasets = new List<SampleDataset>(_cfg.TaskCfgCollection.Count);
-            for (int taskIdx = 0; taskIdx < _cfg.TaskCfgCollection.Count; taskIdx++)
+            try
             {
-                taskTestDatasets.Add(new SampleDataset(testingData.Count));
-            }
-            int sampleIdx = 0;
-            foreach (Sample sample in testingData.SampleCollection)
-            {
-                double[] resFlatData = Res.Compute(sample.InputVector, out List<Tuple<string, double[]>> resOutSectionsData);
-                for(int taskIdx = 0; taskIdx < _cfg.TaskCfgCollection.Count; taskIdx++)
+                //Prepare specific datasets for tasks
+                List<SampleDataset> taskTestDatasets = new List<SampleDataset>(_cfg.TaskCfgCollection.Count);
+                for (int taskIdx = 0; taskIdx < _cfg.TaskCfgCollection.Count; taskIdx++)
                 {
-                    double[] taskInputVector = GetTaskInputVector(taskIdx, resOutSectionsData);
-                    double[] taskOutputVector = GetTaskOutputVector(taskIdx, sample.OutputVector);
-                    taskTestDatasets[taskIdx].AddSample(sample.ID, taskInputVector, taskOutputVector);
+                    taskTestDatasets.Add(new SampleDataset(testingData.Count));
                 }
-                ++sampleIdx;
-                ResCompTestProgressInfo pinfo = new ResCompTestProgressInfo(new ProgressTracker((uint)testingData.SampleCollection.Count, (uint)sampleIdx), null);
-                TestProgressChanged?.Invoke(pinfo);
-            }
-            List<ModelErrStat> taskErrStats = new List<ModelErrStat>(_cfg.TaskCfgCollection.Count);
-            List<ResultDataset> taskResultDatasets = new List<ResultDataset>(_cfg.TaskCfgCollection.Count);
-            for (int taskIdx = 0; taskIdx < _cfg.TaskCfgCollection.Count; taskIdx++)
-            {
-                taskErrStats.Add(Tasks[taskIdx].Test(taskTestDatasets[taskIdx], out ResultDataset taskResultDataset, OnModelTestProgressChanged));
-                taskResultDatasets.Add(taskResultDataset);
-            }
-            resultDataset = new ResultDataset(testingData.Count);
-            for(int i = 0; i < testingData.Count; i++)
-            {
-                List<double[]> tasksComputed = new List<double[]>(_cfg.TaskCfgCollection.Count);
-                for(int taskIdx = 0; taskIdx < _cfg.TaskCfgCollection.Count; taskIdx++)
+                int sampleIdx = 0;
+                foreach (Sample sample in testingData.SampleCollection)
                 {
-                    tasksComputed.Add(taskResultDatasets[taskIdx].ComputedVectorCollection[i]);
+                    double[] resFlatData = Res.Compute(sample.InputVector, out List<Tuple<string, double[]>> resOutSectionsData);
+                    for (int taskIdx = 0; taskIdx < _cfg.TaskCfgCollection.Count; taskIdx++)
+                    {
+                        double[] taskInputVector = GetTaskInputVector(taskIdx, resOutSectionsData);
+                        double[] taskOutputVector = GetTaskOutputVector(taskIdx, sample.OutputVector);
+                        taskTestDatasets[taskIdx].AddSample(sample.ID, taskInputVector, taskOutputVector);
+                    }
+                    ++sampleIdx;
+                    ResCompTestProgressInfo pinfo = new ResCompTestProgressInfo(new ProgressTracker((uint)testingData.SampleCollection.Count, (uint)sampleIdx), null);
+                    TestProgressChanged?.Invoke(pinfo);
                 }
-                double[] flatComputedVector = tasksComputed.Flattenize();
-                resultDataset.AddVectors(testingData.SampleCollection[i].InputVector,
-                                        flatComputedVector,
-                                        testingData.SampleCollection[i].OutputVector
-                                        );
+                List<ModelErrStat> taskErrStats = new List<ModelErrStat>(_cfg.TaskCfgCollection.Count);
+                List<ResultDataset> taskResultDatasets = new List<ResultDataset>(_cfg.TaskCfgCollection.Count);
+                for (int taskIdx = 0; taskIdx < _cfg.TaskCfgCollection.Count; taskIdx++)
+                {
+                    taskErrStats.Add(Tasks[taskIdx].Test(taskTestDatasets[taskIdx], out ResultDataset taskResultDataset, OnModelTestProgressChanged));
+                    taskResultDatasets.Add(taskResultDataset);
+                }
+                resultDataset = new ResultDataset(testingData.Count);
+                for (int i = 0; i < testingData.Count; i++)
+                {
+                    List<double[]> tasksComputed = new List<double[]>(_cfg.TaskCfgCollection.Count);
+                    for (int taskIdx = 0; taskIdx < _cfg.TaskCfgCollection.Count; taskIdx++)
+                    {
+                        tasksComputed.Add(taskResultDatasets[taskIdx].ComputedVectorCollection[i]);
+                    }
+                    double[] flatComputedVector = tasksComputed.Flattenize();
+                    resultDataset.AddVectors(testingData.SampleCollection[i].InputVector,
+                                            flatComputedVector,
+                                            testingData.SampleCollection[i].OutputVector
+                                            );
+                }
+                return taskErrStats;
             }
-            return taskErrStats;
+            finally
+            {
+                if (progressInfoSubscriber != null)
+                {
+                    TestProgressChanged -= progressInfoSubscriber;
+                }
+            }
         }
 
         /// <summary>

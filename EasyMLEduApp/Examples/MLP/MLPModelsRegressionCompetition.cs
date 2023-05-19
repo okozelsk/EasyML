@@ -8,8 +8,8 @@ namespace EasyMLEduApp.Examples.MLP
 {
     /// <summary>
     /// Example code demonstrates use of
-    /// Network, CrossVal, Stacking and Composite models
-    /// for Regression tasks (forecasting).
+    /// Network, CrossVal, BHS, Stacking and Composite models
+    /// to solve Regression tasks (forecasting).
     /// 
     /// See txt files related to csv files for more info.
     /// Example uses following csv datafiles from ./Data subfolder:
@@ -44,6 +44,7 @@ namespace EasyMLEduApp.Examples.MLP
             //Output feature names of TTOO Biosystems Share Prices regression task
             List<string> outputFeatureNames = new List<string>() { "High", "Low", "Adj Close" };
             //Training and Testing data
+            EasyML.Oper.Report("./Data/TTOO_patterns.txt");
             SampleDataset trainingData =
                 EasyML.Oper.LoadSampleData("./Data/TTOO_patterns_train.csv", //Training csv data file name
                                            SampleDataset.CsvOutputFeaturesPosition.Last,
@@ -60,9 +61,11 @@ namespace EasyMLEduApp.Examples.MLP
             List<IModelConfig> modelConfigCollection = new List<IModelConfig>()
             {
                 MLPModelConfigs.CreateNetworkModelConfig(ActivationFnID.ELU),
-                MLPModelConfigs.CreateCrossValModelConfig(0.25d),
-                MLPModelConfigs.CreateStackingModelConfig(0.25d),
-                MLPModelConfigs.CreateCompositeModelConfig(0.25d)
+                MLPModelConfigs.CreateRPropNetworkModelConfig(2, 2000, ActivationFnID.ELU),
+                MLPModelConfigs.CreateRPropCrossValModelConfig(0.25d, 2, 2000),
+                MLPModelConfigs.CreateBHSModelConfig(),
+                MLPModelConfigs.CreateRPropStackingModelConfig(0.25d),
+                MLPModelConfigs.CreateSmallCompositeModelConfig()
             };
 
             //For each defined model configuration
@@ -111,6 +114,7 @@ namespace EasyMLEduApp.Examples.MLP
             EasyML.Oper.Log.Write($"---------------------------");
             EasyML.Oper.Log.Write($"The best configuration is:");
             EasyML.Oper.Report((ConfigBase)bestModelConfig, false, 4);
+            EasyML.Oper.Log.Write(string.Empty);
             EasyML.Oper.Log.Write($"The best model info:");
             EasyML.Oper.Report(bestModel, false, 4);
             EasyML.Oper.Log.Write($"The best model results:");

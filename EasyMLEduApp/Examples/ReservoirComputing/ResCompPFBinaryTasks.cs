@@ -33,6 +33,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
                 "BeetleFlySwitch"
             };
             //Training and Testing data
+            EasyML.Oper.Report("./Data/BeetleFly.txt");
             SampleDataset trainingData =
                 EasyML.Oper.LoadSampleData("./Data/BeetleFly_train.csv", //Training csv data file name
                                            SampleDataset.CsvOutputFeaturesPosition.Last,
@@ -104,6 +105,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
                 "EventIndicator"
             };
             //Training and Testing data
+            EasyML.Oper.Report("./Data/Earthquakes.txt");
             SampleDataset trainingData =
                 EasyML.Oper.LoadSampleData("./Data/Earthquakes_train.csv", //Training csv data file name
                                            SampleDataset.CsvOutputFeaturesPosition.Last,

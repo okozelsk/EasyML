@@ -701,12 +701,44 @@
     </xs:attribute>
   </xs:complexType>
 
+  <!-- Configuration of the HSModel. -->
+  <xs:complexType name="HSModelConfig">
+    <xs:sequence minOccurs="1" maxOccurs="1">
+      <xs:element type="NetworkStackConfig" name="stack" minOccurs="1" maxOccurs="1"/>
+      <xs:choice minOccurs="1" maxOccurs="1">
+        <xs:element type="NetworkModelConfig" name="networkModel" minOccurs="0" maxOccurs="1"/>
+        <xs:element type="CrossValModelConfig" name="crossValModel" minOccurs="0" maxOccurs="1"/>
+        <xs:element type="StackingModelConfig" name="stackingModel" minOccurs="0" maxOccurs="1"/>
+        <xs:element type="BHSModelConfig" name="bhsModel" minOccurs="0" maxOccurs="1"/>
+        <xs:element type="CompositeModelConfig" name="compositeModel" minOccurs="0" maxOccurs="1"/>
+      </xs:choice>
+    </xs:sequence>
+    <xs:attribute type="xs:boolean" name="routeInput" use="optional" default="false">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies whether to provide original input to meta-learner. Default value is false.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <!-- Configuration of the BHSModel. -->
+  <xs:complexType name="BHSModelConfig">
+    <xs:sequence minOccurs="1" maxOccurs="1">
+      <xs:element type="HSModelConfig" name="hsModel" minOccurs="1" maxOccurs="1"/>
+    </xs:sequence>
+    <xs:attribute type="UIntGT0Type" name="repetitions" use="optional" default="1">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies how many times to repeat halfing. Default value is 1.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
   <!-- Configuration of the CompositeModel. -->
   <xs:complexType name="CompositeModelConfig">
     <xs:choice minOccurs="1" maxOccurs="unbounded">
       <xs:element type="NetworkModelConfig" name="networkModel" minOccurs="0" maxOccurs="1"/>
       <xs:element type="CrossValModelConfig" name="crossValModel" minOccurs="0" maxOccurs="1"/>
       <xs:element type="StackingModelConfig" name="stackingModel" minOccurs="0" maxOccurs="1"/>
+      <xs:element type="BHSModelConfig" name="bhsModel" minOccurs="0" maxOccurs="1"/>
       <xs:element type="CompositeModelConfig" name="compositeModel" minOccurs="0" maxOccurs="1"/>
     </xs:choice>
   </xs:complexType>
@@ -849,6 +881,7 @@
         <xs:element type="NetworkModelConfig" name="networkModel" minOccurs="0" maxOccurs="1"/>
         <xs:element type="CrossValModelConfig" name="crossValModel" minOccurs="0" maxOccurs="1"/>
         <xs:element type="StackingModelConfig" name="stackingModel" minOccurs="0" maxOccurs="1"/>
+        <xs:element type="BHSModelConfig" name="bhsModel" minOccurs="0" maxOccurs="1"/>
         <xs:element type="CompositeModelConfig" name="compositeModel" minOccurs="0" maxOccurs="1"/>
       </xs:choice>
     </xs:sequence>

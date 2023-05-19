@@ -32,6 +32,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
             //Output feature names
             List<string> outputFeatureNames = new List<string>() { "High", "Low", "Adj Close" };
             //Full data
+            EasyML.Oper.Report("./Data/TSLA.txt");
             SampleDataset fullData =
                 EasyML.Oper.LoadSampleData("./Data/TSLA.csv", //Csv data file name
                                            inputFeatureNames, //Identification of features we want to use as the input variables
@@ -112,6 +113,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
             //Output feature names
             List<string> outputFeatureNames = new List<string>() { "Value" };
             //Full data
+            EasyML.Oper.Report("./Data/MackeyGlass.txt");
             SampleDataset fullData =
                 EasyML.Oper.LoadSampleData("./Data/MackeyGlass.csv", //Csv data file name
                                            inputFeatureNames, //Identification of features we want to use as the input variables

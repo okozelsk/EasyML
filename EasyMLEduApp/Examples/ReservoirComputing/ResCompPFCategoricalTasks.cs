@@ -49,6 +49,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
                 "tremble"
             };
             //Training and Testing data
+            EasyML.Oper.Report("./Data/LibrasMovement.txt");
             SampleDataset trainingData =
                 EasyML.Oper.LoadSampleData("./Data/LibrasMovement_train.csv", //Training csv data file name
                                            SampleDataset.CsvOutputFeaturesPosition.Last,
@@ -127,6 +128,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
                 "years 13-19"
             };
             //Training and Testing data
+            EasyML.Oper.Report("./Data/ProximalPhalanxOutlineAgeGroup.txt");
             SampleDataset trainingData =
                 EasyML.Oper.LoadSampleData("./Data/ProximalPhalanxOutlineAgeGroup_train.csv", //Training csv data file name
                                            SampleDataset.CsvOutputFeaturesPosition.First,
@@ -205,6 +207,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
                 "Dishwasher"
             };
             //Training and Testing data
+            EasyML.Oper.Report("./Data/LargeKitchenAppliances.txt");
             SampleDataset trainingData =
                 EasyML.Oper.LoadSampleData("./Data/LargeKitchenAppliances_train.csv", //Training csv data file name
                                            SampleDataset.CsvOutputFeaturesPosition.Last,
@@ -288,6 +291,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
                 "Wide"
             };
             //Training and Testing data
+            EasyML.Oper.Report("./Data/CricketX.txt");
             SampleDataset trainingData =
                 EasyML.Oper.LoadSampleData("./Data/CricketX_train.csv", //Training csv data file name
                                            SampleDataset.CsvOutputFeaturesPosition.Last,
@@ -365,6 +369,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
                 "Mutant-unc-63"
             };
             //Training and Testing data
+            EasyML.Oper.Report("./Data/Worms.txt");
             SampleDataset trainingData =
                 EasyML.Oper.LoadSampleData("./Data/Worms_train.csv", //Training csv data file name
                                            SampleDataset.CsvOutputFeaturesPosition.Last,

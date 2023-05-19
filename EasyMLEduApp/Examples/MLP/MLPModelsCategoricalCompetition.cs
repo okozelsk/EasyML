@@ -1,6 +1,7 @@
 ﻿using EasyMLCore;
 using EasyMLCore.Data;
 using EasyMLCore.MLP;
+using EasyMLCore.MLP.Model;
 using System;
 using System.Collections.Generic;
 
@@ -8,8 +9,9 @@ namespace EasyMLEduApp.Examples.MLP
 {
     /// <summary>
     /// Example code demonstrates use of
-    /// Network, CrossVal, Stacking and Composite models
-    /// for Categorical tasks (classification).
+    /// Network, CrossVal, BHS, Stacking and Composite models
+    /// to solve Categorical tasks (classification).
+    /// Code also shows DiagnosticTest of models.
     /// 
     /// See txt files related to csv files for more info.
     /// Example uses following csv datafiles from ./Data subfolder:
@@ -63,6 +65,7 @@ namespace EasyMLEduApp.Examples.MLP
                 "tremble"
             };
             //Training and Testing data
+            EasyML.Oper.Report("./Data/LibrasMovement.txt");
             SampleDataset trainingData =
                 EasyML.Oper.LoadSampleData("./Data/LibrasMovement_train.csv", //Training csv data file name
                                            SampleDataset.CsvOutputFeaturesPosition.Last,
@@ -80,6 +83,7 @@ namespace EasyMLEduApp.Examples.MLP
             {
                 MLPModelConfigs.CreateNetworkModelConfig(ActivationFnID.ReLU),
                 MLPModelConfigs.CreateCrossValModelConfig(0.05d),
+                MLPModelConfigs.CreateBHSModelConfig(),
                 MLPModelConfigs.CreateStackingModelConfig(0.05d),
                 MLPModelConfigs.CreateSmallCompositeModelConfig(),
                 MLPModelConfigs.CreateCompositeModelConfig(0.05d)
@@ -110,6 +114,15 @@ namespace EasyMLEduApp.Examples.MLP
                                        true, //We want to report progress and results
                                        false //We do not require to report all details
                                        );
+
+                //A diagnostic test as a more informative alternative to standard test
+                ModelDiagnosticData diagData =
+                    EasyML.Oper.DiagnosticTest(model, //Our built model
+                                               testingData, //Sample testing data
+                                               true, //We want to report progress and results
+                                               false //We do not require to report all details
+                                               );
+
                 if (bestErrStat == null)
                 {
                     bestModel = model;
@@ -130,6 +143,7 @@ namespace EasyMLEduApp.Examples.MLP
             EasyML.Oper.Log.Write($"---------------------------");
             EasyML.Oper.Log.Write($"The best configuration is:");
             EasyML.Oper.Report((ConfigBase)bestModelConfig, false, 4);
+            EasyML.Oper.Log.Write(string.Empty);
             EasyML.Oper.Log.Write($"The best model info:");
             EasyML.Oper.Report(bestModel, false, 4);
             EasyML.Oper.Log.Write($"The best model results:");
@@ -151,6 +165,7 @@ namespace EasyMLEduApp.Examples.MLP
                 "years 13-19"
             };
             //Training and Testing data
+            EasyML.Oper.Report("./Data/ProximalPhalanxOutlineAgeGroup.txt");
             SampleDataset trainingData =
                 EasyML.Oper.LoadSampleData("./Data/ProximalPhalanxOutlineAgeGroup_train.csv", //Training csv data file name
                                            SampleDataset.CsvOutputFeaturesPosition.First,
@@ -168,6 +183,7 @@ namespace EasyMLEduApp.Examples.MLP
             {
                 MLPModelConfigs.CreateNetworkModelConfig(ActivationFnID.ReLU),
                 MLPModelConfigs.CreateCrossValModelConfig(0.1d),
+                MLPModelConfigs.CreateBHSModelConfig(),
                 MLPModelConfigs.CreateStackingModelConfig(0.1d),
                 MLPModelConfigs.CreateSmallCompositeModelConfig(),
                 MLPModelConfigs.CreateCompositeModelConfig(0.1d)
@@ -193,12 +209,21 @@ namespace EasyMLEduApp.Examples.MLP
                                       );
                 ModelErrStat errStat =
                     EasyML.Oper.Test(model, //Our built model
-                                       testingData, //Sample testing data
-                                       out ResultDataset resultData, //Original testing samples together with computed data
-                                       true, //We want to report progress and results
-                                       false //We do not require to report all details
-                                       );
-                if(bestErrStat == null)
+                                     testingData, //Sample testing data
+                                     out ResultDataset resultData, //Original testing samples together with computed data
+                                     true, //We want to report progress and results
+                                     false //We do not require to report all details
+                                     );
+
+                //A diagnostic test as a more informative alternative to standard test
+                ModelDiagnosticData diagData =
+                    EasyML.Oper.DiagnosticTest(model, //Our built model
+                                               testingData, //Sample testing data
+                                               true, //We want to report progress and results
+                                               false //We do not require to report all details
+                                               );
+
+                if (bestErrStat == null)
                 {
                     bestModel = model;
                     bestModelConfig = modelCfg;
@@ -218,6 +243,7 @@ namespace EasyMLEduApp.Examples.MLP
             EasyML.Oper.Log.Write($"---------------------------");
             EasyML.Oper.Log.Write($"The best configuration is:");
             EasyML.Oper.Report((ConfigBase)bestModelConfig, false, 4);
+            EasyML.Oper.Log.Write(string.Empty);
             EasyML.Oper.Log.Write($"The best model info:");
             EasyML.Oper.Report(bestModel, false, 4);
             EasyML.Oper.Log.Write($"The best model results:");

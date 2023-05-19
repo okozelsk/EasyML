@@ -57,6 +57,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
                 "tremble"
             };
             //Training and Testing data
+            EasyML.Oper.Report("./Data/LibrasMovement.txt");
             SampleDataset trainingData =
                 EasyML.Oper.LoadSampleData("./Data/LibrasMovement_train.csv", //Training csv data file name
                                            SampleDataset.CsvOutputFeaturesPosition.Last,
@@ -97,7 +98,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
                                        100, //Maximum number of epochs within a training attempt
                                        new RPropConfig() //Weights updater
                                        );
-            CrossValModelConfig crossValCfg =
+            CrossValModelConfig modelCfg =
                 new CrossValModelConfig(networkCfg, //For every validation fold will be trained a cluster member network having this configuration
                                         15d / 180d //Validation fold data ratio
                                         );
@@ -106,7 +107,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
                                       OutputTaskType.Categorical,
                                       inputSections,
                                       new FeaturesConfig(outputFeatureNames),
-                                      crossValCfg //Model to be used
+                                      modelCfg //Model to be used
                                       );
             //Reservoir computer config
             ResCompConfig resCompCfg =
@@ -127,6 +128,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
                 "years 13-19"
             };
             //Training and Testing data
+            EasyML.Oper.Report("./Data/ProximalPhalanxOutlineAgeGroup.txt");
             SampleDataset trainingData =
                 EasyML.Oper.LoadSampleData("./Data/ProximalPhalanxOutlineAgeGroup_train.csv", //Training csv data file name
                                            SampleDataset.CsvOutputFeaturesPosition.First,
@@ -167,7 +169,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
                                        500, //Maximum number of epochs within a training attempt
                                        new RPropConfig() //Weights updater
                                        );
-            CrossValModelConfig crossValCfg =
+            CrossValModelConfig modelCfg =
                 new CrossValModelConfig(networkCfg, //For every validation fold will be trained a cluster member network having this configuration
                                         0.25d //Validation fold data ratio
                                         );
@@ -176,7 +178,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
                                       OutputTaskType.Categorical,
                                       inputSections,
                                       new FeaturesConfig(outputFeatureNames),
-                                      crossValCfg
+                                      modelCfg
                                       );
             //Reservoir computer config
             ResCompConfig resCompCfg =
@@ -198,6 +200,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
                 "Dishwasher"
             };
             //Training and Testing data
+            EasyML.Oper.Report("./Data/LargeKitchenAppliances.txt");
             SampleDataset trainingData =
                 EasyML.Oper.LoadSampleData("./Data/LargeKitchenAppliances_train.csv", //Training csv data file name
                                            SampleDataset.CsvOutputFeaturesPosition.Last,
@@ -238,7 +241,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
                                        1500, //Maximum number of epochs within a training attempt
                                        new RPropConfig() //Weights updater
                                        );
-            CrossValModelConfig crossValCfg =
+            CrossValModelConfig modelCfg =
                 new CrossValModelConfig(networkCfg, //For every validation fold will be trained a cluster member network having this configuration
                                         1d/3d //Validation fold data ratio
                                         );
@@ -247,7 +250,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
                                       OutputTaskType.Categorical,
                                       inputSections,
                                       new FeaturesConfig(outputFeatureNames),
-                                      crossValCfg //Model to be used
+                                      modelCfg //Model to be used
                                       );
             //Reservoir computer config
             ResCompConfig resCompCfg =
@@ -277,6 +280,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
                 "Wide"
             };
             //Training and Testing data
+            EasyML.Oper.Report("./Data/CricketX.txt");
             SampleDataset trainingData =
                 EasyML.Oper.LoadSampleData("./Data/CricketX_train.csv", //Training csv data file name
                                            SampleDataset.CsvOutputFeaturesPosition.Last,
@@ -318,7 +322,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
                                        200, //Maximum number of epochs within a training attempt
                                        new RPropConfig() //Weights updater
                                        );
-            CrossValModelConfig crossValCfg =
+            CrossValModelConfig modelCfg =
                 new CrossValModelConfig(networkCfg, //For every validation fold will be trained a cluster member network having this configuration
                                         0.1d //Validation fold data ratio
                                         );
@@ -327,7 +331,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
                                       OutputTaskType.Categorical,
                                       inputSections,
                                       new FeaturesConfig(outputFeatureNames),
-                                      crossValCfg //Model to be used
+                                      modelCfg //Model to be used
                                       );
             //Reservoir computer config
             ResCompConfig resCompCfg =
@@ -350,6 +354,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
                 "Mutant-unc-63"
             };
             //Training and Testing data
+            EasyML.Oper.Report("./Data/Worms.txt");
             SampleDataset trainingData =
                 EasyML.Oper.LoadSampleData("./Data/Worms_train.csv", //Training csv data file name
                                            SampleDataset.CsvOutputFeaturesPosition.Last,
@@ -391,7 +396,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
                                        500, //Maximum number of epochs within a training attempt
                                        new RPropConfig() //Weights updater
                                        );
-            CrossValModelConfig crossValCfg =
+            CrossValModelConfig modelCfg =
                 new CrossValModelConfig(networkCfg, //For every validation fold will be trained a cluster member network having this configuration
                                         0.05d //Validation fold data ratio
                                         );
@@ -400,7 +405,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
                                       OutputTaskType.Categorical,
                                       inputSections,
                                       new FeaturesConfig(outputFeatureNames),
-                                      crossValCfg //Model to be used
+                                      modelCfg //Model to be used
                                       );
             //Reservoir computer config
             ResCompConfig resCompCfg =
@@ -419,6 +424,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
                 "BeetleFlySwitch"
             };
             //Training and Testing data
+            EasyML.Oper.Report("./Data/BeetleFly.txt");
             SampleDataset trainingData =
                 EasyML.Oper.LoadSampleData("./Data/BeetleFly_train.csv", //Training csv data file name
                                            SampleDataset.CsvOutputFeaturesPosition.Last,
@@ -460,7 +466,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
                                        new AdamConfig(), //Weights updater
                                        new HiddenLayersConfig(new HiddenLayerConfig(30, ActivationFnID.ReLU, new DropoutConfig(0.5d, DropoutMode.Bernoulli)))
                                        );
-            CrossValModelConfig crossValCfg =
+            CrossValModelConfig modelCfg =
                 new CrossValModelConfig(networkCfg, //For every validation fold will be trained a cluster member network having this configuration
                                         0.2d //Validation fold data ratio
                                         );
@@ -470,7 +476,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
                                       OutputTaskType.Binary,
                                       inputSections,
                                       new FeaturesConfig(outputFeatureNames),
-                                      crossValCfg //Model to be used
+                                      modelCfg //Model to be used
                                       );
             //Reservoir computer config
             ResCompConfig resCompCfg =
@@ -489,6 +495,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
                 "EventIndicator"
             };
             //Training and Testing data
+            EasyML.Oper.Report("./Data/Earthquakes.txt");
             SampleDataset trainingData =
                 EasyML.Oper.LoadSampleData("./Data/Earthquakes_train.csv", //Training csv data file name
                                            SampleDataset.CsvOutputFeaturesPosition.Last,
@@ -533,7 +540,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
                                                               new HiddenLayerConfig(10, ActivationFnID.LeakyReLU)
                                                               )
                                        );
-            CrossValModelConfig crossValCfg =
+            CrossValModelConfig modelCfg =
                 new CrossValModelConfig(networkCfg, //For every validation fold will be trained a cluster member network having this configuration
                                         1d/3d //Validation fold data ratio
                                         );
@@ -543,7 +550,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
                                       OutputTaskType.Binary,
                                       inputSections,
                                       new FeaturesConfig(outputFeatureNames),
-                                      crossValCfg
+                                      modelCfg
                                       );
             //Reservoir computer config
             ResCompConfig resCompCfg =

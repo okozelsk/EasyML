@@ -1,6 +1,7 @@
 ﻿using EasyMLCore.Data;
 using EasyMLCore.Extensions;
 using EasyMLCore.MathTools;
+using EasyMLCore.MLP.Model;
 using System;
 using System.Collections.Generic;
 
@@ -32,11 +33,6 @@ namespace EasyMLCore.MLP
         private static int RandomSeed = Common.DefaultRandomSeed;
 
         //Events
-        /// <summary>
-        /// This informative event occurs each time the progress of the build process takes a step forward.
-        /// </summary>
-        protected static event ModelBuildProgressChangedHandler BuildProgressChanged;
-
         /// <summary>
         /// This informative event occurs each time the progress of the model
         /// testing process takes a step forward.
@@ -139,16 +135,6 @@ namespace EasyMLCore.MLP
             return RandomSeed;
         }
 
-        /// <summary>
-        /// Invokes BuildProgressChanged.
-        /// </summary>
-        /// <param name="progressInfo">Progress info.</param>
-        protected static void InvokeBuildProgressChanged(ModelBuildProgressInfo progressInfo)
-        {
-            BuildProgressChanged?.Invoke(progressInfo);
-            return;
-        }
-
         //Methods
         /// <summary>
         /// Gets sub-models confidence weights for each output feature.
@@ -249,17 +235,41 @@ namespace EasyMLCore.MLP
             {
                 ModelTestProgressChanged += progressInfoSubscriber;
             }
-            List<double[]> computedVectorCollection = new List<double[]>(testingData.Count);
-            int numOfProcessedSamples = 0;
-            foreach (Sample sample in testingData.SampleCollection)
+            try
             {
-                double[] computedVector = Compute(sample.InputVector);
-                computedVectorCollection.Add(computedVector);
-                ModelTestProgressChanged?.Invoke(new ModelTestProgressInfo(Name, ++numOfProcessedSamples, testingData.Count));
+                List<double[]> computedVectorCollection = new List<double[]>(testingData.Count);
+                int numOfProcessedSamples = 0;
+                foreach (Sample sample in testingData.SampleCollection)
+                {
+                    double[] computedVector = Compute(sample.InputVector);
+                    computedVectorCollection.Add(computedVector);
+                    ModelTestProgressChanged?.Invoke(new ModelTestProgressInfo(Name, ++numOfProcessedSamples, testingData.Count));
+                }
+                resultDataset = new ResultDataset(testingData, computedVectorCollection);
+                return new ModelErrStat(TaskType, OutputFeatureNames, testingData, computedVectorCollection);
             }
-            resultDataset = new ResultDataset(testingData, computedVectorCollection);
-            return new ModelErrStat(TaskType, OutputFeatureNames, testingData, computedVectorCollection);
+            finally
+            {
+                if (progressInfoSubscriber != null)
+                {
+                    ModelTestProgressChanged -= progressInfoSubscriber;
+                }
+            }
         }
+
+        /// <summary>
+        /// Performs diagnostic test of the model and all inner sub-models.
+        /// </summary>
+        /// <remarks>
+        /// Samples can be in any range. Data standardization is always performed internally.
+        /// </remarks>
+        /// <param name="testingData">Testing samples.</param>
+        /// <param name="progressInfoSubscriber">Subscriber will receive notification event about progress. (Parameter can be null).</param>
+        /// <returns>Resulting diagnostics data of the model and all inner sub-models.</returns>
+        public abstract ModelDiagnosticData DiagnosticTest(SampleDataset testingData,
+                                                           ModelTestProgressChangedHandler progressInfoSubscriber = null
+                                                           );
+
 
         /// <inheritdoc/>
         public TaskOutputDetailBase GetOutputDetail(double[] outputData)

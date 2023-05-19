@@ -1,5 +1,6 @@
 ﻿using EasyMLCore.Data;
 using EasyMLCore.Extensions;
+using EasyMLCore.MLP.Model;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -153,6 +154,21 @@ namespace EasyMLCore.MLP
             return infoText;
         }
 
+
+        /// <inheritdoc/>
+        public override ModelDiagnosticData DiagnosticTest(SampleDataset testingData, ModelTestProgressChangedHandler progressInfoSubscriber = null)
+        {
+            ModelErrStat errStat = Test(testingData, out _, progressInfoSubscriber);
+            ModelDiagnosticData diagData = new ModelDiagnosticData(Name, errStat);
+            foreach(ModelBase model in _members)
+            {
+                ModelDiagnosticData memberDiagData = model.DiagnosticTest(testingData, progressInfoSubscriber);
+                diagData.AddSubModelDiagData(memberDiagData);
+            }
+            diagData.SetFinalized();
+            return diagData;
+        }
+
         /// <inheritdoc/>
         public override ModelBase DeepClone()
         {
@@ -235,6 +251,18 @@ namespace EasyMLCore.MLP
                                             trainingData,
                                             progressInfoSubscriber
                                             );
+                    model.AddMember(subModel);
+                }
+                else if (subModelCfgType == typeof(BHSModelConfig))
+                {
+                    BHSModel subModel =
+                        BHSModel.Build(modelConfig.SubModelCfgCollection[subModelIdx],
+                                       subModelName,
+                                       taskType,
+                                       outputFeatureNames,
+                                       trainingData,
+                                       progressInfoSubscriber
+                                       );
                     model.AddMember(subModel);
                 }
                 else if (subModelCfgType == typeof(CompositeModelConfig))

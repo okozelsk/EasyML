@@ -17,14 +17,6 @@ namespace EasyMLCore.TimeSeries
         //Constants
         public const string ContextPathID = "RCTask";
 
-        //Events
-        /// <summary>
-        /// This informative event occurs each time the progress of the 
-        /// testing process takes a step forward.
-        /// </summary>
-        [field: NonSerialized]
-        public event ModelTestProgressChangedHandler ModelTestProgressChanged;
-
         /// <inheritdoc/>
         public List<string> OutputFeatureNames { get; }
 
@@ -64,15 +56,6 @@ namespace EasyMLCore.TimeSeries
         public int NumOfOutputFeatures { get { return OutputFeatureNames.Count; } }
 
         //Methods
-        private void OnModelTestProgressChanged(ModelTestProgressInfo progressInfo)
-        {
-            //Update context
-            progressInfo.ExtendContextPath($"{ContextPathID}({Name})");
-            //Raise event
-            ModelTestProgressChanged?.Invoke(progressInfo);
-            return;
-        }
-
         /// <summary>
         /// Builds inner model and gets the ResCompTask ready.
         /// </summary>
@@ -127,6 +110,16 @@ namespace EasyMLCore.TimeSeries
                                             trainingData,
                                             progressInfoSubscriber
                                             );
+            }
+            else if (modelCfgType == typeof(BHSModelConfig))
+            {
+                model = BHSModel.Build(cfg.ModelCfg,
+                                       modelNamePrefix,
+                                       resCompTask.TaskType,
+                                       resCompTask.OutputFeatureNames,
+                                       trainingData,
+                                       progressInfoSubscriber
+                                       );
             }
             else if (modelCfgType == typeof(CompositeModelConfig))
             {
@@ -188,11 +181,7 @@ namespace EasyMLCore.TimeSeries
                                  ModelTestProgressChangedHandler progressInfoSubscriber = null
                                  )
         {
-            if (progressInfoSubscriber != null)
-            {
-                ModelTestProgressChanged += progressInfoSubscriber;
-            }
-            return _model.Test(testingData, out resultDataset, OnModelTestProgressChanged);
+            return _model.Test(testingData, out resultDataset, progressInfoSubscriber);
         }
 
         /// <inheritdoc/>

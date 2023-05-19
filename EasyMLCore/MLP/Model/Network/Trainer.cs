@@ -19,8 +19,8 @@ namespace EasyMLCore.MLP
         //Constants
         private const double MaxAcceptableWeightMagnitude = 1e10d;
         private const int NumOfTrainingSamplesIncrementingMiniBatchSize = 100;
-        private const int OptimalMiniBatchMinSize = 2;
-        private const int OptimalMiniBatchMaxSize = 32;
+        private const int OptimalMiniBatchMinSize = 32;
+        private const int OptimalMiniBatchMaxSize = 128;
 
         //Attribute properties
         /// <summary>
@@ -708,67 +708,6 @@ namespace EasyMLCore.MLP
                     weightFlatGrads.Scale(_modelCfg.GradClipNorm / gnorm);
                 }
             }
-
-            /*
-            var aggregatorS = () => 
-            {
-                for (int i = 0; i < weightFlatGrads.Length; i++)
-                {
-                    weightFlatGrads[i] = 0d;
-                    for (int idx = 0; idx < workersWeightFlatGads.Length; idx++)
-                    {
-                        weightFlatGrads[i] += workersWeightFlatGads[idx][i];
-                    }
-                    weightFlatGradSwitches[i] = weightFlatGrads[i] != 0d;
-                    weightFlatGrads[i] /= batchSamplesCount;
-                    //Clip gradient magnitude
-                    if (_modelCfg.GradClipVal > 0d && Math.Abs(weightFlatGrads[i]) > _modelCfg.GradClipVal)
-                    {
-                        weightFlatGrads[i] = Math.Sign(weightFlatGrads[i]) * _modelCfg.GradClipVal;
-                    }
-                    weightGradsSumOfSquares += weightFlatGrads[i] * weightFlatGrads[i];
-                }
-            };
-
-            var aggregatorP = () =>
-            {
-                Parallel.ForEach(Partitioner.Create(0, _flatWeights.Length), weightsRange =>
-                {
-                    double rangeWeightGradsSumOfSquares = 0d;
-                    for (int i = weightsRange.Item1; i < weightsRange.Item2; i++)
-                    {
-                        weightFlatGrads[i] = 0d;
-                        for (int idx = 0; idx < workersWeightFlatGads.Length; idx++)
-                        {
-                            weightFlatGrads[i] += workersWeightFlatGads[idx][i];
-                        }
-                        weightFlatGradSwitches[i] = weightFlatGrads[i] != 0d;
-                        weightFlatGrads[i] /= batchSamplesCount;
-                        if (_modelCfg.GradClipVal > 0d)
-                        {
-                            //Clip gradient max absolute value
-                            if (Math.Abs(weightFlatGrads[i]) > _modelCfg.GradClipVal)
-                            {
-                                weightFlatGrads[i] = Math.Sign(weightFlatGrads[i]) * _modelCfg.GradClipVal;
-                            }
-                        }
-                        rangeWeightGradsSumOfSquares += weightFlatGrads[i] * weightFlatGrads[i];
-                    }
-                    if (_modelCfg.GradClipNorm > 0d)
-                    {
-                        lock (locker)
-                        {
-                            weightGradsSumOfSquares += rangeWeightGradsSumOfSquares;
-                        }
-                    }
-                });
-            };
-
-            aggregatorS();
-            aggregatorP();
-             */
-
-
 
             ///////////////////////////////////////////////////////////////////////////////////////
             //Update weights and biases

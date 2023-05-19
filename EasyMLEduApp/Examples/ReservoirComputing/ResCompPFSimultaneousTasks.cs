@@ -43,6 +43,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
                 "Is (A) GT (H)"
             };
             //Training and Testing data
+            EasyML.Oper.Report("./Data/MultiTaskPPOutlineAgeGroup.txt");
             int totalNumOfOutputFeatures = outputClassLabels.Count + outputRegrFeatureNames.Count + outputBinFeatureNames.Count;
             SampleDataset trainingData =
                 EasyML.Oper.LoadSampleData("./Data/MultiTaskPPOutlineAgeGroup_train.csv", //Training csv data file name

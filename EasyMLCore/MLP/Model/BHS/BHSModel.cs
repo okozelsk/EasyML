@@ -11,20 +11,20 @@ using System.Xml.Linq;
 namespace EasyMLCore.MLP
 {
     /// <summary>
-    /// Implements the x-fold cross validated networks model.
-    /// Model output is weighted average of inner networks models outputs (bagging).
+    /// Implements the model which baggs N inner half-stacking models.
+    /// Model output is weighted average of inner half-stacking models outputs (bagging).
     /// </summary>
     [Serializable]
-    public class CrossValModel : ModelBase
+    public class BHSModel : ModelBase
     {
         //Constants
         /// <summary>
         /// Short identifier in context path.
         /// </summary>
-        public const string ContextPathID = "CVM";
+        public const string ContextPathID = "BHSM";
 
         //Attributes
-        private readonly List<NetworkModel> _members;
+        private readonly List<HSModel> _members;
         private double[][] _weights;
 
         //Constructor
@@ -35,14 +35,14 @@ namespace EasyMLCore.MLP
         /// <param name="name">Name.</param>
         /// <param name="taskType">Output task.</param>
         /// <param name="outputFeatureNames">Names of output features.</param>
-        private CrossValModel(CrossValModelConfig modelConfig,
-                              string name,
-                              OutputTaskType taskType,
-                              IEnumerable<string> outputFeatureNames
-                              )
+        private BHSModel(BHSModelConfig modelConfig,
+                         string name,
+                         OutputTaskType taskType,
+                         IEnumerable<string> outputFeatureNames
+                         )
             : base(modelConfig, name, taskType, outputFeatureNames)
         {
-            _members = new List<NetworkModel>();
+            _members = new List<HSModel>();
             _weights = null;
             return;
         }
@@ -51,13 +51,13 @@ namespace EasyMLCore.MLP
         /// Deep copy constructor.
         /// </summary>
         /// <param name="source">The source instance.</param>
-        public CrossValModel(CrossValModel source)
+        public BHSModel(BHSModel source)
             : base(source)
         {
-            _members = new List<NetworkModel>(source._members.Count);
-            foreach (NetworkModel networkModel in source._members)
+            _members = new List<HSModel>(source._members.Count);
+            foreach (HSModel model in source._members)
             {
-                _members.Add((NetworkModel)networkModel.DeepClone());
+                _members.Add((HSModel)model.DeepClone());
             }
             _weights = (double[][])source._weights.Clone();
             return;
@@ -65,10 +65,10 @@ namespace EasyMLCore.MLP
 
         //Methods
         /// <summary>
-        /// Adds a new member Network model.
+        /// Adds a new member HS model.
         /// </summary>
-        /// <param name="newMember">A new member Network model to be added.</param>
-        private void AddMember(NetworkModel newMember)
+        /// <param name="newMember">A new member HS model to be added.</param>
+        private void AddMember(HSModel newMember)
         {
             //Checks
             if (newMember.NumOfOutputFeatures != NumOfOutputFeatures)
@@ -92,7 +92,7 @@ namespace EasyMLCore.MLP
             //Checks
             if (_members.Count < 1)
             {
-                throw new InvalidOperationException("At least one member Network must be added before the finalization.");
+                throw new InvalidOperationException("At least one member must be added before the finalization.");
             }
             //Set weights
             _weights = GetWeights(_members.ToList<ModelBase>());
@@ -168,12 +168,12 @@ namespace EasyMLCore.MLP
         /// <inheritdoc/>
         public override ModelBase DeepClone()
         {
-            return new CrossValModel(this);
+            return new BHSModel(this);
         }
 
         //Static methods
         /// <summary>
-        /// Builds a CrossValModel.
+        /// Builds a BHSModel.
         /// </summary>
         /// <param name="cfg">Model configuration.</param>
         /// <param name="name">Model name.</param>
@@ -182,62 +182,60 @@ namespace EasyMLCore.MLP
         /// <param name="trainingData">Training samples.</param>
         /// <param name="progressInfoSubscriber">Subscriber will receive notification event about progress. (Parameter can be null).</param>
         /// <returns>Built model.</returns>
-        public static CrossValModel Build(IModelConfig cfg,
-                                          string name,
-                                          OutputTaskType taskType,
-                                          List<string> outputFeatureNames,
-                                          SampleDataset trainingData,
-                                          ModelBuildProgressChangedHandler progressInfoSubscriber = null
-                                          )
+        public static BHSModel Build(IModelConfig cfg,
+                                     string name,
+                                     OutputTaskType taskType,
+                                     List<string> outputFeatureNames,
+                                     SampleDataset trainingData,
+                                     ModelBuildProgressChangedHandler progressInfoSubscriber = null
+                                     )
         {
             //Checks
             if (cfg == null)
             {
                 throw new ArgumentNullException(nameof(cfg));
             }
-            if (cfg.GetType() != typeof(CrossValModelConfig))
+            if (cfg.GetType() != typeof(BHSModelConfig))
             {
-                throw new ArgumentException($"Wrong type of configuration. Expected {typeof(CrossValModelConfig)} but received {cfg.GetType()}.", nameof(cfg));
+                throw new ArgumentException($"Wrong type of configuration. Expected {typeof(BHSModelConfig)} but received {cfg.GetType()}.", nameof(cfg));
             }
             SampleDataset localDataset = trainingData.ShallowClone();
             //Model
-            CrossValModelConfig modelConfig = cfg as CrossValModelConfig;
-            CrossValModel model = new CrossValModel(modelConfig,
-                                                    (name + CrossValModel.ContextPathID),
-                                                    taskType,
-                                                    outputFeatureNames
-                                                    );
-            //Reshuffle local data
-            localDataset.Shuffle(new Random(GetRandomSeed()));
-            //Split data to folds
-            List<SampleDataset> foldCollection = localDataset.Folderize(modelConfig.FoldDataRatio, taskType);
-            //Member's training
-            //Train a network for each validation fold.
-            for (int validationFoldIdx = 0; validationFoldIdx < foldCollection.Count; validationFoldIdx++)
+            BHSModelConfig modelConfig = cfg as BHSModelConfig;
+            BHSModel model = new BHSModel(modelConfig,
+                                          (name + BHSModel.ContextPathID),
+                                          taskType,
+                                          outputFeatureNames
+                                          );
+            //Build members
+            for(int repetition = 1; repetition <= modelConfig.Repetitions; repetition++)
             {
-                //Prepare training data dataset
-                SampleDataset nodeTrainingData = new SampleDataset();
-                for (int foldIdx = 0; foldIdx < foldCollection.Count; foldIdx++)
-                {
-                    if (foldIdx != validationFoldIdx)
-                    {
-                        nodeTrainingData.Add(foldCollection[foldIdx]);
-                    }
-                }
-                string validationFoldNumStr = "F" + (validationFoldIdx + 1).ToLeftPaddedString(foldCollection.Count, '0');
-                //Build network
-                NetworkModel network =
-                    NetworkModel.Build(modelConfig.NetworkModelCfg,
-                                       $"{model.Name}.{validationFoldNumStr}-",
-                                       taskType,
-                                       outputFeatureNames,
-                                       nodeTrainingData,
-                                       foldCollection[validationFoldIdx],
-                                       progressInfoSubscriber
-                                       );
-                //Add network into the model
-                model.AddMember(network);
-            }//validationFoldIdx
+                string repetitionNumStr = "R" + (repetition).ToLeftPaddedString(modelConfig.Repetitions, '0');
+                //Reshuffle local data
+                localDataset.Shuffle(new Random(GetRandomSeed()));
+                //Split data to two folds
+                List<SampleDataset> foldCollection = localDataset.Folderize(0.5d, taskType);
+                //Build H1 HSModel
+                HSModel h1Model = HSModel.Build(modelConfig.HSModelCfg,
+                                                $"{model.Name}.{repetitionNumStr}-H1-",
+                                                taskType,
+                                                outputFeatureNames,
+                                                foldCollection[0],
+                                                foldCollection[1],
+                                                progressInfoSubscriber
+                                                );
+                model.AddMember(h1Model);
+                //Build H2 HSModel
+                HSModel h2Model = HSModel.Build(modelConfig.HSModelCfg,
+                                                $"{model.Name}.{repetitionNumStr}-H2-",
+                                                taskType,
+                                                outputFeatureNames,
+                                                foldCollection[1],
+                                                foldCollection[0],
+                                                progressInfoSubscriber
+                                                );
+                model.AddMember(h2Model);
+            }
             //Set model operationable
             model.SetOperationable();
             //Return built model
@@ -246,6 +244,6 @@ namespace EasyMLCore.MLP
 
 
 
-    }//CrossValModel
+    }//BHSModel
 
 }//Namespace

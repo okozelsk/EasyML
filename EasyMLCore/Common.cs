@@ -200,7 +200,8 @@ namespace EasyMLCore
             {
                 throw new ArgumentException("Number of tasks has to be greater than 0.", nameof(numOfTasks));
             }
-            int maxPartitions = Math.Max(1, desiredNumOfPartitions <= 0 ? Environment.ProcessorCount - 1 : desiredNumOfPartitions);
+            int maxProcessorsToUtilize = Environment.ProcessorCount - 1;
+            int maxPartitions = Math.Max(1, desiredNumOfPartitions <= 0 ? maxProcessorsToUtilize : desiredNumOfPartitions);
             double partitionSize = Math.Max(1d, numOfTasks / (double)maxPartitions);
             int numOfPartitions = Math.Min(numOfTasks, maxPartitions);
             List<Tuple<int, int, int>> partitions = new List<Tuple<int, int, int>>(numOfPartitions);

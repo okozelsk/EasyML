@@ -67,7 +67,7 @@ namespace EasyMLEduApp.Examples.MLP
                                        NetBuildTrainingAttemptMaxEpochs, //Maximum number of epochs within a training attempt
                                        new AdamConfig(), //Weights updater
                                        null, //No hidden layers
-                                       new InputOptionsConfig(InputDropoutCfg),
+                                       null, //No input options (no input dropout)
                                        new OutputOptionsConfig(OutputRegL1Cfg, OutputRegL2Cfg, OutputNormConsCfg),
                                        null, //No learning throttle valve configuration
                                        batchSize, //Batch size
@@ -108,7 +108,7 @@ namespace EasyMLEduApp.Examples.MLP
                                        NetBuildTrainingAttemptMaxEpochs, //Maximum number of epochs within a training attempt
                                        new AdamConfig(), //Weights updater
                                        hiddenLayersCfg, //Hidden layers
-                                       new InputOptionsConfig(InputDropoutCfg),
+                                       null, //No input options (no input dropout)
                                        new OutputOptionsConfig(OutputRegL1Cfg, OutputRegL2Cfg, OutputNormConsCfg),
                                        null, //No learning throttle valve configuration
                                        batchSize, //Batch size
@@ -121,7 +121,7 @@ namespace EasyMLEduApp.Examples.MLP
         }
 
         /// <summary>
-        /// Creates configuration of the model of single MLP network having RProp optimizer and BGD.
+        /// Creates configuration of the model of single MLP network having hidden layers and RProp optimizer (leads to BGD).
         /// </summary>
         /// <param name="trainAttempts">Maximum number of training attempts.</param>
         /// <param name="attemptEpochs">Maximum number of epochs within a training attempt.</param>
@@ -151,7 +151,7 @@ namespace EasyMLEduApp.Examples.MLP
                                        attemptEpochs, //Maximum number of epochs within a training attempt
                                        new RPropConfig(), //Weights updater
                                        hiddenLayersCfg, //Hidden layers
-                                       new InputOptionsConfig(new DropoutConfig()),
+                                       null, //No input options (no input dropout)
                                        new OutputOptionsConfig(OutputRegL1Cfg, OutputRegL2Cfg, OutputNormConsCfg),
                                        null, //No learning throttle valve configuration
                                        NetworkModelConfig.AutoBatchSizeNumCode, //Batch size
@@ -164,7 +164,7 @@ namespace EasyMLEduApp.Examples.MLP
         }
 
         /// <summary>
-        /// Creates configuration of the model of single MLP network having BGD RProp optimizer and no hidden layers.
+        /// Creates configuration of the model of single MLP network having no hidden layers and RProp optimizer (leads to BGD).
         /// </summary>
         /// <param name="trainAttempts">Maximum number of training attempts.</param>
         /// <param name="attemptEpochs">Maximum number of epochs within a training attempt.</param>
@@ -178,7 +178,7 @@ namespace EasyMLEduApp.Examples.MLP
                                        attemptEpochs, //Maximum number of epochs within a training attempt
                                        new RPropConfig(), //Weights updater
                                        null, //No hidden layers
-                                       new InputOptionsConfig(new DropoutConfig()),
+                                       null, //No input options (no input dropout)
                                        new OutputOptionsConfig(OutputRegL1Cfg, OutputRegL2Cfg, OutputNormConsCfg),
                                        null, //No learning throttle valve configuration
                                        NetworkModelConfig.AutoBatchSizeNumCode, //Batch size
@@ -208,7 +208,7 @@ namespace EasyMLEduApp.Examples.MLP
         }
 
         /// <summary>
-        /// Creates configuration of a CrossValModel of networks trained by RProp optimizer and BGD.
+        /// Creates configuration of a CrossValModel of networks trained by RProp optimizer (leads toBGD).
         /// </summary>
         /// <param name="foldDataRatio">Specifies the ratio of training samples constituting validation fold. Number of resulting validation folds then determines number of member networks.</param>
         /// <param name="trainAttempts">Maximum number of training attempts.</param>
@@ -220,7 +220,7 @@ namespace EasyMLEduApp.Examples.MLP
         {
             //Model configuration
             CrossValModelConfig modelCfg =
-                new CrossValModelConfig(CreateRPropNetworkModelConfig(trainAttempts, attemptEpochs, ActivationFnID.LeakyReLU, 50, 2), //For every validation fold will be trained a member network having this configuration
+                new CrossValModelConfig(CreateRPropNetworkModelConfig(trainAttempts, attemptEpochs, ActivationFnID.LeakyReLU, 50, 1), //For every validation fold will be trained a member network having this configuration
                                        foldDataRatio //Validation fold data ratio
                                        );
             return modelCfg;
@@ -273,15 +273,16 @@ namespace EasyMLEduApp.Examples.MLP
         {
             //Configuration of networks constituing a stack.
             NetworkStackConfig stackCfg =
-                new NetworkStackConfig(CreateNetworkModelConfig(ActivationFnID.LeakyReLU),
-                                       CreateNetworkModelConfig(ActivationFnID.ReLU),
-                                       CreateNetworkModelConfig(ActivationFnID.GELU),
-                                       CreateNetworkModelConfig(ActivationFnID.ELU)
+                new NetworkStackConfig(CreateNetworkModelConfig(ActivationFnID.ReLU, 50, 2),
+                                       CreateNetworkModelConfig(ActivationFnID.ReLU, 50, 1),
+                                       CreateNetworkModelConfig(ActivationFnID.LeakyReLU, 26, 1),
+                                       CreateOutputOnlyNetworkModelConfig()
                                        );
             //Model configuration
             StackingModelConfig cfg =
                 new StackingModelConfig(stackCfg,
                                         CreateOutputOnlyNetworkModelConfig(), //Meta-learner model configuration
+                                        //CreateNetworkModelConfig(ActivationFnID.ReLU),
                                         foldDataRatio, //Specifies the ratio of training samples constituting one hold-out fold
                                         routeInput //Specifies whether to provide original input to meta-learner.
                                         );
@@ -302,18 +303,77 @@ namespace EasyMLEduApp.Examples.MLP
         {
             //Configuration of networks constituing a stack.
             NetworkStackConfig stackCfg =
-                new NetworkStackConfig(CreateRPropNetworkModelConfig(3, 500, ActivationFnID.LeakyReLU),
-                                       CreateRPropNetworkModelConfig(3, 500, ActivationFnID.ReLU),
-                                       CreateRPropNetworkModelConfig(3, 500, ActivationFnID.GELU),
-                                       CreateRPropNetworkModelConfig(3, 500, ActivationFnID.ELU)
+                new NetworkStackConfig(CreateRPropNetworkModelConfig(3, 500, ActivationFnID.ReLU, 50, 2),
+                                       CreateRPropNetworkModelConfig(3, 500, ActivationFnID.ReLU, 50, 1),
+                                       CreateRPropNetworkModelConfig(3, 500, ActivationFnID.LeakyReLU, 26, 1),
+                                       CreateRPropOutputOnlyNetworkModelConfig(3, 500)
                                        );
             //Model configuration
             StackingModelConfig cfg =
                 new StackingModelConfig(stackCfg,
-                                        CreateRPropNetworkModelConfig(3, 500, ActivationFnID.ReLU), //Meta-learner model configuration
+                                        CreateRPropOutputOnlyNetworkModelConfig(3, 500), //Meta-learner model configuration
                                         foldDataRatio, //Specifies the ratio of training samples constituting one hold-out fold
                                         routeInput //Specifies whether to provide original input to meta-learner
                                         );
+            return cfg;
+        }
+
+        /*
+         * BHS model configurations.
+        */
+        /// <summary>
+        /// Creates configuration of a BHS model.
+        /// </summary>
+        /// <param name="routeInput">Specifies whether to provide original input to meta-learner.</param>
+        public static BHSModelConfig CreateBHSModelConfig(bool routeInput = HSModelConfig.DefaultRouteInput
+                                                          )
+        {
+            //Configuration of networks constituing a stack.
+            NetworkStackConfig stackCfg =
+                new NetworkStackConfig(CreateNetworkModelConfig(ActivationFnID.ReLU, 50, 2),
+                                       CreateNetworkModelConfig(ActivationFnID.ReLU, 50, 1),
+                                       CreateNetworkModelConfig(ActivationFnID.LeakyReLU, 26, 1),
+                                       CreateOutputOnlyNetworkModelConfig()
+                                       );
+            //HS model configuration
+            HSModelConfig hsModelcfg =
+                new HSModelConfig(stackCfg,
+                                  CreateOutputOnlyNetworkModelConfig(), //Meta-learner model configuration
+                                  routeInput //Specifies whether to provide original input to meta-learner.
+                                  );
+            //BHS model configuration
+            BHSModelConfig cfg =
+                new BHSModelConfig(hsModelcfg, //HS model configuration
+                                   1 //Halfing repetitions
+                                   );
+            return cfg;
+        }
+
+        /// <summary>
+        /// Creates configuration of a BHS model with RProp optimizer (leading to BGD).
+        /// </summary>
+        /// <param name="routeInput">Specifies whether to provide original input to meta-learner.</param>
+        public static BHSModelConfig CreateRPropBHSModelConfig(bool routeInput = HSModelConfig.DefaultRouteInput
+                                                          )
+        {
+            //Configuration of networks constituing a stack.
+            NetworkStackConfig stackCfg =
+                new NetworkStackConfig(CreateRPropNetworkModelConfig(3, 500, ActivationFnID.ReLU, 25, 2),
+                                       CreateRPropNetworkModelConfig(3, 500, ActivationFnID.ReLU, 20, 1),
+                                       CreateRPropNetworkModelConfig(3, 500, ActivationFnID.LeakyReLU, 15, 1),
+                                       CreateRPropOutputOnlyNetworkModelConfig(3, 500)
+                                       );
+            //HS model configuration
+            HSModelConfig hsModelcfg =
+                new HSModelConfig(stackCfg,
+                                  CreateRPropOutputOnlyNetworkModelConfig(3, 500), //Meta-learner model configuration
+                                  routeInput //Specifies whether to provide original input to meta-learner.
+                                  );
+            //BHS model configuration
+            BHSModelConfig cfg =
+                new BHSModelConfig(hsModelcfg, //HS model configuration
+                                   1 //Halfing repetitions
+                                   );
             return cfg;
         }
 
@@ -328,9 +388,9 @@ namespace EasyMLEduApp.Examples.MLP
         {
             //Model configuration
             CompositeModelConfig modelCfg =
-                new CompositeModelConfig(CreateNetworkModelConfig(ActivationFnID.ReLU),
-                                         CreateNetworkModelConfig(ActivationFnID.TanH),
-                                         CreateRPropNetworkModelConfig(3, 200)
+                new CompositeModelConfig(CreateNetworkModelConfig(ActivationFnID.ReLU, 50, 2),
+                                         CreateNetworkModelConfig(ActivationFnID.TanH, 50, 2),
+                                         CreateNetworkModelConfig(ActivationFnID.ReLU, 44, 1)
                                          );
             return modelCfg;
         }
@@ -338,7 +398,7 @@ namespace EasyMLEduApp.Examples.MLP
         /// <summary>
         /// Creates configuration of the CompositeModel consisting of StackingModel, CrossValModel and one another CompositeModel.
         /// </summary>
-        /// <param name="foldDataRatio">Used for inner CrossValModel model. Specifies the ratio of training samples constituting validation fold.</param>
+        /// <param name="foldDataRatio">Used for inner Stacking and CrossVal models. Specifies the ratio of training samples constituting hold-out/validation fold.</param>
         public static CompositeModelConfig CreateCompositeModelConfig(double foldDataRatio)
         {
             //Model configuration

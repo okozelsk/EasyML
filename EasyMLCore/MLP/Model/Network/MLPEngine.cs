@@ -454,23 +454,20 @@ namespace EasyMLCore.MLP
                 //Compute summed weighted inputs
                 double[] sums = new double[NumOfLayerNeurons];
                 double[] activations = new double[NumOfLayerNeurons];
-                Parallel.ForEach(Partitioner.Create(0, NumOfLayerNeurons), neuronRange =>
+                for (int neuronIdx = 0; neuronIdx < NumOfLayerNeurons; neuronIdx++)
                 {
-                    for(int neuronIdx = neuronRange.Item1; neuronIdx < neuronRange.Item2; neuronIdx++)
+                    int weightFlatIdx = WeightsStartFlatIdx + neuronIdx * NumOfInputNodes;
+                    sums[neuronIdx] = flatWeights[BiasesStartFlatIdx + neuronIdx];
+                    for (int inputIdx = 0; inputIdx < NumOfInputNodes; inputIdx++)
                     {
-                        int weightFlatIdx = WeightsStartFlatIdx + neuronIdx * NumOfInputNodes;
-                        sums[neuronIdx] = flatWeights[BiasesStartFlatIdx + neuronIdx];
-                        for (int inputIdx = 0; inputIdx < NumOfInputNodes; inputIdx++)
-                        {
-                            sums[neuronIdx] += flatWeights[weightFlatIdx + inputIdx] * inputs[inputIdx];
-                        }
-                        if (!OutputLayer)
-                        {
-                            //Compute hidden layer neuron
-                            activations[neuronIdx] = Activation.Compute(sums[neuronIdx]);
-                        }
+                        sums[neuronIdx] += flatWeights[weightFlatIdx + inputIdx] * inputs[inputIdx];
                     }
-                });
+                    if (!OutputLayer)
+                    {
+                        //Compute hidden layer neuron
+                        activations[neuronIdx] = Activation.Compute(sums[neuronIdx]);
+                    }
+                }
                 if (OutputLayer)
                 {
                     //Compute output layer neurons

@@ -8,9 +8,10 @@ using System.Reflection;
 namespace EasyMLEduApp.Examples.MLP
 {
     /// <summary>
-    /// Example code demonstrates use of NetworkModel, CrossValModel, StackingModel
-    /// and CompositeModel to solve Binary decisions tasks.
-    /// Code also shows how any objects of type dataset, configuration, error
+    /// Example code demonstrates use of
+    /// Network, CrossVal, BHS, Stacking and Composite models
+    /// to solve Binary decisions tasks (classification).
+    /// Code also shows how objects of type dataset, configuration, error
     /// statistics or model can be easily serialized and deserialized.
     /// 
     /// See txt files related to csv files for more info.
@@ -34,6 +35,7 @@ namespace EasyMLEduApp.Examples.MLP
             {
                 MLPModelConfigs.CreateNetworkModelConfig(ActivationFnID.LeakyReLU),
                 MLPModelConfigs.CreateCrossValModelConfig(0.1d),
+                MLPModelConfigs.CreateBHSModelConfig(),
                 MLPModelConfigs.CreateStackingModelConfig(0.1d),
                 MLPModelConfigs.CreateSmallCompositeModelConfig()
             };
@@ -131,6 +133,7 @@ namespace EasyMLEduApp.Examples.MLP
             EasyML.Oper.Log.Write($"--------------------");
             EasyML.Oper.Log.Write($"The best configuration is:");
             EasyML.Oper.Report((ConfigBase)bestModelConfig, false, 4);
+            EasyML.Oper.Log.Write(string.Empty);
             EasyML.Oper.Log.Write($"Trained model detailed info:");
             EasyML.Oper.Report(bestModel, false, 4);
             EasyML.Oper.Log.Write($"Achieved error statistics:");

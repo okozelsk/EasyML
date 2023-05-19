@@ -29,6 +29,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
             //Output feature names of TTOO Biosystems Share Prices regression task
             List<string> outputFeatureNames = new List<string>() { "High", "Low", "Adj Close" };
             //Training and Testing data
+            EasyML.Oper.Report("./Data/TTOO_patterns.txt");
             SampleDataset trainingData =
                 EasyML.Oper.LoadSampleData("./Data/TTOO_patterns_train.csv", //Training csv data file name
                                            SampleDataset.CsvOutputFeaturesPosition.Last,
