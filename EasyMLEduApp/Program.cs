@@ -35,6 +35,7 @@ namespace EasyMLEduApp
                 switch (consoleKeyInfo.KeyChar.ToString().ToUpperInvariant())
                 {
                     case "1":
+                        //MLP models code examples sub menu
                         MLPCodeExamplesMenu();
                         wait = false;
                         break;
@@ -45,12 +46,7 @@ namespace EasyMLEduApp
                         wait = false;
                         break;
 
-                    case "3":
-                        //Performance demo
-                        break;
-
                     case "P":
-                        //Playground.Run();
                         try
                         {
                             Playground.Run();
@@ -202,6 +198,7 @@ namespace EasyMLEduApp
                 Console.WriteLine("  4. Reservoir Computer (pattern feeding) Simultaneous categorical, binary and regression tasks");
                 Console.WriteLine("  5. Reservoir Computer (pattern feeding) Deep tests");
                 Console.WriteLine("  6. Reservoir Computer (time point feeding) Regression tasks");
+                Console.WriteLine("  7. ICANN/PASCAL2 Challenge: MEG MindReading");
                 Console.WriteLine("  X. Back to Root menu");
                 Console.WriteLine();
                 Console.WriteLine("  Press the digit or letter of your choice...");
@@ -268,6 +265,17 @@ namespace EasyMLEduApp
                         try
                         {
                             ResCompTPRegressionTasks.Run();
+                        }
+                        catch (Exception e)
+                        {
+                            ReportException(e);
+                        }
+                        break;
+
+                    case "7":
+                        try
+                        {
+                            ResCompMindReadingChallenge.Run();
                         }
                         catch (Exception e)
                         {

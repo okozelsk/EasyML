@@ -166,7 +166,17 @@ For the "TimePoint" feeding RC a file is expected that has a header with all var
 ## EasyMLEduApp (namespace EasyMLEduApp)
 Contains a small console application (.net 6, C#10), where is shown how to work with EasyMLCore. Application has no startup parameters and walking through examples is solved as the menu.
 Examples are divided into two main parts. The first one shows usage of MLP models (here is recommended to start) and the second shows usage of Reservoir Computer.
-Application uses datasets stored in Data sub-folder. Datasets are in csv format and each dataset has associated text file describing it (just for information). Application writes serialization data to Temp sub-folder.
+Application reads datasets stored in Data and LargeData sub-folders.
+Datasets in "Data" subfolder are part of the repository so they are copied atomatically.
+Datasets in "LargeData" subfolder are not part of the repository and they are have to be downloaded manually from [Dropbox](https://www.dropbox.com/sh/giwl8iee5eafjoo/AADqljqnOHIsgtuttjNgxAJWa?dl=0) and unzipped.
+Datasets are in csv format and each dataset has associated text file describing it (just for information).
+Application writes serialization data to Temp sub-folder.
+
+#### Some interresting results of Reservoir Computer
+|ML Task|Type|Best result|EasyML Reservoir Computer Result|Source code|Comment|
+|--|--|--|--|--|--|
+|[ICANN/PASCAL2 Challenge: MEG Mind Reading](https://www.researchgate.net/publication/239918465_ICANNPASCAL2_Challenge_MEG_Mind_Reading_--_Overview_and_Results)|Classification|68%|71.36%|[ResCompMindReadingChallenge.cs](./EasyMLEduApp/Examples/ReservoirComputing/ResCompMindReadingChallenge.cs)|Simple configuration using "SpikesFadingTrace" predictors.|
+
 
 #### Contact
 Questions, ideas, suggestions for improvement and other constructive comments are welcome at my email address oldrich.kozelsky@email.cz
