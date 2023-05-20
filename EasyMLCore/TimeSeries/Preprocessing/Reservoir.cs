@@ -426,7 +426,7 @@ namespace EasyMLCore.TimeSeries
         {
             const int SynapsesParallelLimit = 7000;
             const int NeuronsWithStatParallelLimit = 500;
-            const int NeuronsOnlyParallelLimit = 2000;
+            const int NeuronsOnlyParallelLimit = NeuronsWithStatParallelLimit * 2;
             //Input
             for (int i = 0; i < _inputNeurons.Length; i++)
             {

@@ -147,6 +147,9 @@
     <None Update="Data\Worms_test.csv">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="LargeData\readme.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Temp\readme.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

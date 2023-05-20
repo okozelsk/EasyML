@@ -50,6 +50,7 @@ namespace EasyMLEduApp
                         break;
 
                     case "P":
+                        //Playground.Run();
                         try
                         {
                             Playground.Run();

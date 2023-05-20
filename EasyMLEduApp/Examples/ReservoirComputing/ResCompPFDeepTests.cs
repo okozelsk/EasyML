@@ -77,7 +77,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
                                                              2, //Two variables (coordinates X and Y)
                                                              TimeSeriesPattern.FlatVarSchema.VarSequence, //Coordinates are two noodles 45xX and 45xY in a flat input pattern
                                                              Reservoir.InputFeeding.Pattern, //Feeding regime
-                                                             0.5d, //ReservoirInputConfig.DefaultDensity, //Connections density of 1 input variable to hidden neurons
+                                                             0.2d, //ReservoirInputConfig.DefaultDensity, //Connections density of 1 input variable to hidden neurons
                                                              4, //Synaptic maximum delay
                                                              ReservoirInputConfig.DefaultMaxStrength //Max strength of input per hidden neuron
                                                              ),
@@ -91,17 +91,19 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
             //Task config
             //Allowed inputs (outputs from raservoir)
             ResCompTaskInputSectionsConfig inputSections =
-                new ResCompTaskInputSectionsConfig(Reservoir.OutSection.SpikesFadingTraces
-                                                   );
+                new ResCompTaskInputSectionsConfig(Reservoir.OutSection.SpikesFadingTraces);
+
             NetworkModelConfig networkCfg =
                 new NetworkModelConfig(3, //Maximum number of training attempts
                                        100, //Maximum number of epochs within a training attempt
                                        new RPropConfig() //Weights updater
                                        );
+
             CrossValModelConfig modelCfg =
                 new CrossValModelConfig(networkCfg, //For every validation fold will be trained a cluster member network having this configuration
                                         15d / 180d //Validation fold data ratio
                                         );
+
             ResCompTaskConfig taskConfig =
                 new ResCompTaskConfig(taskName,
                                       OutputTaskType.Categorical,
@@ -109,6 +111,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
                                       new FeaturesConfig(outputFeatureNames),
                                       modelCfg //Model to be used
                                       );
+
             //Reservoir computer config
             ResCompConfig resCompCfg =
                 new ResCompConfig(reservoirCfg, taskConfig);
@@ -148,11 +151,11 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
                                                              1, //One variable (outline)
                                                              TimeSeriesPattern.FlatVarSchema.VarSequence, //It does not matter in case of 1 variable
                                                              Reservoir.InputFeeding.Pattern, //Feeding regime
-                                                             160d, //ReservoirInputConfig.DefaultDensity, //Connections density of 1 input variable to hidden neurons
-                                                             79, //Synaptic maximum delay
+                                                             (2 * 80 * 1), //ReservoirInputConfig.DefaultDensity, //Connections density of 1 input variable to hidden neurons
+                                                             (trainingData.InputVectorLength - 1), //Synaptic maximum delay
                                                              ReservoirInputConfig.DefaultMaxStrength //Max strength of input per hidden neuron
                                                              ),
-                                    new ReservoirHiddenLayerConfig(160, //Number of hidden neurons
+                                    new ReservoirHiddenLayerConfig((2 * 80 * 1), //Number of hidden neurons
                                                                    ReservoirHiddenLayerConfig.DefaultDensity, //Density of hidden to hidden connection
                                                                    ReservoirHiddenLayerConfig.DefaultMaxDelay, //Synaptic maximum delay
                                                                    0.05d //Retainment
@@ -162,8 +165,8 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
             //Task config
             //Allowed inputs (outputs from raservoir)
             ResCompTaskInputSectionsConfig inputSections =
-                new ResCompTaskInputSectionsConfig(Reservoir.OutSection.SpikesFadingTraces
-                                                   );
+                new ResCompTaskInputSectionsConfig(Reservoir.OutSection.SpikesFadingTraces);
+
             NetworkModelConfig networkCfg =
                 new NetworkModelConfig(5, //Maximum number of training attempts
                                        500, //Maximum number of epochs within a training attempt
@@ -171,7 +174,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
                                        );
             CrossValModelConfig modelCfg =
                 new CrossValModelConfig(networkCfg, //For every validation fold will be trained a cluster member network having this configuration
-                                        0.25d //Validation fold data ratio
+                                        0.5d //Validation fold data ratio
                                         );
             ResCompTaskConfig taskConfig =
                 new ResCompTaskConfig(taskName,

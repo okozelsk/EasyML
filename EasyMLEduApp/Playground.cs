@@ -7,7 +7,9 @@ using EasyMLCore.Loss;
 using EasyMLCore.MathTools;
 using EasyMLCore.MiscTools;
 using EasyMLCore.MLP;
+using EasyMLCore.MLP.Model;
 using EasyMLCore.TimeSeries;
+using EasyMLEduApp.Examples.MLP;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -25,7 +27,6 @@ namespace EasyMLEduApp
 
         //Methods
 
-    
 
         /// <summary>
         /// Playground's entry point.
@@ -34,7 +35,6 @@ namespace EasyMLEduApp
         {
             Console.Clear();
             //TODO - place your code here
-
             Console.WriteLine("Press enter to return to menu...");
             Console.ReadLine();
             return;
