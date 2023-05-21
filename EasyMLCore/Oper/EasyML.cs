@@ -756,6 +756,39 @@ namespace EasyMLCore
             return aggregatedErrStat;
         }
 
+        /// <summary>
+        /// Performs diagnostic test of a model and all its sub-models on given data.
+        /// </summary>
+        /// <param name="resComp">Model to be tested.</param>
+        /// <param name="testingData">Testing samples.</param>
+        /// <param name="verbose">Specifies whether to report progress.</param>
+        /// <param name="detail">Specifies whether to report max available detail.</param>
+        /// <returns>Diagnostics data of the model and all its sub-models.</returns>
+        public List<ModelDiagnosticData> DiagnosticTest(ResComp resComp,
+                                                        SampleDataset testingData,
+                                                        bool verbose = true,
+                                                        bool detail = false
+                                                        )
+        {
+            if (verbose)
+            {
+                Log.Write($"Diagnostic test of the Reservoir Computer is running...");
+            }
+            List<ModelDiagnosticData> tasksDiagData = resComp.DiagnosticTest(testingData, verbose ? Handlers.OnResCompTestProgressChanged : null);
+            if (verbose)
+            {
+                //Log.Write(string.Empty);
+                for (int i = 0; i < tasksDiagData.Count; i++)
+                {
+                    //Log.Write($"Task ({model.Tasks[i].Name})");
+                    Log.Write(tasksDiagData[i].GetInfoText(detail, 4));
+                    Log.Write(string.Empty);
+                }
+                Log.Write(string.Empty);
+            }
+            return tasksDiagData;
+        }
+
 
 
 

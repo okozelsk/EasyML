@@ -1,6 +1,7 @@
 ﻿using EasyMLCore;
 using EasyMLCore.Data;
 using EasyMLCore.MLP;
+using EasyMLCore.MLP.Model;
 using EasyMLCore.TimeSeries;
 using EasyMLEduApp.Examples.MLP;
 using System;

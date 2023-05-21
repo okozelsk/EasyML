@@ -1,6 +1,7 @@
 ﻿using EasyMLCore;
 using EasyMLCore.Data;
 using EasyMLCore.MLP;
+using EasyMLCore.MLP.Model;
 using EasyMLCore.TimeSeries;
 using EasyMLEduApp.Examples.MLP;
 using System;
@@ -93,6 +94,13 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
                                    testingData, //Testing data
                                    out ResultDataset resultDataset //Original testing samples together with computed data
                                    );
+            //Diagnostic test (an alternative to Test)
+            List<ModelDiagnosticData> tasksDiagData =
+                EasyML.Oper.DiagnosticTest(resComp, //Our built reservoir computer
+                                           testingData, //Testing data
+                                           true, //Verbose
+                                           false //Max detail
+                                           );
             return;
         }
 
@@ -168,6 +176,13 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
                                    testingData, //Testing data
                                    out ResultDataset resultDataset //Original testing samples together with computed data
                                    );
+            //Diagnostic test (an alternative to Test)
+            List<ModelDiagnosticData> tasksDiagData =
+                EasyML.Oper.DiagnosticTest(resComp, //Our built reservoir computer
+                                           testingData, //Testing data
+                                           true, //Verbose
+                                           false //Max detail
+                                           );
             return;
         }
 

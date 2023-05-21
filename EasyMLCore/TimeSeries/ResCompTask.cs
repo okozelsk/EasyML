@@ -1,6 +1,7 @@
 ﻿using EasyMLCore.Data;
 using EasyMLCore.Extensions;
 using EasyMLCore.MLP;
+using EasyMLCore.MLP.Model;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -186,6 +187,22 @@ namespace EasyMLCore.TimeSeries
                                  )
         {
             return _model.Test(testingData, out resultDataset, progressInfoSubscriber);
+        }
+
+        /// <summary>
+        /// Performs diagnostic test of the RC task's model and all its inner sub-models.
+        /// </summary>
+        /// <remarks>
+        /// Samples can be in any range. Data standardization is always performed internally.
+        /// </remarks>
+        /// <param name="testingData">Testing samples.</param>
+        /// <param name="progressInfoSubscriber">Subscriber will receive notification event about progress. (Parameter can be null).</param>
+        /// <returns>Resulting diagnostics data of the RC task's model and all its inner sub-models.</returns>
+        public ModelDiagnosticData DiagnosticTest(SampleDataset testingData,
+                                                  ModelTestProgressChangedHandler progressInfoSubscriber = null
+                                                  )
+        {
+            return _model.DiagnosticTest(testingData, progressInfoSubscriber);
         }
 
         /// <inheritdoc/>

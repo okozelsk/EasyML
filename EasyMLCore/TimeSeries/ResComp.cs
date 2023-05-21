@@ -2,6 +2,7 @@
 using EasyMLCore.Extensions;
 using EasyMLCore.MiscTools;
 using EasyMLCore.MLP;
+using EasyMLCore.MLP.Model;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -173,6 +174,24 @@ namespace EasyMLCore.TimeSeries
             return taskOutputVector;
         }
 
+        private SampleDataset GetTaskDataset(int taskIdx, SampleDataset allData, List<List<Tuple<string, double[]>>> bulkResOutSectionsData)
+        {
+            //Not all input samples are available for tasks
+            int trainingDataStartIdx = allData.Count - bulkResOutSectionsData.Count;
+            //Extract task inputs and outputs and prepare task-specific data
+            SampleDataset taskDataset = new SampleDataset(bulkResOutSectionsData.Count);
+            for (int sampleIdx = trainingDataStartIdx, resOutIdx = 0; sampleIdx < allData.SampleCollection.Count; sampleIdx++, resOutIdx++)
+            {
+                double[] taskInputVector = GetTaskInputVector(taskIdx, bulkResOutSectionsData[resOutIdx]);
+                double[] taskOutputVector = GetTaskOutputVector(taskIdx, allData.SampleCollection[sampleIdx].OutputVector);
+                taskDataset.AddSample(allData.SampleCollection[sampleIdx].ID,
+                                      taskInputVector,
+                                      taskOutputVector
+                                      );
+            }
+            return taskDataset;
+        }
+
         /// <summary>
         /// Builds the Reservoir Computer.
         /// </summary>
@@ -201,28 +220,13 @@ namespace EasyMLCore.TimeSeries
                                   out reservoirStat,
                                   resComp.OnReservoirInitProgressChanged
                                   );
-                //Not all input samples are available for tasks training
-                int trainingDataStartIdx = trainingData.Count - bulkResOutSectionsData.Count;
                 //Build task's models
-                //_taskInputSectionIdxs
-                int taskOutputFeaturesStartIdx = 0;
                 for (int taskIdx = 0; taskIdx < cfg.TaskCfgCollection.Count; taskIdx++)
                 {
                     //Extract task inputs and outputs and prepare task-specific data
-                    SampleDataset taskDataset;
-                    taskDataset = new SampleDataset(bulkResOutSectionsData.Count);
-                    for (int sampleIdx = trainingDataStartIdx, resOutIdx = 0; sampleIdx < trainingData.SampleCollection.Count; sampleIdx++, resOutIdx++)
-                    {
-                        double[] taskInputVector = resComp.GetTaskInputVector(taskIdx, bulkResOutSectionsData[resOutIdx]);
-                        double[] taskOutputVector = trainingData.SampleCollection[sampleIdx].OutputVector.Extract(taskOutputFeaturesStartIdx, cfg.TaskCfgCollection[taskIdx].OutputFeaturesCfg.FeatureCfgCollection.Count);
-                        taskDataset.AddSample(trainingData.SampleCollection[sampleIdx].ID,
-                                              taskInputVector,
-                                              taskOutputVector
-                                              );
-                    }
+                    SampleDataset taskDataset = resComp.GetTaskDataset(taskIdx, trainingData, bulkResOutSectionsData);
                     //Build task
                     resComp.Tasks.Add(ResCompTask.Build(cfg.TaskCfgCollection[taskIdx], taskDataset, resComp.OnModelBuildProgressChanged));
-                    taskOutputFeaturesStartIdx += cfg.TaskCfgCollection[taskIdx].OutputFeaturesCfg.FeatureCfgCollection.Count;
                 }
                 return resComp;
             }
@@ -299,6 +303,7 @@ namespace EasyMLCore.TimeSeries
                     ResCompTestProgressInfo pinfo = new ResCompTestProgressInfo(new ProgressTracker((uint)testingData.SampleCollection.Count, (uint)sampleIdx), null);
                     TestProgressChanged?.Invoke(pinfo);
                 }
+                //Test tasks
                 List<ModelErrStat> taskErrStats = new List<ModelErrStat>(_cfg.TaskCfgCollection.Count);
                 List<ResultDataset> taskResultDatasets = new List<ResultDataset>(_cfg.TaskCfgCollection.Count);
                 for (int taskIdx = 0; taskIdx < _cfg.TaskCfgCollection.Count; taskIdx++)
@@ -321,6 +326,62 @@ namespace EasyMLCore.TimeSeries
                                             );
                 }
                 return taskErrStats;
+            }
+            finally
+            {
+                if (progressInfoSubscriber != null)
+                {
+                    TestProgressChanged -= progressInfoSubscriber;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Performs diagnostic test of each RC task's model and all its inner sub-models.
+        /// </summary>
+        /// <remarks>
+        /// Samples can be in any range. Data standardization is always performed internally.
+        /// </remarks>
+        /// <param name="testingData">Testing samples.</param>
+        /// <param name="progressInfoSubscriber">Subscriber will receive notification event about progress. (Parameter can be null).</param>
+        /// <returns>Resulting diagnostics data of each RC task's model and all its inner sub-models.</returns>
+        public List<ModelDiagnosticData> DiagnosticTest(SampleDataset testingData,
+                                                        ResCompTestProgressChangedHandler progressInfoSubscriber = null
+                                                        )
+        {
+            if (progressInfoSubscriber != null)
+            {
+                TestProgressChanged += progressInfoSubscriber;
+            }
+            try
+            {
+                //Prepare specific datasets for tasks
+                List<SampleDataset> taskTestDatasets = new List<SampleDataset>(_cfg.TaskCfgCollection.Count);
+                for (int taskIdx = 0; taskIdx < _cfg.TaskCfgCollection.Count; taskIdx++)
+                {
+                    taskTestDatasets.Add(new SampleDataset(testingData.Count));
+                }
+                int sampleIdx = 0;
+                foreach (Sample sample in testingData.SampleCollection)
+                {
+                    double[] resFlatData = Res.Compute(sample.InputVector, out List<Tuple<string, double[]>> resOutSectionsData);
+                    for (int taskIdx = 0; taskIdx < _cfg.TaskCfgCollection.Count; taskIdx++)
+                    {
+                        double[] taskInputVector = GetTaskInputVector(taskIdx, resOutSectionsData);
+                        double[] taskOutputVector = GetTaskOutputVector(taskIdx, sample.OutputVector);
+                        taskTestDatasets[taskIdx].AddSample(sample.ID, taskInputVector, taskOutputVector);
+                    }
+                    ++sampleIdx;
+                    ResCompTestProgressInfo pinfo = new ResCompTestProgressInfo(new ProgressTracker((uint)testingData.SampleCollection.Count, (uint)sampleIdx), null);
+                    TestProgressChanged?.Invoke(pinfo);
+                }
+                //Diagnostic tests
+                List<ModelDiagnosticData> tasksDiagData = new List<ModelDiagnosticData>(_cfg.TaskCfgCollection.Count);
+                for (int taskIdx = 0; taskIdx < _cfg.TaskCfgCollection.Count; taskIdx++)
+                {
+                    tasksDiagData.Add(Tasks[taskIdx].DiagnosticTest(taskTestDatasets[taskIdx], OnModelTestProgressChanged));
+                }
+                return tasksDiagData;
             }
             finally
             {
