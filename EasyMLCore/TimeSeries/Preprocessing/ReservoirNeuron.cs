@@ -112,6 +112,38 @@ namespace EasyMLCore.TimeSeries
             return;
         }
 
+        /// <summary>
+        /// Copy constructor.
+        /// </summary>
+        /// <param name="source">Source instance.</param>
+        public ReservoirNeuron(ReservoirNeuron source)
+        {
+            Index = source.Index;
+            InputSynapses = new List<ReservoirSynapse>(source.InputSynapses.Count);
+            foreach(ReservoirSynapse synapse in source.InputSynapses)
+            {
+                InputSynapses.Add(synapse.DeepClone());
+            }
+            HiddenSynapses = new List<ReservoirSynapse>(source.HiddenSynapses.Count);
+            foreach (ReservoirSynapse synapse in source.HiddenSynapses)
+            {
+                HiddenSynapses.Add(synapse.DeepClone());
+            }
+            SpikeEvent = source.SpikeEvent;
+            SpikePower = source.SpikePower;
+            Predictors = (double[])source.Predictors.Clone();
+            PredictorSwitches = (bool[])source.PredictorSwitches.Clone();
+            _activationFn = source._activationFn;
+            _retainment = source._retainment;
+            _spikeEventThreshold = source._spikeEventThreshold;
+            _fadingCoeff = source._fadingCoeff;
+            _stimuliSum = source._stimuliSum;
+            _prevActivation = source._prevActivation;
+            _activation = source._activation;
+            return;
+        }
+
+
         //Methods
         /// <summary>
         /// Gets current neuron activation.
@@ -122,12 +154,12 @@ namespace EasyMLCore.TimeSeries
         /// <summary>
         /// Synaptically connects input neuron.
         /// </summary>
-        /// <param name="sourceNeuron">Source neuron to be connected with.</param>
+        /// <param name="sourceNeuronIndex">Index of source neuron to be connected with.</param>
         /// <param name="weight">Synaptic weight.</param>
         /// <param name="delay">Synaptic delay.</param>
-        public void ConnectInputNeuron(ReservoirNeuron sourceNeuron, double weight, int delay)
+        public void ConnectInputNeuron(int sourceNeuronIndex, double weight, int delay)
         {
-            ReservoirSynapse synapse = new ReservoirSynapse(sourceNeuron, weight, delay);
+            ReservoirSynapse synapse = new ReservoirSynapse(sourceNeuronIndex, weight, delay);
             InputSynapses.Add(synapse);
             return;
         }
@@ -135,12 +167,12 @@ namespace EasyMLCore.TimeSeries
         /// <summary>
         /// Synaptically connects hidden neuron.
         /// </summary>
-        /// <param name="sourceNeuron">Source neuron to be connected with.</param>
+        /// <param name="sourceNeuronIndex">Index of source neuron to be connected with.</param>
         /// <param name="weight">Synaptic weight.</param>
         /// <param name="delay">Synaptic delay.</param>
-        public void ConnectHiddenNeuron(ReservoirNeuron sourceNeuron, double weight, int delay)
+        public void ConnectHiddenNeuron(int sourceNeuronIndex, double weight, int delay)
         {
-            ReservoirSynapse synapse = new ReservoirSynapse(sourceNeuron, weight, delay);
+            ReservoirSynapse synapse = new ReservoirSynapse(sourceNeuronIndex, weight, delay);
             HiddenSynapses.Add(synapse);
             return;
         }
@@ -179,18 +211,26 @@ namespace EasyMLCore.TimeSeries
         /// <summary>
         /// Collects stimuli from an external input and connected neurons.
         /// </summary>
+        /// <param name="inputNeurons">Input neurons.</param>
+        /// <param name="hiddenNeurons">Hidden neurons.</param>
         /// <param name="externalInput">External input.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void CollectStimuli(double externalInput = 0)
+        public void CollectStimuli(ReservoirNeuron[] inputNeurons, ReservoirNeuron[] hiddenNeurons, double externalInput = 0)
         {
             _stimuliSum = externalInput;
-            foreach (ReservoirSynapse synapse in InputSynapses)
+            if (inputNeurons != null)
             {
-                _stimuliSum += synapse.Pull();
+                foreach (ReservoirSynapse synapse in InputSynapses)
+                {
+                    _stimuliSum += synapse.Pull(inputNeurons);
+                }
             }
-            foreach (ReservoirSynapse synapse in HiddenSynapses)
+            if (hiddenNeurons != null)
             {
-                _stimuliSum += synapse.Pull();
+                foreach (ReservoirSynapse synapse in HiddenSynapses)
+                {
+                    _stimuliSum += synapse.Pull(hiddenNeurons);
+                }
             }
             return;
         }
@@ -287,6 +327,14 @@ namespace EasyMLCore.TimeSeries
                 hiddenWStat.AddSample(synapse.GetWeight());
             }
             return;
+        }
+
+        /// <summary>
+        /// Creates deep clone.
+        /// </summary>
+        public ReservoirNeuron DeepClone()
+        {
+            return new ReservoirNeuron(this);
         }
 
     }//ReservoirNeuron

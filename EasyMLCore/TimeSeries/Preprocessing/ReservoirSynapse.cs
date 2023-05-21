@@ -16,7 +16,7 @@ namespace EasyMLCore.TimeSeries
         public int Delay { get; private set; }
 
         //Attributes
-        private readonly ReservoirNeuron _presynapticNeuron;
+        private readonly int _presynapticNeuronIndex;
         private readonly double[] _queueBuffer;
         private int _enqueueIndex;
         private int _dequeueIndex;
@@ -26,16 +26,32 @@ namespace EasyMLCore.TimeSeries
         /// <summary>
         /// Creates an initialized instance.
         /// </summary>
-        /// <param name="presynapticNeuron">Synapse's presynaptic (stimuli source) neuron.</param>
+        /// <param name="presynapticNeuronIndex">Index of synapse's presynaptic (stimuli source) neuron.</param>
         /// <param name="weight">Synaptic weight.</param>
         /// <param name="delay">Synaptic delay.</param>
-        public ReservoirSynapse(ReservoirNeuron presynapticNeuron, double weight, int delay)
+        public ReservoirSynapse(int presynapticNeuronIndex, double weight, int delay)
         {
             Delay = delay;
-            _presynapticNeuron = presynapticNeuron;
+            _presynapticNeuronIndex = presynapticNeuronIndex;
             _weight = weight;
             _queueBuffer = Delay > 0 ? new double[Delay + 1] : null;
             Reset();
+            return;
+        }
+
+        /// <summary>
+        /// Copy constructor.
+        /// </summary>
+        /// <param name="source">Source instance.</param>
+        public ReservoirSynapse(ReservoirSynapse source)
+        {
+            Delay = source.Delay;
+            _presynapticNeuronIndex = source._presynapticNeuronIndex;
+            _weight = source._weight;
+            _queueBuffer = (double[])source._queueBuffer?.Clone();
+            _enqueueIndex = source._enqueueIndex;
+            _dequeueIndex = source._dequeueIndex;
+            _count = source._dequeueIndex;
             return;
         }
 
@@ -47,10 +63,10 @@ namespace EasyMLCore.TimeSeries
         public double GetWeight() { return _weight; }
 
         /// <summary>
-        /// Gets synapse's presynaptic neuron.
+        /// Gets presynaptic neuron's index.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReservoirNeuron GetPresynapticNeuron() { return _presynapticNeuron; }
+        public int GetPresynapticNeuronIndex() { return _presynapticNeuronIndex; }
 
         /// <summary>
         /// Resets synapse.
@@ -80,16 +96,16 @@ namespace EasyMLCore.TimeSeries
         /// </summary>
         /// <returns>Stimuli.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public double Pull()
+        public double Pull(ReservoirNeuron[] neurons)
         {
             //Delay?
             if(_queueBuffer == null)
             {
                 //No delay
-                return _presynapticNeuron.GetActivation() * _weight;
+                return neurons[_presynapticNeuronIndex].GetActivation() * _weight;
             }
             //Enqueue
-            _queueBuffer[_enqueueIndex++] = _presynapticNeuron.GetActivation() * _weight;
+            _queueBuffer[_enqueueIndex++] = neurons[_presynapticNeuronIndex].GetActivation() * _weight;
             if (_enqueueIndex == _queueBuffer.Length)
             {
                 _enqueueIndex = 0;
@@ -112,6 +128,14 @@ namespace EasyMLCore.TimeSeries
                 //No signal yet
                 return 0d;
             }
+        }
+
+        /// <summary>
+        /// Creates deep clone.
+        /// </summary>
+        public ReservoirSynapse DeepClone()
+        {
+            return new ReservoirSynapse(this);
         }
 
     }//Reservoir synapse

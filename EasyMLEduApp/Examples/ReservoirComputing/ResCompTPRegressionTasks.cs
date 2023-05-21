@@ -168,7 +168,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
                                   out ReservoirStat resStat //Stat data of the reservoir
                                   );
             //Store RC at this point for later use
-            resComp.Serialize("./Temp/MackeyGlassSavedRC.bin");
+            ResComp savedResComp = resComp.DeepClone();
             //Classical testing
             List<ModelErrStat> errStats =
                 EasyML.Oper.Test(resComp, //Our built reservoir computer
@@ -193,18 +193,16 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
 
             EasyML.Oper.Log.Write($"And now let's try to compute testing samples without the feed of samples.");
             EasyML.Oper.Log.Write($"Instead of samples, we use directly RC's computed output as the next input (aka feedback).");
-            //Restore RC back at the point after training
-            resComp = (ResComp)SerializableObject.Deserialize("./Temp/MackeyGlassSavedRC.bin");
             //The first input is the last output vector from training samples
             double[] inputVector = trainingData.SampleCollection[trainingData.Count - 1].OutputVector;
             for(int i = 0; i < testingData.Count; i++)
             {
-                //Compute next MackeyGlass value
-                double[] outputVector = resComp.Compute(inputVector, out List<Tuple<string, TaskOutputDetailBase>> outputDetails);
+                //Compute next MackeyGlass value using previously saved ResComp instance
+                double[] outputVector = savedResComp.Compute(inputVector, out List<Tuple<string, TaskOutputDetailBase>> outputDetails);
                 //Report ideal value from testing data
                 EasyML.Oper.Log.Write($"Sample {i+1}");
                 EasyML.Oper.Log.Write($"Ideal:");
-                EasyML.Oper.Report(resComp.GetOutputDetails(testingData.SampleCollection[i].OutputVector));
+                EasyML.Oper.Report(savedResComp.GetOutputDetails(testingData.SampleCollection[i].OutputVector));
                 //And report our computed value
                 EasyML.Oper.Log.Write($"Computed:");
                 EasyML.Oper.Report(outputDetails);
@@ -221,7 +219,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
         public static void Run()
         {
             Console.Clear();
-            ExecuteResCompTSLAExample();
+            //ExecuteResCompTSLAExample();
             ExecuteResCompMackeyGlassExample();
             return;
         }

@@ -8,6 +8,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -212,7 +213,7 @@ namespace EasyMLCore.TimeSeries
                     int sNRealIdx = tNIdx == hiddenNeuronIndices.Length - 1 ? hiddenNeuronIndices[0] : hiddenNeuronIndices[tNIdx + 1];
                     absWeightsSums[tNRealIdx] += Math.Abs(weight);
                     //Connect
-                    _hiddenNeurons[tNRealIdx].ConnectHiddenNeuron(_hiddenNeurons[sNRealIdx], weight, delay);
+                    _hiddenNeurons[tNRealIdx].ConnectHiddenNeuron(sNRealIdx, weight, delay);
                     ++NumOfHiddenSynapses;
                 }
             }
@@ -246,7 +247,7 @@ namespace EasyMLCore.TimeSeries
                 {
                     double weight = rand.NextRangedUniformDouble(_cfg.InputCfg.MaxStrength / 2d, _cfg.InputCfg.MaxStrength);
                     int delay = icc == null ? 0 : icc.GetNext();
-                    _hiddenNeurons[hiddenNeuronIndices[i]].ConnectInputNeuron(_inputNeurons[neuronIdx], weight, delay);
+                    _hiddenNeurons[hiddenNeuronIndices[i]].ConnectInputNeuron(neuronIdx, weight, delay);
                     ++NumOfInputSynapses;
                 }
             }
@@ -268,6 +269,44 @@ namespace EasyMLCore.TimeSeries
             OutSectionsLengths[(int)OutSection.ResInputs] = cfg.InputCfg.FlatDataLength;
             //Booting cycles countdown
             SetBootingCountdown();
+            return;
+        }
+
+        /// <summary>
+        /// Copy constructor.
+        /// </summary>
+        /// <param name="source">Source instance.</param>
+        public Reservoir(Reservoir source)
+        {
+            OutSectionsLengths = (int[])source.OutSectionsLengths.Clone();
+            NumOfInputSynapses = source.NumOfInputSynapses;
+            InputSynapsesWeightStat = new BasicStat(source.InputSynapsesWeightStat);
+            NumOfHiddenSynapses = source.NumOfHiddenSynapses;
+            HiddenSynapsesWeightStat = new BasicStat(source.HiddenSynapsesWeightStat);
+            _cfg = (ReservoirConfig)source._cfg.DeepClone();
+            _inputFilters = new RealFeatureFilter[source._inputFilters.Length];
+            for(int i = 0; i < source._inputFilters.Length; i++)
+            {
+                _inputFilters[i] = (RealFeatureFilter)source._inputFilters[i].DeepClone();
+            }
+            _inputActivationFn = ActivationFactory.CreateActivationFn(source._inputActivationFn.ID);
+            _inputNeurons = new ReservoirNeuron[source._inputNeurons.Length];
+            for (int i = 0; i < source._inputNeurons.Length; i++)
+            {
+                _inputNeurons[i] = source._inputNeurons[i].DeepClone();
+            }
+            _hiddenActivationFn = ActivationFactory.CreateActivationFn(source._hiddenActivationFn.ID);
+            _hiddenNeurons = new ReservoirNeuron[source._hiddenNeurons.Length];
+            for (int i = 0; i < source._hiddenNeurons.Length; i++)
+            {
+                _hiddenNeurons[i] = source._hiddenNeurons[i].DeepClone();
+            }
+            _hiddenBiases = (double[])source._hiddenBiases.Clone();
+            _numOfOutputSections = source._numOfOutputSections;
+            _predictorSectionFullLength = source._predictorSectionFullLength;
+            _outputSectionNames = new List<string>(source._outputSectionNames);
+            _bootingCountdown = source._bootingCountdown;
+            _initialized = source._initialized;
             return;
         }
 
@@ -362,7 +401,7 @@ namespace EasyMLCore.TimeSeries
                         for (int j = 0; j < _hiddenNeurons[i].HiddenSynapses.Count; j++)
                         {
                             tmpVector[i] += _hiddenNeurons[i].HiddenSynapses[j].GetWeight() *
-                                             eigenVector[_hiddenNeurons[i].HiddenSynapses[j].GetPresynapticNeuron().Index];
+                                             eigenVector[_hiddenNeurons[i].HiddenSynapses[j].GetPresynapticNeuronIndex()];
                         }
                     }
                 });
@@ -430,7 +469,7 @@ namespace EasyMLCore.TimeSeries
             //Input
             for (int i = 0; i < _inputNeurons.Length; i++)
             {
-                _inputNeurons[i].CollectStimuli(timepointData[i]);
+                _inputNeurons[i].CollectStimuli(null, null, timepointData[i]);
                 _inputNeurons[i].Recompute();
             }
             //Hidden
@@ -443,16 +482,16 @@ namespace EasyMLCore.TimeSeries
                 {
                     for (int i = range.Item1; i < range.Item2; i++)
                     {
-                        _hiddenNeurons[i].CollectStimuli(_hiddenBiases[_hiddenNeurons[i].Index]);
+                        _hiddenNeurons[i].CollectStimuli(_inputNeurons, _hiddenNeurons, _hiddenBiases[i]);
                     }
                 });
             }
             else
             {
                 //Single thread version
-                foreach (ReservoirNeuron neuron in _hiddenNeurons)
+                for (int i = 0; i < _hiddenNeurons.Length; i++)
                 {
-                    neuron.CollectStimuli(_hiddenBiases[neuron.Index]);
+                    _hiddenNeurons[i].CollectStimuli(_inputNeurons, _hiddenNeurons, _hiddenBiases[i]);
                 }
             }
             //Recomputations and stats
@@ -799,6 +838,14 @@ namespace EasyMLCore.TimeSeries
                 infoText = infoText.Indent(margin);
             }
             return infoText;
+        }
+
+        /// <summary>
+        /// Creates deep clone.
+        /// </summary>
+        public Reservoir DeepClone()
+        {
+            return new Reservoir( this );
         }
 
     }//Reservoir

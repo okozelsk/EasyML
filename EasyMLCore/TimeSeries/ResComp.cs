@@ -88,6 +88,27 @@ namespace EasyMLCore.TimeSeries
             return;
         }
 
+        /// <summary>
+        /// Copy constructor.
+        /// </summary>
+        /// <param name="source">Source instance.</param>
+        public ResComp(ResComp source)
+        {
+            _cfg = (ResCompConfig)source._cfg.DeepClone();
+            Res = source.Res.DeepClone();
+            Tasks = new List<ResCompTask>(source.Tasks.Count);
+            foreach(ResCompTask task in source.Tasks)
+            {
+                Tasks.Add(task.DeepClone());
+            }
+            _taskInputSectionIdxs = new int[source._taskInputSectionIdxs.Length][];
+            for(int i = 0; i < source._taskInputSectionIdxs.Length; i++)
+            {
+                _taskInputSectionIdxs[i] = (int[])source._taskInputSectionIdxs[i].Clone();
+            }
+            return;
+        }
+
         //Properties
         /// <inheritdoc/>
         public int NumOfOutputFeatures
@@ -356,6 +377,14 @@ namespace EasyMLCore.TimeSeries
                 infoText = infoText.Indent(margin);
             }
             return infoText;
+        }
+
+        /// <summary>
+        /// Creates a deep clone.
+        /// </summary>
+        public ResComp DeepClone()
+        {
+            return new ResComp(this);
         }
 
     }//ResComp

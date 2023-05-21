@@ -25,6 +25,10 @@ namespace EasyMLCore.TimeSeries
         private ModelBase _model;
 
         //Constructors
+        /// <summary>
+        /// Creates an uninitialized instance.
+        /// </summary>
+        /// <param name="cfg">Configuration of the reservoir computer task.</param>
         private ResCompTask(ResCompTaskConfig cfg)
         {
             OutputFeatureNames = cfg.OutputFeaturesCfg.GetFeatureNames();
@@ -34,7 +38,7 @@ namespace EasyMLCore.TimeSeries
         }
 
         /// <summary>
-        /// The deep copy constructor.
+        /// Copy constructor.
         /// </summary>
         /// <param name="source">The source instance.</param>
         public ResCompTask(ResCompTask source)
