@@ -18,12 +18,20 @@ namespace EasyMLCore.TimeSeries
         //Constants
         public const string ContextPathID = "RCTask";
 
+        //Attribute properties
+        /// <summary>
+        /// Configuration of the reservoir computer task.
+        /// </summary>
+        public ResCompTaskConfig TaskCfg { get; }
+
+        /// <summary>
+        /// Inner MLP model.
+        /// </summary>
+        public ModelBase Model {get; private set;}
+
+
         /// <inheritdoc/>
         public List<string> OutputFeatureNames { get; }
-
-        //Attributes
-        private readonly ResCompTaskConfig _cfg;
-        private ModelBase _model;
 
         //Constructors
         /// <summary>
@@ -33,8 +41,8 @@ namespace EasyMLCore.TimeSeries
         private ResCompTask(ResCompTaskConfig cfg)
         {
             OutputFeatureNames = cfg.OutputFeaturesCfg.GetFeatureNames();
-            _cfg = (ResCompTaskConfig)cfg.DeepClone();
-            _model = null;
+            TaskCfg = (ResCompTaskConfig)cfg.DeepClone();
+            Model = null;
             return;
         }
 
@@ -45,17 +53,17 @@ namespace EasyMLCore.TimeSeries
         public ResCompTask(ResCompTask source)
         {
             OutputFeatureNames = new List<string>(source.OutputFeatureNames);
-            _cfg = (ResCompTaskConfig)source._cfg.DeepClone();
-            _model = source._model?.DeepClone();
+            TaskCfg = (ResCompTaskConfig)source.TaskCfg.DeepClone();
+            Model = source.Model?.DeepClone();
             return;
         }
 
         //Properties
         /// <inheritdoc cref="ResCompTaskConfig.Name"/>
-        public string Name { get { return _cfg.Name; } }
+        public string Name { get { return TaskCfg.Name; } }
 
         /// <inheritdoc/>
-        public OutputTaskType TaskType { get { return _cfg.TaskType; } }
+        public OutputTaskType TaskType { get { return TaskCfg.TaskType; } }
 
         /// <inheritdoc/>
         public int NumOfOutputFeatures { get { return OutputFeatureNames.Count; } }
@@ -140,7 +148,7 @@ namespace EasyMLCore.TimeSeries
             {
                 throw new ApplicationException($"Unsupported model configuration {modelCfgType}.");
             }
-            resCompTask._model = model;
+            resCompTask.Model = model;
             return resCompTask;
         }
 
@@ -155,7 +163,7 @@ namespace EasyMLCore.TimeSeries
             {
                 throw new ArgumentNullException(nameof(input));
             }
-            return _model.Compute(input);
+            return Model.Compute(input);
         }
 
         /// <summary>
@@ -186,7 +194,7 @@ namespace EasyMLCore.TimeSeries
                                  ModelTestProgressChangedHandler progressInfoSubscriber = null
                                  )
         {
-            return _model.Test(testingData, out resultDataset, progressInfoSubscriber);
+            return Model.Test(testingData, out resultDataset, progressInfoSubscriber);
         }
 
         /// <summary>
@@ -202,7 +210,7 @@ namespace EasyMLCore.TimeSeries
                                                   ModelTestProgressChangedHandler progressInfoSubscriber = null
                                                   )
         {
-            return _model.DiagnosticTest(testingData, progressInfoSubscriber);
+            return Model.DiagnosticTest(testingData, progressInfoSubscriber);
         }
 
         /// <inheritdoc/>
@@ -233,7 +241,7 @@ namespace EasyMLCore.TimeSeries
                 sb.Append($" [{outputFeatureName}]");
             }
             sb.Append(Environment.NewLine);
-            sb.Append(_model.GetInfoText(detail, 4));
+            sb.Append(Model.GetInfoText(detail, 4));
             string infoText = sb.ToString();
             if( margin > 0)
             {

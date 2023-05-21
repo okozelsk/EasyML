@@ -52,6 +52,11 @@ namespace EasyMLCore.TimeSeries
 
         //Attribute properties
         /// <summary>
+        /// Reservoir computer's configuration.
+        /// </summary>
+        public ResCompConfig ResCompCfg { get; }
+        
+        /// <summary>
         /// Reservoir.
         /// </summary>
         public Reservoir Res { get; }
@@ -62,7 +67,6 @@ namespace EasyMLCore.TimeSeries
         public List<ResCompTask> Tasks { get; }
 
         //Attributes
-        private readonly ResCompConfig _cfg;
         private readonly int[][] _taskInputSectionIdxs;
 
         //Constructor
@@ -72,17 +76,17 @@ namespace EasyMLCore.TimeSeries
         /// <param name="cfg">Reservoir computer's configuration.</param>
         private ResComp(ResCompConfig cfg)
         {
-            _cfg = (ResCompConfig)cfg.DeepClone();
+            ResCompCfg = (ResCompConfig)cfg.DeepClone();
             //Reservoir instance
-            Res = new Reservoir(_cfg.ReservoirCfg);
-            Tasks = new List<ResCompTask>(_cfg.TaskCfgCollection.Count);
-            _taskInputSectionIdxs = new int[_cfg.TaskCfgCollection.Count][];
-            for(int i = 0; i < _cfg.TaskCfgCollection.Count; i++)
+            Res = new Reservoir(ResCompCfg.ReservoirCfg);
+            Tasks = new List<ResCompTask>(ResCompCfg.TaskCfgCollection.Count);
+            _taskInputSectionIdxs = new int[ResCompCfg.TaskCfgCollection.Count][];
+            for(int i = 0; i < ResCompCfg.TaskCfgCollection.Count; i++)
             {
-                _taskInputSectionIdxs[i] = new int[_cfg.TaskCfgCollection[i].InputSectionsCfg.InputSectionCfgCollection.Count];
+                _taskInputSectionIdxs[i] = new int[ResCompCfg.TaskCfgCollection[i].InputSectionsCfg.InputSectionCfgCollection.Count];
                 for(int j = 0; j < _taskInputSectionIdxs[i].Length;  j++)
                 {
-                    _taskInputSectionIdxs[i][j] = (int)_cfg.TaskCfgCollection[i].InputSectionsCfg.InputSectionCfgCollection[j].Name;
+                    _taskInputSectionIdxs[i][j] = (int)ResCompCfg.TaskCfgCollection[i].InputSectionsCfg.InputSectionCfgCollection[j].Name;
                 }
                 Array.Sort(_taskInputSectionIdxs[i]);
             }
@@ -95,7 +99,7 @@ namespace EasyMLCore.TimeSeries
         /// <param name="source">Source instance.</param>
         public ResComp(ResComp source)
         {
-            _cfg = (ResCompConfig)source._cfg.DeepClone();
+            ResCompCfg = (ResCompConfig)source.ResCompCfg.DeepClone();
             Res = source.Res.DeepClone();
             Tasks = new List<ResCompTask>(source.Tasks.Count);
             foreach(ResCompTask task in source.Tasks)
@@ -117,7 +121,7 @@ namespace EasyMLCore.TimeSeries
             get
             {
                 int num = 0;
-                foreach (ResCompTaskConfig taskCfg in _cfg.TaskCfgCollection)
+                foreach (ResCompTaskConfig taskCfg in ResCompCfg.TaskCfgCollection)
                 {
                     num += taskCfg.OutputFeaturesCfg.FeatureCfgCollection.Count;
                 }
@@ -168,9 +172,9 @@ namespace EasyMLCore.TimeSeries
             int taskOutputFeaturesStartIdx = 0;
             for(int i = 0; i < taskIdx; i++)
             {
-                taskOutputFeaturesStartIdx += _cfg.TaskCfgCollection[i].OutputFeaturesCfg.FeatureCfgCollection.Count;
+                taskOutputFeaturesStartIdx += ResCompCfg.TaskCfgCollection[i].OutputFeaturesCfg.FeatureCfgCollection.Count;
             }
-            double[] taskOutputVector = flatOutVector.Extract(taskOutputFeaturesStartIdx, _cfg.TaskCfgCollection[taskIdx].OutputFeaturesCfg.FeatureCfgCollection.Count);
+            double[] taskOutputVector = flatOutVector.Extract(taskOutputFeaturesStartIdx, ResCompCfg.TaskCfgCollection[taskIdx].OutputFeaturesCfg.FeatureCfgCollection.Count);
             return taskOutputVector;
         }
 
@@ -248,13 +252,13 @@ namespace EasyMLCore.TimeSeries
         public double[] Compute(double[] input, out List<Tuple<string, TaskOutputDetailBase>> detailedOutputs)
         {
             Res.Compute(input, out List<Tuple<string, double[]>> outSectionsData);
-            detailedOutputs = new List<Tuple<string, TaskOutputDetailBase>>(_cfg.TaskCfgCollection.Count);
-            List<double[]> taskFlatOutputs = new List<double[]>(_cfg.TaskCfgCollection.Count);
-            for(int i = 0; i < _cfg.TaskCfgCollection.Count; i++)
+            detailedOutputs = new List<Tuple<string, TaskOutputDetailBase>>(ResCompCfg.TaskCfgCollection.Count);
+            List<double[]> taskFlatOutputs = new List<double[]>(ResCompCfg.TaskCfgCollection.Count);
+            for(int i = 0; i < ResCompCfg.TaskCfgCollection.Count; i++)
             {
                 double[] taskInput = GetTaskInputVector(i, outSectionsData);
                 taskFlatOutputs.Add(Tasks[i].Compute(taskInput, out TaskOutputDetailBase taskOutDetail));
-                detailedOutputs.Add(new Tuple<string, TaskOutputDetailBase>(_cfg.TaskCfgCollection[i].Name, taskOutDetail));
+                detailedOutputs.Add(new Tuple<string, TaskOutputDetailBase>(ResCompCfg.TaskCfgCollection[i].Name, taskOutDetail));
             }
             return taskFlatOutputs.Flattenize();
         }
@@ -284,8 +288,8 @@ namespace EasyMLCore.TimeSeries
             try
             {
                 //Prepare specific datasets for tasks
-                List<SampleDataset> taskTestDatasets = new List<SampleDataset>(_cfg.TaskCfgCollection.Count);
-                for (int taskIdx = 0; taskIdx < _cfg.TaskCfgCollection.Count; taskIdx++)
+                List<SampleDataset> taskTestDatasets = new List<SampleDataset>(ResCompCfg.TaskCfgCollection.Count);
+                for (int taskIdx = 0; taskIdx < ResCompCfg.TaskCfgCollection.Count; taskIdx++)
                 {
                     taskTestDatasets.Add(new SampleDataset(testingData.Count));
                 }
@@ -293,7 +297,7 @@ namespace EasyMLCore.TimeSeries
                 foreach (Sample sample in testingData.SampleCollection)
                 {
                     double[] resFlatData = Res.Compute(sample.InputVector, out List<Tuple<string, double[]>> resOutSectionsData);
-                    for (int taskIdx = 0; taskIdx < _cfg.TaskCfgCollection.Count; taskIdx++)
+                    for (int taskIdx = 0; taskIdx < ResCompCfg.TaskCfgCollection.Count; taskIdx++)
                     {
                         double[] taskInputVector = GetTaskInputVector(taskIdx, resOutSectionsData);
                         double[] taskOutputVector = GetTaskOutputVector(taskIdx, sample.OutputVector);
@@ -304,9 +308,9 @@ namespace EasyMLCore.TimeSeries
                     TestProgressChanged?.Invoke(pinfo);
                 }
                 //Test tasks
-                List<ModelErrStat> taskErrStats = new List<ModelErrStat>(_cfg.TaskCfgCollection.Count);
-                List<ResultDataset> taskResultDatasets = new List<ResultDataset>(_cfg.TaskCfgCollection.Count);
-                for (int taskIdx = 0; taskIdx < _cfg.TaskCfgCollection.Count; taskIdx++)
+                List<ModelErrStat> taskErrStats = new List<ModelErrStat>(ResCompCfg.TaskCfgCollection.Count);
+                List<ResultDataset> taskResultDatasets = new List<ResultDataset>(ResCompCfg.TaskCfgCollection.Count);
+                for (int taskIdx = 0; taskIdx < ResCompCfg.TaskCfgCollection.Count; taskIdx++)
                 {
                     taskErrStats.Add(Tasks[taskIdx].Test(taskTestDatasets[taskIdx], out ResultDataset taskResultDataset, OnModelTestProgressChanged));
                     taskResultDatasets.Add(taskResultDataset);
@@ -314,8 +318,8 @@ namespace EasyMLCore.TimeSeries
                 resultDataset = new ResultDataset(testingData.Count);
                 for (int i = 0; i < testingData.Count; i++)
                 {
-                    List<double[]> tasksComputed = new List<double[]>(_cfg.TaskCfgCollection.Count);
-                    for (int taskIdx = 0; taskIdx < _cfg.TaskCfgCollection.Count; taskIdx++)
+                    List<double[]> tasksComputed = new List<double[]>(ResCompCfg.TaskCfgCollection.Count);
+                    for (int taskIdx = 0; taskIdx < ResCompCfg.TaskCfgCollection.Count; taskIdx++)
                     {
                         tasksComputed.Add(taskResultDatasets[taskIdx].ComputedVectorCollection[i]);
                     }
@@ -356,8 +360,8 @@ namespace EasyMLCore.TimeSeries
             try
             {
                 //Prepare specific datasets for tasks
-                List<SampleDataset> taskTestDatasets = new List<SampleDataset>(_cfg.TaskCfgCollection.Count);
-                for (int taskIdx = 0; taskIdx < _cfg.TaskCfgCollection.Count; taskIdx++)
+                List<SampleDataset> taskTestDatasets = new List<SampleDataset>(ResCompCfg.TaskCfgCollection.Count);
+                for (int taskIdx = 0; taskIdx < ResCompCfg.TaskCfgCollection.Count; taskIdx++)
                 {
                     taskTestDatasets.Add(new SampleDataset(testingData.Count));
                 }
@@ -365,7 +369,7 @@ namespace EasyMLCore.TimeSeries
                 foreach (Sample sample in testingData.SampleCollection)
                 {
                     double[] resFlatData = Res.Compute(sample.InputVector, out List<Tuple<string, double[]>> resOutSectionsData);
-                    for (int taskIdx = 0; taskIdx < _cfg.TaskCfgCollection.Count; taskIdx++)
+                    for (int taskIdx = 0; taskIdx < ResCompCfg.TaskCfgCollection.Count; taskIdx++)
                     {
                         double[] taskInputVector = GetTaskInputVector(taskIdx, resOutSectionsData);
                         double[] taskOutputVector = GetTaskOutputVector(taskIdx, sample.OutputVector);
@@ -376,8 +380,8 @@ namespace EasyMLCore.TimeSeries
                     TestProgressChanged?.Invoke(pinfo);
                 }
                 //Diagnostic tests
-                List<ModelDiagnosticData> tasksDiagData = new List<ModelDiagnosticData>(_cfg.TaskCfgCollection.Count);
-                for (int taskIdx = 0; taskIdx < _cfg.TaskCfgCollection.Count; taskIdx++)
+                List<ModelDiagnosticData> tasksDiagData = new List<ModelDiagnosticData>(ResCompCfg.TaskCfgCollection.Count);
+                for (int taskIdx = 0; taskIdx < ResCompCfg.TaskCfgCollection.Count; taskIdx++)
                 {
                     tasksDiagData.Add(Tasks[taskIdx].DiagnosticTest(taskTestDatasets[taskIdx], OnModelTestProgressChanged));
                 }
@@ -399,7 +403,7 @@ namespace EasyMLCore.TimeSeries
         /// <returns>The list of appropriate instances of task specific detailed outputs.</returns>
         public List<Tuple<string, TaskOutputDetailBase>> GetOutputDetails(double[] outputData)
         {
-            List<Tuple<string, TaskOutputDetailBase>> outputs = new List<Tuple<string, TaskOutputDetailBase>>(_cfg.TaskCfgCollection.Count);
+            List<Tuple<string, TaskOutputDetailBase>> outputs = new List<Tuple<string, TaskOutputDetailBase>>(ResCompCfg.TaskCfgCollection.Count);
             int idx = 0;
             foreach(ResCompTask task in Tasks)
             {

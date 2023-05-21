@@ -92,6 +92,11 @@ namespace EasyMLCore.TimeSeries
 
         //Attribute properties
         /// <summary>
+        /// Reservoir's configuration.
+        /// </summary>
+        public ReservoirConfig ResCfg { get; }
+        
+        /// <summary>
         /// Lengths of output sections.
         /// </summary>
         public int[] OutSectionsLengths { get; }
@@ -117,7 +122,6 @@ namespace EasyMLCore.TimeSeries
         public BasicStat HiddenSynapsesWeightStat { get; }
 
         //Attributes
-        private readonly ReservoirConfig _cfg;
         private readonly RealFeatureFilter[] _inputFilters;
         private readonly ActivationBase _inputActivationFn;
         private readonly ReservoirNeuron[] _inputNeurons;
@@ -141,51 +145,51 @@ namespace EasyMLCore.TimeSeries
             //Names of reservoir's output sections
             _outputSectionNames = new List<string>(Enum.GetNames(typeof(OutSection)));
             //Store configuration
-            _cfg = (ReservoirConfig)cfg.DeepClone();
+            ResCfg = (ReservoirConfig)cfg.DeepClone();
             //Ensure always the same random sequence
             Random rand = new Random(RandomSeed);
             //Switch off init switch
             _initialized = false;
             //Input filters
-            _inputFilters = new RealFeatureFilter[_cfg.InputCfg.Variables];
-            for (int i = 0; i < _cfg.InputCfg.Variables; i++)
+            _inputFilters = new RealFeatureFilter[ResCfg.InputCfg.Variables];
+            for (int i = 0; i < ResCfg.InputCfg.Variables; i++)
             {
                 _inputFilters[i] = new RealFeatureFilter(FeatureFilterBase.FeatureUse.Input);
             }
             //Neurons
             //Input neurons
             _inputActivationFn = ActivationFactory.CreateActivationFn(ActivationFnID.Linear);
-            _inputNeurons = new ReservoirNeuron[_cfg.InputCfg.Variables];
+            _inputNeurons = new ReservoirNeuron[ResCfg.InputCfg.Variables];
             for (int i = 0; i < _inputNeurons.Length; i++)
             {
                 _inputNeurons[i] = new ReservoirNeuron(i,
                                                        _inputActivationFn,
-                                                       _cfg.HiddenLayerCfg.SpikeEventThreshold,
+                                                       ResCfg.HiddenLayerCfg.SpikeEventThreshold,
                                                        0d,
                                                        0d
                                                        );
             }
             //Hidden neurons
             double fadingCoeff;
-            if (_cfg.InputCfg.Feeding == InputFeeding.TimePoint)
+            if (ResCfg.InputCfg.Feeding == InputFeeding.TimePoint)
             {
                 //Synchronize fading coefficient and number of necessary reservoir's booting cycles
-                fadingCoeff = 1d - Math.Min(0.5d, 1d / _cfg.HiddenLayerCfg.NumOfNeurons);
+                fadingCoeff = 1d - Math.Min(0.5d, 1d / ResCfg.HiddenLayerCfg.NumOfNeurons);
             }
             else
             {
                 //Synchronize fading coefficient and pattern timepoints
-                fadingCoeff = 1d - Math.Min(0.5d, (1d / (_cfg.InputCfg.FlatDataLength / _cfg.InputCfg.Variables)) * 0.25d);
+                fadingCoeff = 1d - Math.Min(0.5d, (1d / (ResCfg.InputCfg.FlatDataLength / ResCfg.InputCfg.Variables)) * 0.25d);
             }
-            _hiddenActivationFn = ActivationFactory.CreateActivationFn(_cfg.HiddenLayerCfg.ActivationID);
-            _hiddenNeurons = new ReservoirNeuron[_cfg.HiddenLayerCfg.NumOfNeurons];
+            _hiddenActivationFn = ActivationFactory.CreateActivationFn(ResCfg.HiddenLayerCfg.ActivationID);
+            _hiddenNeurons = new ReservoirNeuron[ResCfg.HiddenLayerCfg.NumOfNeurons];
             for (int i = 0; i < _hiddenNeurons.Length; i++)
             {
                 _hiddenNeurons[i] = new ReservoirNeuron(i,
                                                         _hiddenActivationFn,
-                                                        _cfg.HiddenLayerCfg.SpikeEventThreshold,
+                                                        ResCfg.HiddenLayerCfg.SpikeEventThreshold,
                                                         fadingCoeff,
-                                                        _cfg.HiddenLayerCfg.Retainment
+                                                        ResCfg.HiddenLayerCfg.Retainment
                                                         );
             }
             //Connections
@@ -193,10 +197,10 @@ namespace EasyMLCore.TimeSeries
             hiddenNeuronIndices.Indices();
             //Hidden
             NumOfHiddenSynapses = 0;
-            int numOfHNConns = Math.Max(1, _cfg.HiddenLayerCfg.Density < 1d ? (int)Math.Round(_hiddenNeurons.Length * _cfg.HiddenLayerCfg.Density, MidpointRounding.AwayFromZero)
-                                                                            : (int)_cfg.HiddenLayerCfg.Density);
+            int numOfHNConns = Math.Max(1, ResCfg.HiddenLayerCfg.Density < 1d ? (int)Math.Round(_hiddenNeurons.Length * ResCfg.HiddenLayerCfg.Density, MidpointRounding.AwayFromZero)
+                                                                            : (int)ResCfg.HiddenLayerCfg.Density);
             numOfHNConns = Math.Min(_hiddenNeurons.Length, numOfHNConns);
-            int maxHDelay = Math.Min(numOfHNConns - 1, _cfg.HiddenLayerCfg.MaxDelay);
+            int maxHDelay = Math.Min(numOfHNConns - 1, ResCfg.HiddenLayerCfg.MaxDelay);
             CyclingCounter hcc = maxHDelay > 0 ? new CyclingCounter(0, maxHDelay, 1) : null;
             double[] absWeightsSums = new double[_hiddenNeurons.Length];
             //Loop a random ring schema to maximize passing the signal through the reservoir
@@ -226,7 +230,7 @@ namespace EasyMLCore.TimeSeries
             double eigenVal = EstimateSpectralRadius();
             foreach (ReservoirNeuron hiddenNeuron in _hiddenNeurons)
             {
-                hiddenNeuron.ScaleHiddenSynapsesWeight(_cfg.HiddenLayerCfg.SpectralRadius / eigenVal);
+                hiddenNeuron.ScaleHiddenSynapsesWeight(ResCfg.HiddenLayerCfg.SpectralRadius / eigenVal);
             }
             //Setup biases
             _hiddenBiases = new double[_hiddenNeurons.Length];
@@ -234,10 +238,10 @@ namespace EasyMLCore.TimeSeries
 
             //Input
             NumOfInputSynapses = 0;
-            int numOfINConns = Math.Max(1, _cfg.InputCfg.Density < 1d ? (int)Math.Round(_hiddenNeurons.Length * _cfg.InputCfg.Density, MidpointRounding.AwayFromZero)
-                                                                      : (int)_cfg.InputCfg.Density);
+            int numOfINConns = Math.Max(1, ResCfg.InputCfg.Density < 1d ? (int)Math.Round(_hiddenNeurons.Length * ResCfg.InputCfg.Density, MidpointRounding.AwayFromZero)
+                                                                      : (int)ResCfg.InputCfg.Density);
             numOfINConns = Math.Min(_hiddenNeurons.Length, numOfINConns);
-            int maxIDelay = Math.Min(numOfINConns - 1, _cfg.InputCfg.MaxDelay);
+            int maxIDelay = Math.Min(numOfINConns - 1, ResCfg.InputCfg.MaxDelay);
             CyclingCounter icc = maxIDelay > 0 ? new CyclingCounter(0, maxIDelay, 1) : null;
             for (int neuronIdx = 0; neuronIdx < _inputNeurons.Length; neuronIdx++)
             {
@@ -245,7 +249,7 @@ namespace EasyMLCore.TimeSeries
                 icc?.Reset();
                 for (int i = 0; i < numOfINConns; i++)
                 {
-                    double weight = rand.NextRangedUniformDouble(_cfg.InputCfg.MaxStrength / 2d, _cfg.InputCfg.MaxStrength);
+                    double weight = rand.NextRangedUniformDouble(ResCfg.InputCfg.MaxStrength / 2d, ResCfg.InputCfg.MaxStrength);
                     int delay = icc == null ? 0 : icc.GetNext();
                     _hiddenNeurons[hiddenNeuronIndices[i]].ConnectInputNeuron(neuronIdx, weight, delay);
                     ++NumOfInputSynapses;
@@ -263,7 +267,7 @@ namespace EasyMLCore.TimeSeries
                 neuron.UpdateSynapsesWeightStat(InputSynapsesWeightStat, HiddenSynapsesWeightStat);
             }
             //Total number of output features
-            _predictorSectionFullLength = _hiddenNeurons.Length * (_cfg.InputCfg.Feeding == InputFeeding.Pattern ? 2 : 1);
+            _predictorSectionFullLength = _hiddenNeurons.Length * (ResCfg.InputCfg.Feeding == InputFeeding.Pattern ? 2 : 1);
             OutSectionsLengths = new int[_numOfOutputSections];
             Array.Fill(OutSectionsLengths, _predictorSectionFullLength);
             OutSectionsLengths[(int)OutSection.ResInputs] = cfg.InputCfg.FlatDataLength;
@@ -283,7 +287,7 @@ namespace EasyMLCore.TimeSeries
             InputSynapsesWeightStat = new BasicStat(source.InputSynapsesWeightStat);
             NumOfHiddenSynapses = source.NumOfHiddenSynapses;
             HiddenSynapsesWeightStat = new BasicStat(source.HiddenSynapsesWeightStat);
-            _cfg = (ReservoirConfig)source._cfg.DeepClone();
+            ResCfg = (ReservoirConfig)source.ResCfg.DeepClone();
             _inputFilters = new RealFeatureFilter[source._inputFilters.Length];
             for(int i = 0; i < source._inputFilters.Length; i++)
             {
@@ -332,7 +336,7 @@ namespace EasyMLCore.TimeSeries
         /// <summary>
         /// ID of hidden neurons' activation function.
         /// </summary>
-        public ActivationFnID HiddenActivationFnID { get { return _cfg.HiddenLayerCfg.ActivationID; } }
+        public ActivationFnID HiddenActivationFnID { get { return ResCfg.HiddenLayerCfg.ActivationID; } }
 
         //Static methods
         /// <summary>
@@ -430,7 +434,7 @@ namespace EasyMLCore.TimeSeries
         /// </summary>
         private void SetBootingCountdown()
         {
-            _bootingCountdown = _cfg.InputCfg.Feeding == InputFeeding.TimePoint ? _hiddenNeurons.Length : 0;
+            _bootingCountdown = ResCfg.InputCfg.Feeding == InputFeeding.TimePoint ? _hiddenNeurons.Length : 0;
             return;
         }
 
@@ -529,18 +533,18 @@ namespace EasyMLCore.TimeSeries
         /// <returns>Original input and all reservoir's outputs. Section by section (see OutSection enum) in a flat 1D array.</returns>
         private double[] ComputeInternal(double[] input, out List<Tuple<string, double[]>> outSectionsData, ReservoirNeuronStat[] neuronStats)
         {
-            if (input.Length != _cfg.InputCfg.FlatDataLength)
+            if (input.Length != ResCfg.InputCfg.FlatDataLength)
             {
-                throw new ArgumentException($"Inconsistent input data. Different length {input.Length} than is specified in configuration {_cfg.InputCfg.FlatDataLength}.", nameof(input));
+                throw new ArgumentException($"Inconsistent input data. Different length {input.Length} than is specified in configuration {ResCfg.InputCfg.FlatDataLength}.", nameof(input));
             }
-            TimeSeriesPattern inputPattern = new TimeSeriesPattern(input, _inputFilters.Length, _cfg.InputCfg.VarSchema);
+            TimeSeriesPattern inputPattern = new TimeSeriesPattern(input, _inputFilters.Length, ResCfg.InputCfg.VarSchema);
             if (!inputPattern.Consistent)
             {
                 throw new ArgumentException("Inconsistent input data.", nameof(input));
             }
             inputPattern.StandardizeData(_inputFilters);
             int numOfTimepoints = inputPattern.Length;
-            if (_cfg.InputCfg.Feeding == InputFeeding.TimePoint)
+            if (ResCfg.InputCfg.Feeding == InputFeeding.TimePoint)
             {
                 //Check single timepoint
                 if (numOfTimepoints != 1)
@@ -563,7 +567,7 @@ namespace EasyMLCore.TimeSeries
             int[] sectionsOutIdx = new int[_numOfOutputSections - 1];
             Array.Fill(sectionsOutIdx, 0);
             //Pushing data
-            if (_cfg.InputCfg.Feeding == InputFeeding.Pattern)
+            if (ResCfg.InputCfg.Feeding == InputFeeding.Pattern)
             {
                 //Reversal time order
                 for (int timepointIdx = numOfTimepoints - 1; timepointIdx >= 0; timepointIdx--)
@@ -594,7 +598,7 @@ namespace EasyMLCore.TimeSeries
                 double[] timepointData = inputPattern.GetDataAt(timepointIdx);
                 PushTimepointData(timepointData, neuronStats);
                 //Booting countdown
-                if (_cfg.InputCfg.Feeding == InputFeeding.TimePoint && _bootingCountdown > 0) --_bootingCountdown;
+                if (ResCfg.InputCfg.Feeding == InputFeeding.TimePoint && _bootingCountdown > 0) --_bootingCountdown;
             }
             //Update stat and prepare output
             if (Ready)
@@ -652,7 +656,7 @@ namespace EasyMLCore.TimeSeries
             const double BlockingBorder = 1e-6d;
             //Before stat finalization check the output predictors
             int totalNumOfBlockedPredictors = 0;
-            int predictorOutCount = _cfg.InputCfg.Feeding == InputFeeding.Pattern ? 2 : 1;
+            int predictorOutCount = ResCfg.InputCfg.Feeding == InputFeeding.Pattern ? 2 : 1;
             int[] numOfBlockedPredictors = new int[_numOfOutputSections - 1];
             Array.Fill(numOfBlockedPredictors, 0);
             for (int neuronIdx = 0; neuronIdx < _hiddenNeurons.Length; neuronIdx++)
@@ -692,7 +696,7 @@ namespace EasyMLCore.TimeSeries
                                 if (_hiddenNeurons[neuronIdx].PredictorSwitches[predictorIdx])
                                 {
                                     filteredPredictors[firstHalfOutIdx++] = bulkResOutSectionsData[rowIdx][predictorIdx].Item2[neuronIdx];
-                                    if(_cfg.InputCfg.Feeding == InputFeeding.Pattern)
+                                    if(ResCfg.InputCfg.Feeding == InputFeeding.Pattern)
                                     {
                                         filteredPredictors[secondHalfOutIdx++] = bulkResOutSectionsData[rowIdx][predictorIdx].Item2[_hiddenNeurons.Length + neuronIdx];
                                     }
@@ -737,7 +741,7 @@ namespace EasyMLCore.TimeSeries
                 {
                     for (int i = range.Item1; i < range.Item2; i++)
                     {
-                        patterns[i] = new TimeSeriesPattern(inputData[i], _inputFilters.Length, _cfg.InputCfg.VarSchema);
+                        patterns[i] = new TimeSeriesPattern(inputData[i], _inputFilters.Length, ResCfg.InputCfg.VarSchema);
                     }
                 });
                 //Setup filters of input variables
