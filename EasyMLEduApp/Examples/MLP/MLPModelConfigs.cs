@@ -4,7 +4,8 @@ using EasyMLCore;
 namespace EasyMLEduApp.Examples.MLP
 {
     /// <summary>
-    /// Shows how to create configurations of the NetworkModel, CrossValModel, StackingModel and CompositeModel.
+    /// Shows how to create configurations of the NetworkModel, CrossValModel,
+    /// StackingModel, BHSModel and CompositeModel.
     /// These configurations are used by other examples.
     /// </summary>
     public static class MLPModelConfigs
@@ -49,6 +50,9 @@ namespace EasyMLEduApp.Examples.MLP
         private static readonly NormConsConfig HiddenNormConsCfg = new NormConsConfig(0d, 0d, false);
         //No norm constraint on networks output layers
         private static readonly NormConsConfig OutputNormConsCfg = new NormConsConfig(0d, 0d, false);
+        //Learning throttle valve
+        //No throttling
+        private static readonly LearningThrottleValveConfig LTVCfg = null;
 
         /*
          * Network model configurations.
@@ -67,9 +71,9 @@ namespace EasyMLEduApp.Examples.MLP
                                        NetBuildTrainingAttemptMaxEpochs, //Maximum number of epochs within a training attempt
                                        new AdamConfig(), //Weights updater
                                        null, //No hidden layers
-                                       null, //No input options (no input dropout)
+                                       new InputOptionsConfig(InputDropoutCfg), //Input dropout
                                        new OutputOptionsConfig(OutputRegL1Cfg, OutputRegL2Cfg, OutputNormConsCfg),
-                                       null, //No learning throttle valve configuration
+                                       LTVCfg, //Learning throttle valve
                                        batchSize, //Batch size
                                        NetworkModelConfig.DefaultGradClipNorm,
                                        NetworkModelConfig.DefaultGradClipVal,
@@ -108,9 +112,9 @@ namespace EasyMLEduApp.Examples.MLP
                                        NetBuildTrainingAttemptMaxEpochs, //Maximum number of epochs within a training attempt
                                        new AdamConfig(), //Weights updater
                                        hiddenLayersCfg, //Hidden layers
-                                       null, //No input options (no input dropout)
+                                       new InputOptionsConfig(InputDropoutCfg), //Input dropout
                                        new OutputOptionsConfig(OutputRegL1Cfg, OutputRegL2Cfg, OutputNormConsCfg),
-                                       null, //No learning throttle valve configuration
+                                       LTVCfg, //Learning throttle valve
                                        batchSize, //Batch size
                                        NetworkModelConfig.DefaultGradClipNorm,
                                        NetworkModelConfig.DefaultGradClipVal,
@@ -151,9 +155,9 @@ namespace EasyMLEduApp.Examples.MLP
                                        attemptEpochs, //Maximum number of epochs within a training attempt
                                        new RPropConfig(), //Weights updater
                                        hiddenLayersCfg, //Hidden layers
-                                       null, //No input options (no input dropout)
+                                       null, //No input options (no input dropout because the RPRop)
                                        new OutputOptionsConfig(OutputRegL1Cfg, OutputRegL2Cfg, OutputNormConsCfg),
-                                       null, //No learning throttle valve configuration
+                                       LTVCfg, //Learning throttle valve
                                        NetworkModelConfig.AutoBatchSizeNumCode, //Batch size
                                        NetworkModelConfig.DefaultGradClipNorm,
                                        NetworkModelConfig.DefaultGradClipVal,
@@ -178,9 +182,9 @@ namespace EasyMLEduApp.Examples.MLP
                                        attemptEpochs, //Maximum number of epochs within a training attempt
                                        new RPropConfig(), //Weights updater
                                        null, //No hidden layers
-                                       null, //No input options (no input dropout)
+                                       null, //No input options (no input dropout because the RPRop)
                                        new OutputOptionsConfig(OutputRegL1Cfg, OutputRegL2Cfg, OutputNormConsCfg),
-                                       null, //No learning throttle valve configuration
+                                       LTVCfg, //Learning throttle valve
                                        NetworkModelConfig.AutoBatchSizeNumCode, //Batch size
                                        NetworkModelConfig.DefaultGradClipNorm,
                                        NetworkModelConfig.DefaultGradClipVal,
@@ -282,7 +286,6 @@ namespace EasyMLEduApp.Examples.MLP
             StackingModelConfig cfg =
                 new StackingModelConfig(stackCfg,
                                         CreateOutputOnlyNetworkModelConfig(), //Meta-learner model configuration
-                                        //CreateNetworkModelConfig(ActivationFnID.ReLU),
                                         foldDataRatio, //Specifies the ratio of training samples constituting one hold-out fold
                                         routeInput //Specifies whether to provide original input to meta-learner.
                                         );
@@ -396,14 +399,14 @@ namespace EasyMLEduApp.Examples.MLP
         }
 
         /// <summary>
-        /// Creates configuration of the CompositeModel consisting of StackingModel, CrossValModel and one another CompositeModel.
+        /// Creates configuration of the CompositeModel consisting of BHSModel, CrossValModel and one another CompositeModel.
         /// </summary>
-        /// <param name="foldDataRatio">Used for inner Stacking and CrossVal models. Specifies the ratio of training samples constituting hold-out/validation fold.</param>
+        /// <param name="foldDataRatio">Used for inner CrossVal model. Specifies the ratio of training samples constituting hold-out/validation fold.</param>
         public static CompositeModelConfig CreateCompositeModelConfig(double foldDataRatio)
         {
             //Model configuration
             CompositeModelConfig modelCfg =
-                new CompositeModelConfig(CreateStackingModelConfig(foldDataRatio),
+                new CompositeModelConfig(CreateBHSModelConfig(),
                                          CreateCrossValModelConfig(foldDataRatio),
                                          CreateSmallCompositeModelConfig()
                                          );

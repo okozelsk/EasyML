@@ -330,8 +330,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
                                       OutputTaskType.Categorical,
                                       inputSections,
                                       new FeaturesConfig(outputFeatureNames),
-                                      //MLPModelConfigs.CreateRPropCrossValModelConfig(0.1d, 20, 100) //Model to be used
-                                      MLPModelConfigs.CreateRPropOutputOnlyNetworkCrossValModelConfig(0.1d, 5, 200) //Model to be used
+                                      EasyML.Oper.GetDefaultOutputOnlyNetworkModelConfig(trainingData, 0.25d) //Model to be used
                                       );
             //Reservoir computer config
             ResCompConfig resCompCfg =

@@ -13,6 +13,10 @@ namespace EasyMLCore.MLP
     public class NetworkModelConfig : ConfigBase, IModelConfig
     {
         //Constants
+        //Constants for default config
+        public const double RecommendedDropoutP = 0.5d;
+        public const int RecommendedTAttempts = 3;
+        public const int RecommendedNumOfTEpochsPerSample = 5;
         /// <summary>
         /// Name of an associated xsd type.
         /// </summary>
@@ -416,10 +420,10 @@ namespace EasyMLCore.MLP
             double baseCount = Math.Round(3d * Math.Log(inputVectorLength * outputVectorLength), 0, MidpointRounding.AwayFromZero);
             baseCount *= (1d / (1d - dropoutP));
             int numOfHiddenNeurons = (int)Math.Round(baseCount, 0, MidpointRounding.AwayFromZero);
+            numOfHiddenNeurons = Math.Max(numOfHiddenNeurons, outputVectorLength);
             return numOfHiddenNeurons;
         }
 
-        //Static methods
         /// <summary>
         /// Prepares default network model configuration for given complexity.
         /// </summary>
@@ -429,17 +433,32 @@ namespace EasyMLCore.MLP
         /// <returns>Default network model configuration for given task complexity.</returns>
         public static NetworkModelConfig GetDefaultNetworkModelConfig(int inputVectorLength, int outputVectorLength, int numOfSamples)
         {
-            const double recommendedDropoutP = 0.5d;
-            const int recommendedTAttempts = 3;
-            int recommendedTEpochs = 5 * numOfSamples;
-            HiddenLayerConfig hlc = new HiddenLayerConfig(EstimateNumOfHiddenNeurons(inputVectorLength, outputVectorLength, recommendedDropoutP),
+            int recommendedTEpochs = RecommendedNumOfTEpochsPerSample * numOfSamples;
+            HiddenLayerConfig hlc = new HiddenLayerConfig(EstimateNumOfHiddenNeurons(inputVectorLength, outputVectorLength, RecommendedDropoutP),
                                                           ActivationFnID.ReLU,
-                                                          new DropoutConfig(recommendedDropoutP, DropoutMode.Bernoulli)
+                                                          new DropoutConfig(RecommendedDropoutP, DropoutMode.Bernoulli)
                                                           );
-            return new NetworkModelConfig(recommendedTAttempts,
+            return new NetworkModelConfig(RecommendedTAttempts,
                                           recommendedTEpochs,
                                           new AdamConfig(),
                                           new HiddenLayersConfig(hlc)
+                                          );
+        }
+
+        /// <summary>
+        /// Prepares default output only network model.
+        /// </summary>
+        /// <param name="numOfSamples">Number of training samples.</param>
+        /// <param name="inputDropoutP">Specifies probability of input dropout. 0 means no dropout.</param>
+        /// <returns>Default output only network model configuration.</returns>
+        public static NetworkModelConfig GetDefaultOutputOnlyNetworkModelConfig(int numOfSamples, double inputDropoutP = 0d)
+        {
+            int recommendedTEpochs = 2 * RecommendedNumOfTEpochsPerSample * numOfSamples;
+            return new NetworkModelConfig(RecommendedTAttempts,
+                                          recommendedTEpochs,
+                                          new AdamConfig(),
+                                          null,
+                                          (inputDropoutP > 0d && inputDropoutP < 1d) ? new InputOptionsConfig(new DropoutConfig(inputDropoutP, DropoutMode.Bernoulli)) : null
                                           );
         }
 

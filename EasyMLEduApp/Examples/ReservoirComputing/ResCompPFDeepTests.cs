@@ -25,6 +25,8 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
     ///   LargeKitchenAppliances_train.csv and LargeKitchenAppliances_test.csv
     ///   CricketX_train.csv and CricketX_test.csv
     ///   Worms_train.csv and Worms_test.csv
+    ///   BeetleFly_train.csv and BeetleFly_test.csv
+    ///   Earthquakes_train.csv and Earthquakes_test.csv
     /// </summary>
     public static class ResCompPFDeepTests
     {

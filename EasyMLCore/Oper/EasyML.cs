@@ -343,6 +343,30 @@ namespace EasyMLCore
         }
 
         /// <summary>
+        /// Prepares default output only network model configuration (no hidden layers).
+        /// </summary>
+        /// <param name="trainingData">Available training data.</param>
+        /// <param name="inputDropoutP">Specifies probability of input dropout. 0 means no dropout.</param>
+        /// <param name="verbose">Specifies whether to report configuration.</param>
+        /// <returns>Default output only network model configuration.</returns>
+        public NetworkModelConfig GetDefaultOutputOnlyNetworkModelConfig(SampleDataset trainingData,
+                                                                         double inputDropoutP = 0d,
+                                                                         bool verbose = true
+                                                                         )
+        {
+            NetworkModelConfig config =
+                NetworkModelConfig.GetDefaultOutputOnlyNetworkModelConfig(trainingData.Count,
+                                                                          inputDropoutP
+                                                                          );
+            if (verbose)
+            {
+                Log.Write($"Default network config for NumOfSamples={trainingData.Count} and inputDropout={inputDropoutP} is:");
+                Report(config, false, 0);
+            }
+            return config;
+        }
+
+        /// <summary>
         /// Prepares default model configuration for given complexity.
         /// </summary>
         /// <param name="trainingData">Available training data.</param>
