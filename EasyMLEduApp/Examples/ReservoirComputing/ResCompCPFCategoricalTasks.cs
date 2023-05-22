@@ -23,7 +23,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
     ///   CricketX_train.csv and CricketX_test.csv
     /// </summary>
     /// <seealso cref="MLPModelConfigs"/>
-    public static class ResCompPFCategoricalTasks
+    public static class ResCompCPFCategoricalTasks
     {
 
         //Methods
@@ -66,10 +66,9 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
             ////////////////////////////////////////////////////////////////////////////
             //Reservoir config
             ReservoirConfig reservoirCfg =
-                new ReservoirConfig(new ReservoirInputConfig(trainingData.InputVectorLength, //90 Flat input pattern length
+                new ReservoirConfig(new ReservoirInputConfig(Reservoir.InputFeeding.PatternConstLength, //Feeding regime
                                                              2, //Two variables (coordinates X and Y)
                                                              TimeSeriesPattern.FlatVarSchema.VarSequence, //Coordinates are two noodles 45xX and 45xY in a flat input pattern
-                                                             Reservoir.InputFeeding.Pattern, //Feeding regime
                                                              0.2d, //Connections density of 1 input variable to hidden neurons
                                                              5, //Synaptic maximum delay
                                                              ReservoirInputConfig.DefaultMaxStrength //Max strength of input per hidden neuron
@@ -145,10 +144,9 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
             ////////////////////////////////////////////////////////////////////////////
             //Reservoir config
             ReservoirConfig reservoirCfg =
-                new ReservoirConfig(new ReservoirInputConfig(trainingData.InputVectorLength, //80 Flat input pattern length
+                new ReservoirConfig(new ReservoirInputConfig(Reservoir.InputFeeding.PatternConstLength, //Feeding regime
                                                              1, //One variable (outline)
                                                              TimeSeriesPattern.FlatVarSchema.VarSequence, //It does not matter in case of 1 variable
-                                                             Reservoir.InputFeeding.Pattern, //Feeding regime
                                                              ReservoirInputConfig.DefaultDensity, //Connections density of 1 input variable to hidden neurons
                                                              2, //Synaptic maximum delay
                                                              ReservoirInputConfig.DefaultMaxStrength //Max strength of input per hidden neuron
@@ -224,10 +222,9 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
             ////////////////////////////////////////////////////////////////////////////
             //Reservoir config
             ReservoirConfig reservoirCfg =
-                new ReservoirConfig(new ReservoirInputConfig(trainingData.InputVectorLength, //720 Flat input pattern length
+                new ReservoirConfig(new ReservoirInputConfig(Reservoir.InputFeeding.PatternConstLength, //Feeding regime
                                                              1, //One variable (electricity consumption)
                                                              TimeSeriesPattern.FlatVarSchema.VarSequence, //It does not matter in case of 1 variable
-                                                             Reservoir.InputFeeding.Pattern, //Feeding regime
                                                              ReservoirInputConfig.DefaultDensity, //Connections density of 1 input variable to hidden neurons
                                                              ReservoirInputConfig.DefaultMaxDelay, //Synaptic maximum delay
                                                              ReservoirInputConfig.DefaultMaxStrength //Max strength of input per hidden neuron
@@ -309,10 +306,9 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
             ////////////////////////////////////////////////////////////////////////////
             //Reservoir config
             ReservoirConfig reservoirCfg =
-                new ReservoirConfig(new ReservoirInputConfig(trainingData.InputVectorLength, //300 Flat input pattern length
+                new ReservoirConfig(new ReservoirInputConfig(Reservoir.InputFeeding.PatternConstLength, //Feeding regime
                                                              1, //One variable (Acceleration on X axis)
                                                              TimeSeriesPattern.FlatVarSchema.VarSequence, //It does not matter in case of 1 variable
-                                                             Reservoir.InputFeeding.Pattern, //Feeding regime
                                                              300d, //Connections density of 1 input variable to hidden neurons
                                                              29, //Synaptic maximum delay
                                                              1.5d //Max strength of input per hidden neuron
@@ -387,10 +383,9 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
             ////////////////////////////////////////////////////////////////////////////
             //Reservoir config
             ReservoirConfig reservoirCfg =
-                new ReservoirConfig(new ReservoirInputConfig(trainingData.InputVectorLength, //900 Flat input pattern length
+                new ReservoirConfig(new ReservoirInputConfig(Reservoir.InputFeeding.PatternConstLength, //Feeding regime
                                                              1, //One variable (eigenworm1D)
                                                              TimeSeriesPattern.FlatVarSchema.VarSequence, //It does not matter in case of 1 variable
-                                                             Reservoir.InputFeeding.Pattern, //Feeding regime
                                                              0.2d, //Connections density of 1 input variable to hidden neurons
                                                              ReservoirInputConfig.DefaultMaxDelay, //Synaptic maximum delay
                                                              ReservoirInputConfig.DefaultMaxStrength //Max strength of input per hidden neuron
@@ -450,6 +445,6 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
             return;
         }
 
-    }//ResCompPFCategoricalTasks
+    }//ResCompCPFCategoricalTasks
 
 }//Namespace

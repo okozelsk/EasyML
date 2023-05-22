@@ -20,7 +20,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
     ///   MultiTaskPPOutlineAgeGroup_train.csv and MultiTaskPPOutlineAgeGroup_test.csv
     /// </summary>
     /// <seealso cref="MLPModelConfigs"/>
-    public static class ResCompPFSimultaneousTasks
+    public static class ResCompCPFSimultaneousTasks
     {
 
         //Methods
@@ -61,10 +61,9 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
             ////////////////////////////////////////////////////////////////////////////
             //Reservoir config
             ReservoirConfig reservoirCfg =
-                new ReservoirConfig(new ReservoirInputConfig(trainingData.InputVectorLength, //80 Flat input pattern length
+                new ReservoirConfig(new ReservoirInputConfig(Reservoir.InputFeeding.PatternConstLength, //Feeding regime
                                                              1, //One variable (outline)
                                                              TimeSeriesPattern.FlatVarSchema.VarSequence, //It does not matter in case of 1 variable
-                                                             Reservoir.InputFeeding.Pattern, //Feeding regime
                                                              60d, //Connections density of 1 input variable to hidden neurons
                                                              2, //Synaptic maximum delay
                                                              ReservoirInputConfig.DefaultMaxStrength //Max strength of input per hidden neuron
@@ -165,6 +164,6 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
             return;
         }
 
-    }//ResCompPFSimultaneousTasks
+    }//ResCompCPFSimultaneousTasks
 
 }//Namespace

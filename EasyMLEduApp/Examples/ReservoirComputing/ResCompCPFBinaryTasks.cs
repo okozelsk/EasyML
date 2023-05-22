@@ -21,7 +21,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
     ///   Earthquakes_train.csv and Earthquakes_test.csv
     /// </summary>
     /// <seealso cref="MLPModelConfigs"/>
-    public static class ResCompPFBinaryTasks
+    public static class ResCompCPFBinaryTasks
     {
 
         //Methods
@@ -50,10 +50,9 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
             ////////////////////////////////////////////////////////////////////////////
             //Reservoir config
             ReservoirConfig reservoirCfg =
-                new ReservoirConfig(new ReservoirInputConfig(trainingData.InputVectorLength, //512 Flat input pattern length
+                new ReservoirConfig(new ReservoirInputConfig(Reservoir.InputFeeding.PatternConstLength, //Feeding regime
                                                              1, //One variable (Distance from centre)
                                                              TimeSeriesPattern.FlatVarSchema.VarSequence, //In case of 1 variable is valid any var schema
-                                                             Reservoir.InputFeeding.Pattern, //Feeding regime
                                                              10d, //Connections density of 1 input variable to hidden neurons
                                                              4,//Synaptic maximum delay
                                                              ReservoirInputConfig.DefaultMaxStrength //Max strength of input per hidden neuron
@@ -129,10 +128,9 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
             ////////////////////////////////////////////////////////////////////////////
             //Reservoir config
             ReservoirConfig reservoirCfg =
-                new ReservoirConfig(new ReservoirInputConfig(trainingData.InputVectorLength, //512 Flat input pattern length
+                new ReservoirConfig(new ReservoirInputConfig(Reservoir.InputFeeding.PatternConstLength, //Feeding regime
                                                              1, //One variable (sensor signal)
                                                              TimeSeriesPattern.FlatVarSchema.VarSequence, //In case of 1 variable is valid any var schema
-                                                             Reservoir.InputFeeding.Pattern, //Feeding regime
                                                              32d, //Connections density of 1 input variable to hidden neurons
                                                              15,//Synaptic maximum delay
                                                              ReservoirInputConfig.DefaultMaxStrength //Max strength of input per hidden neuron
@@ -198,6 +196,6 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
             return;
         }
 
-    }//ResCompPFBinaryTasks
+    }//ResCompCPFBinaryTasks
 
 }//Namespace

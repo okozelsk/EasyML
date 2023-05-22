@@ -46,17 +46,27 @@ namespace EasyMLCore.TimeSeries
         public enum InputFeeding
         {
             /// <summary>
-            /// Data is fed continuously at separated time points and reservoir state is never reseted.
+            /// Data is fed continuously at separated time points and
+            /// reservoir state is never reseted.
             /// Predictors are collected after each time point computation.
             /// </summary>
             TimePoint,
             /// <summary>
-            /// Time series data is processed first from right to left (reversed time order).
-            /// Predictors are collected and reservoir's state is reseted. Subsequently, the
-            /// time series data is processed from left to right. And the second set of
-            /// predictors is collected.
+            /// Time series data has constant length.
+            /// Data is processed first from right to left (reversed time order).
+            /// Predictors are collected and reservoir's state is reseted.
+            /// Subsequently, the time series data is processed from left to right
+            /// and the second set of predictors is collected.
             /// </summary>
-            Pattern
+            PatternConstLength,
+            /// <summary>
+            /// Time series data has varying length.
+            /// Data is processed first from right to left (reversed time order).
+            /// Predictors are collected and reservoir's state is reseted.
+            /// Subsequently, the time series data is processed from left to right
+            /// and the second set of predictors is collected.
+            /// </summary>
+            PatternVarLength
         }
 
         /// <summary>
@@ -151,15 +161,15 @@ namespace EasyMLCore.TimeSeries
             //Switch off init switch
             _initialized = false;
             //Input filters
-            _inputFilters = new RealFeatureFilter[ResCfg.InputCfg.Variables];
-            for (int i = 0; i < ResCfg.InputCfg.Variables; i++)
+            _inputFilters = new RealFeatureFilter[ResCfg.InputCfg.NumOfVariables];
+            for (int i = 0; i < ResCfg.InputCfg.NumOfVariables; i++)
             {
                 _inputFilters[i] = new RealFeatureFilter(FeatureFilterBase.FeatureUse.Input);
             }
             //Neurons
             //Input neurons
             _inputActivationFn = ActivationFactory.CreateActivationFn(ActivationFnID.Linear);
-            _inputNeurons = new ReservoirNeuron[ResCfg.InputCfg.Variables];
+            _inputNeurons = new ReservoirNeuron[ResCfg.InputCfg.NumOfVariables];
             for (int i = 0; i < _inputNeurons.Length; i++)
             {
                 _inputNeurons[i] = new ReservoirNeuron(i,
@@ -178,8 +188,9 @@ namespace EasyMLCore.TimeSeries
             }
             else
             {
-                //Synchronize fading coefficient and pattern timepoints
-                fadingCoeff = 1d - Math.Min(0.5d, (1d / (ResCfg.InputCfg.FlatDataLength / ResCfg.InputCfg.Variables)) * 0.25d);
+                //For patterns, no fading is necessary, so the fading coefficient can be simply 1
+                fadingCoeff = 1d;
+                //fadingCoeff = 1d - Math.Min(0.5d, (1d / (ResCfg.InputCfg.FlatDataLength / ResCfg.InputCfg.Variables)) * 0.25d);
             }
             _hiddenActivationFn = ActivationFactory.CreateActivationFn(ResCfg.HiddenLayerCfg.ActivationID);
             _hiddenNeurons = new ReservoirNeuron[ResCfg.HiddenLayerCfg.NumOfNeurons];
@@ -267,10 +278,10 @@ namespace EasyMLCore.TimeSeries
                 neuron.UpdateSynapsesWeightStat(InputSynapsesWeightStat, HiddenSynapsesWeightStat);
             }
             //Total number of output features
-            _predictorSectionFullLength = _hiddenNeurons.Length * (ResCfg.InputCfg.Feeding == InputFeeding.Pattern ? 2 : 1);
+            _predictorSectionFullLength = _hiddenNeurons.Length * (ResCfg.InputCfg.Feeding != InputFeeding.TimePoint ? 2 : 1);
             OutSectionsLengths = new int[_numOfOutputSections];
             Array.Fill(OutSectionsLengths, _predictorSectionFullLength);
-            OutSectionsLengths[(int)OutSection.ResInputs] = cfg.InputCfg.FlatDataLength;
+            OutSectionsLengths[(int)OutSection.ResInputs] = 0; //Now is unknown
             //Booting cycles countdown
             SetBootingCountdown();
             return;
@@ -533,10 +544,6 @@ namespace EasyMLCore.TimeSeries
         /// <returns>Original input and all reservoir's outputs. Section by section (see OutSection enum) in a flat 1D array.</returns>
         private double[] ComputeInternal(double[] input, out List<Tuple<string, double[]>> outSectionsData, ReservoirNeuronStat[] neuronStats)
         {
-            if (input.Length != ResCfg.InputCfg.FlatDataLength)
-            {
-                throw new ArgumentException($"Inconsistent input data. Different length {input.Length} than is specified in configuration {ResCfg.InputCfg.FlatDataLength}.", nameof(input));
-            }
             TimeSeriesPattern inputPattern = new TimeSeriesPattern(input, _inputFilters.Length, ResCfg.InputCfg.VarSchema);
             if (!inputPattern.Consistent)
             {
@@ -562,12 +569,15 @@ namespace EasyMLCore.TimeSeries
             {
                 outSectionsData.Add(new Tuple<string, double[]>(_outputSectionNames[i], new double[OutSectionsLengths[i]]));
             }
-            //Add original input - always the last
-            outSectionsData.Add(new Tuple<string, double[]>(_outputSectionNames[_numOfOutputSections - 1], input));
+            //Add original input if allowed - always the last
+            if (ResCfg.InputCfg.Feeding != InputFeeding.PatternVarLength)
+            {
+                outSectionsData.Add(new Tuple<string, double[]>(_outputSectionNames[_numOfOutputSections - 1], input));
+            }
             int[] sectionsOutIdx = new int[_numOfOutputSections - 1];
             Array.Fill(sectionsOutIdx, 0);
             //Pushing data
-            if (ResCfg.InputCfg.Feeding == InputFeeding.Pattern)
+            if (ResCfg.InputCfg.Feeding != InputFeeding.TimePoint)
             {
                 //Reversal time order
                 for (int timepointIdx = numOfTimepoints - 1; timepointIdx >= 0; timepointIdx--)
@@ -631,7 +641,7 @@ namespace EasyMLCore.TimeSeries
         /// </summary>
         /// <param name="input">Input data.</param>
         /// <param name="outSectionsData">All reservoir's outputs divided into the sections following OutSection enum. Each tuple contains section name and section data.</param>
-        /// <returns>Original input and all reservoir's outputs. Section by section (see OutSection enum) in a flat 1D array.</returns>
+        /// <returns>Original input (if allowed) and all reservoir's outputs. Section by section (see OutSection enum) in a flat 1D array.</returns>
         public double[] Compute(double[] input, out List<Tuple<string, double[]>> outSectionsData)
         {
             if (!_initialized)
@@ -656,7 +666,7 @@ namespace EasyMLCore.TimeSeries
             const double BlockingBorder = 1e-6d;
             //Before stat finalization check the output predictors
             int totalNumOfBlockedPredictors = 0;
-            int predictorOutCount = ResCfg.InputCfg.Feeding == InputFeeding.Pattern ? 2 : 1;
+            int predictorOutCount = ResCfg.InputCfg.Feeding != InputFeeding.TimePoint ? 2 : 1;
             int[] numOfBlockedPredictors = new int[_numOfOutputSections - 1];
             Array.Fill(numOfBlockedPredictors, 0);
             for (int neuronIdx = 0; neuronIdx < _hiddenNeurons.Length; neuronIdx++)
@@ -696,7 +706,7 @@ namespace EasyMLCore.TimeSeries
                                 if (_hiddenNeurons[neuronIdx].PredictorSwitches[predictorIdx])
                                 {
                                     filteredPredictors[firstHalfOutIdx++] = bulkResOutSectionsData[rowIdx][predictorIdx].Item2[neuronIdx];
-                                    if(ResCfg.InputCfg.Feeding == InputFeeding.Pattern)
+                                    if(ResCfg.InputCfg.Feeding != InputFeeding.TimePoint)
                                     {
                                         filteredPredictors[secondHalfOutIdx++] = bulkResOutSectionsData[rowIdx][predictorIdx].Item2[_hiddenNeurons.Length + neuronIdx];
                                     }
@@ -734,6 +744,17 @@ namespace EasyMLCore.TimeSeries
                 if (_initialized)
                 {
                     Reset();
+                }
+                //Setup properly ResInputs out section length
+                if(ResCfg.InputCfg.Feeding != InputFeeding.PatternVarLength)
+                {
+                    //ResInputs has constant length -> allowed
+                    OutSectionsLengths[(int)OutSection.ResInputs] = inputData[0].Length;
+                }
+                else
+                {
+                    //ResInputs has varying length -> forbidden
+                    OutSectionsLengths[(int)OutSection.ResInputs] = 0;
                 }
                 //Convert data to input patterns
                 TimeSeriesPattern[] patterns = new TimeSeriesPattern[inputData.Count];

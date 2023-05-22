@@ -74,12 +74,12 @@ These parameters are essential and must be specified in ReservoirInputConfig. Th
 <br />
 *"Variables"* parameter simply specifies, how many variables your time series has. Univariate has 1 variable. Multivariate has more than 1 variable. For example if your time series describes evolving of position in space, you have 3 variables (X, Y and Z coordinate) at each time series point.
 <br />
-*"Feeding"* parameter has two options: "Pattern" and "TimePoint".
-"Pattern" option mens, that input 1D array of doubles (vector) is a time series and hence it contains several time points. Individual input vector is independent of each other. In that case, Reservoir is always reseted before the next input vector to be processed.
-"TimePoint" option mens, that input 1D array of doubles (vector) contains data of single time point of time series. So order of the input vectors is important. In that case, Reservoir is never reseted and is continuously evolving.
+*"Feeding"* parameter has three options: "PatternConstLength", "PatternVarLength" and "TimePoint".
+"Pattern..." options mean, that input 1D array of doubles (vector) is a time series and hence it contains several time points. Individual input vector is independent of each other. In that case, Reservoir is always reseted before the next input vector to be processed.
+"TimePoint" option means, that input 1D array of doubles (vector) contains data of single time point of time series. So order of the input vectors is important. In that case, Reservoir is never reseted and is continuously evolving.
 <br />
 *"VarSchema"* parameter specifies schema of variables organization in an input 1D array of doubles (vector).
-This parameter does matter only in case of multivariate "Pattern" feeding and has two options: "Groupped" and "VarSequence".
+This parameter does matter only in case of multivariate "Pattern..." feeding and has two options: "Groupped" and "VarSequence".
 "Groupped" option means, that variables of one time point are together (v1[t1]v2[t1]v1[t2]v2[t2]v1[t3]v2[t3],...).
 Option "VarSequence" means, that variables of one time point are separated so it looks like noodles (v1[t1]v1[t2]v1[t3]v2[t1]v2[t2]v2[t3],...).
 <br />
@@ -123,7 +123,7 @@ Each Reservoir's Hidden neuron provides a set of predictors.
 |Squared Activation|Use it for Regression tasks (together with Activation or alone). It is the current activation value of Hidden neuron squared, but with the preserved sign.|
 |Spikes Fading Trace|Use it for Categorical and Binary tasks.The predictor is constructed as a gradually decaying trace of the history of spikes emitted by the Hidden neuron. The predictor is the result of my research and is my main contribution to Reservoir Computing.|
 
-The output of the Reservoir is all the predictors collected from all the hidden neurons as well as the original input to the Reservoir.
+The output of the Reservoir is all the predictors collected from all the hidden neurons as well as the original input to the Reservoir, if feeding mode allows it.
 In order to further work with the output, it is divided into sections: Activations, SquaredActivations, SpikesFadingTraces and ResInput.
 <br />
 <br />
@@ -175,7 +175,7 @@ Application writes serialization data to Temp sub-folder.
 #### Some interresting results of Reservoir Computer
 |ML Task|Type|Best result|EasyML Reservoir Computer Result|Source code|Comment|
 |--|--|--|--|--|--|
-|[ICANN/PASCAL2 Challenge: MEG Mind Reading](https://www.researchgate.net/publication/239918465_ICANNPASCAL2_Challenge_MEG_Mind_Reading_--_Overview_and_Results)|Classification|68%|71.36%|[ResCompMindReadingChallenge.cs](./EasyMLEduApp/Examples/ReservoirComputing/ResCompMindReadingChallenge.cs)|Simple configuration using "SpikesFadingTrace" predictors.|
+|[ICANN/PASCAL2 Challenge: MEG Mind Reading](https://www.researchgate.net/publication/239918465_ICANNPASCAL2_Challenge_MEG_Mind_Reading_--_Overview_and_Results)|Classification|68%|71.52%|[ResCompMindReadingChallenge.cs](./EasyMLEduApp/Examples/ReservoirComputing/ResCompMindReadingChallenge.cs)|Simple configuration using "SpikesFadingTrace" predictors. Challenge Load, Build and Test completed in 44 seconds on RYZEN7 CPU.|
 
 
 #### Contact

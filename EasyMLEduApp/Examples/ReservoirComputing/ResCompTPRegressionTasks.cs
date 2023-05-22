@@ -48,10 +48,9 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
             ////////////////////////////////////////////////////////////////////////////
             //Reservoir config
             ReservoirConfig reservoirCfg =
-                new ReservoirConfig(new ReservoirInputConfig(trainingData.InputVectorLength, //5 variables "High", "Low", "Adj Close" and "Volume" at time point (1:1 to flat input vector length)
-                                                             trainingData.InputVectorLength, //5 variables "High", "Low", "Adj Close" and "Volume" at time point (1:1 to flat input vector length)
+                new ReservoirConfig(new ReservoirInputConfig(Reservoir.InputFeeding.TimePoint, //Feeding regime
+                                                             trainingData.FirstInputVectorLength, //5 variables "High", "Low", "Adj Close" and "Volume" at time point (1:1 to flat input vector length)
                                                              TimeSeriesPattern.FlatVarSchema.VarSequence, //In case of time point feeding variables schema does not matter (both schemas are valid)
-                                                             Reservoir.InputFeeding.TimePoint, //Feeding regime
                                                              0.05d, //Connections density of 1 input variable to hidden neurons
                                                              0,//ReservoirInputConfig.DefaultMaxDelay, //Synaptic maximum delay
                                                              2d //ReservoirInputConfig.DefaultMaxStrength //Max strength of input per hidden neuron
@@ -129,10 +128,9 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
             ////////////////////////////////////////////////////////////////////////////
             //Reservoir config
             ReservoirConfig reservoirCfg =
-                new ReservoirConfig(new ReservoirInputConfig(trainingData.InputVectorLength, //1 variable "Value" (1:1 to flat input vector length)
-                                                             trainingData.InputVectorLength, //1 variable "Value" (1:1 to flat input vector length)
+                new ReservoirConfig(new ReservoirInputConfig(Reservoir.InputFeeding.TimePoint, //Feeding regime
+                                                             trainingData.FirstInputVectorLength, //1 variable "Value" (1:1 to flat input vector length)
                                                              TimeSeriesPattern.FlatVarSchema.VarSequence, //In case of time point feeding variables schema does not matter (both schemas are valid)
-                                                             Reservoir.InputFeeding.TimePoint, //Feeding regime
                                                              ReservoirInputConfig.DefaultDensity, //Connections density of 1 input variable to hidden neurons
                                                              ReservoirInputConfig.DefaultMaxDelay, //Synaptic maximum delay
                                                              1d //Max strength of input per hidden neuron

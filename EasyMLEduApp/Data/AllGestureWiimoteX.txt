@@ -1,0 +1,26 @@
+Train Size   Test Size   Length   Number of Classes   Number of Dimensions   Type
+300          700         Vary     10                  1                      MOTION
+
+The GestureWiimote data include 10 subjects, each perform 10 gestures 10 times.
+The gesture acquisition device is a Nintendo Wiimote remote controller with built-in three-axis accelerometer.
+Data here is acceleration in x-axis dimension only, patterns are of different lengths and there is no missing values.
+
+Classes at the end of datarow as number 1-10:
+        1. pick-up
+        2. shake
+        3. one move to the right
+        4. one move to the left
+        5. one move to up
+        6. one move to down
+        7. one left circle
+        8. one right circle
+        9. one move toward the screen
+        10. one move away from the screen
+
+Source:
+https://timeseriesclassification.com/description.php?Dataset=AllGestureWiimoteX
+UEA & UCR Time Series Classification Repository
+[1] Guna, Jože, Iztok Humar, and Matevž Pogačnik. "Intuitive gesture based user identification system." Telecommunications and Signal Processing (TSP), 2012 35th International Conference on. IEEE, 2012.
+
+Best referential accuracy:
+????

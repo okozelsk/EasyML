@@ -145,14 +145,35 @@ namespace EasyMLCore.Data
             {
                 if (SampleCollection.Count > 0)
                 {
-                    if (SampleCollection[0].OutputVector == null)
-                    {
-                        return false;
-                    }
                     int outputLength = SampleCollection[0].OutputVector.Length;
                     for (int i = 1; i < SampleCollection.Count; i++)
                     {
-                        if (SampleCollection[i].OutputVector == null || SampleCollection[i].OutputVector.Length != outputLength)
+                        if (SampleCollection[i].OutputVector.Length != outputLength)
+                        {
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Checks equality of input vector lengths and output vector lengths.
+        /// </summary>
+        public bool IsUniform
+        {
+            get
+            {
+                if (SampleCollection.Count > 0)
+                {
+                    int inputLength = SampleCollection[0].InputVector.Length;
+                    int outputLength = SampleCollection[0].OutputVector.Length;
+                    for (int i = 1; i < SampleCollection.Count; i++)
+                    {
+                        if (SampleCollection[i].InputVector.Length != inputLength ||
+                            SampleCollection[i].OutputVector.Length != outputLength
+                            )
                         {
                             return false;
                         }
@@ -171,7 +192,7 @@ namespace EasyMLCore.Data
         /// Gets input vector length of the first sample in the collection
         /// or -1 if there are no samples.
         /// </summary>
-        public int InputVectorLength
+        public int FirstInputVectorLength
         {
             get
             {
@@ -190,7 +211,7 @@ namespace EasyMLCore.Data
         /// Gets output vector length of the first sample in the collection
         /// or 0 if there are no samples.
         /// </summary>
-        public int OutputVectorLength
+        public int FirstOutputVectorLength
         {
             get
             {
@@ -548,9 +569,9 @@ namespace EasyMLCore.Data
         /// <seealso cref="TimeSeriesPattern"/>
         public SampleDataset ConvertInputFlatVarSchema(int numOfVariables, TimeSeriesPattern.FlatVarSchema newFlatVarSchema)
         {
-            if(numOfVariables <= 0 || InputVectorLength % numOfVariables != 0)
+            if(numOfVariables <= 0 || FirstInputVectorLength % numOfVariables != 0)
             {
-                throw new ArgumentException($"Inconsistent or invalid specified number of variables ({numOfVariables}) for input vector length ({InputVectorLength})", nameof(numOfVariables));
+                throw new ArgumentException($"Inconsistent or invalid specified number of variables ({numOfVariables}) for input vector length ({FirstInputVectorLength})", nameof(numOfVariables));
             }
             //Loop and convert samples
             SampleDataset dataset = new SampleDataset();
@@ -626,31 +647,6 @@ namespace EasyMLCore.Data
         {
             SampleCollection.Sort(Sample.IDComparer);
             return;
-        }
-
-        /// <summary>
-        /// Checks that all input vectors have the same length.
-        /// </summary>
-        /// <returns></returns>
-        public bool IsConsistentInputLength()
-        {
-            if (Count < 1)
-            {
-                return false;
-            }
-            if (SampleCollection[0].InputVector == null)
-            {
-                return false;
-            }
-            int length = InputVectorLength;
-            for (int i = 1; i < SampleCollection.Count; i++)
-            {
-                if (SampleCollection[i].InputVector == null || SampleCollection[i].InputVector.Length != length)
-                {
-                    return false;
-                }
-            }
-            return true;
         }
 
         /// <summary>
@@ -735,7 +731,7 @@ namespace EasyMLCore.Data
             {
                 throw new InvalidOperationException($"Insufficient number of samples ({Count.ToString(CultureInfo.InvariantCulture)}). Minimum is 2.");
             }
-            int numOfOutputs = OutputVectorLength;
+            int numOfOutputs = FirstOutputVectorLength;
             List<SampleDataset> foldCollection = new List<SampleDataset>();
             //Fold data ratio basic correction
             if (foldDataRatio > MaxRatioOfFoldData)
@@ -906,10 +902,6 @@ namespace EasyMLCore.Data
         /// <param name="secondDataset">The second part dataset.</param>
         public void Split(int numOfSamplesInSecondDataset, out SampleDataset firstDataset, out SampleDataset secondDataset)
         {
-            if(!IsConsistent)
-            {
-                throw new InvalidOperationException("This dataset is not consistent.");
-            }
             if(numOfSamplesInSecondDataset <= 0)
             {
                 throw new ArgumentException($"Requested number of samples in second part dataset has to be GT 0. Received: {numOfSamplesInSecondDataset}.", nameof(numOfSamplesInSecondDataset));
@@ -934,8 +926,12 @@ namespace EasyMLCore.Data
                                           out FeatureFilterBase[] outputFilters
                                           )
         {
+            if(!IsUniform)
+            {
+                throw new InvalidOperationException($"Dataset is not uniform so method can not be performed.");
+            }
             //Input filters
-            FeatureFilterBase[] iFilters = new FeatureFilterBase[InputVectorLength];
+            FeatureFilterBase[] iFilters = new FeatureFilterBase[FirstInputVectorLength];
             for (int i = 0; i < iFilters.Length; i++)
             {
                 iFilters[i] = new RealFeatureFilter(FeatureFilterBase.FeatureUse.Input);
@@ -949,7 +945,7 @@ namespace EasyMLCore.Data
             });
             inputFilters = iFilters;
             //Output filters
-            FeatureFilterBase[] oFilters = new FeatureFilterBase[OutputVectorLength];
+            FeatureFilterBase[] oFilters = new FeatureFilterBase[FirstOutputVectorLength];
             for (int i = 0; i < oFilters.Length; i++)
             {
                 oFilters[i] = (taskType == OutputTaskType.Regression) ? (FeatureFilterBase)new RealFeatureFilter(FeatureFilterBase.FeatureUse.Output) : (FeatureFilterBase)new BinFeatureFilter(FeatureFilterBase.FeatureUse.Output);
@@ -985,8 +981,8 @@ namespace EasyMLCore.Data
             double[][] stdOutputs = new double[SampleCollection.Count][];
             for (int i = 0; i < SampleCollection.Count; i++)
             {
-                stdInputs[i] = new double[InputVectorLength];
-                stdOutputs[i] = new double[OutputVectorLength];
+                stdInputs[i] = new double[FirstInputVectorLength];
+                stdOutputs[i] = new double[FirstOutputVectorLength];
             }
             FeatureFilterBase[] iFilters = inputFilters;
             FeatureFilterBase[] oFilters = outputFilters;
@@ -1076,7 +1072,11 @@ namespace EasyMLCore.Data
             }
             if (!origTestingData.IsConsistent)
             {
-                throw new ArgumentException($"Original testing data is not consistent.", nameof(origTestingData));
+                throw new ArgumentException($"Original test data is not consistent.", nameof(origTestingData));
+            }
+            if(origTrainingData.FirstOutputVectorLength != origTestingData.FirstOutputVectorLength)
+            {
+                throw new ArgumentException($"The original test data has a different output vector length than the original training data.", nameof(origTestingData));
             }
             //Allocations
             newTrainingData = new SampleDataset(origTrainingData.Count);

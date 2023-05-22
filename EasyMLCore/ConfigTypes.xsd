@@ -120,9 +120,14 @@
           <xs:documentation xml:lang="en">Data is fed continuously at separated time points and reservoir state is never reseted. Predictors are collected after each time point computation.</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
-      <xs:enumeration value="Pattern">
+      <xs:enumeration value="PatternConstLength">
         <xs:annotation>
-          <xs:documentation xml:lang="en">Time series data is processed first from right to left (reversed time order). Predictors are collected and reservoir's state is reseted. Subsequently, the time series data is processed from left to right. And the second set of predictors is collected.</xs:documentation>
+          <xs:documentation xml:lang="en">Time series data has constant length. Data is processed first from right to left (reversed time order). Predictors are collected and reservoir's state is reseted. Subsequently, the time series data is processed from left to right and the second set of predictors is collected.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="PatternVarLength">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Time series data has varying length. Data is processed first from right to left (reversed time order). Predictors are collected and reservoir's state is reseted. Subsequently, the time series data is processed from left to right and the second set of predictors is collected.</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
     </xs:restriction>
@@ -767,9 +772,9 @@
   
   <!-- Configuration of a reservoir's input. -->
   <xs:complexType name="ReservoirInputConfig">
-    <xs:attribute type="UIntGT0Type" name="flatDataLength"  use="required">
+    <xs:attribute type="ReservoirInputFeedingEnum" name="feeding" use="required">
       <xs:annotation>
-        <xs:documentation xml:lang="en">The length of a flat input vector.</xs:documentation>
+        <xs:documentation xml:lang="en">Specifies regime of input data feeding.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute type="UIntGT0Type" name="variables"  use="required">
@@ -780,11 +785,6 @@
     <xs:attribute type="TSPatternFlatVarSchemaEnum" name="varSchema" use="required">
       <xs:annotation>
         <xs:documentation xml:lang="en">Schema of input variables organization in the time series flat array.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute type="ReservoirInputFeedingEnum" name="feeding" use="required">
-      <xs:annotation>
-        <xs:documentation xml:lang="en">Specifies regime of input data feeding.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute type="UDoubleGT0Type" name="density" use="optional" default="0.25">

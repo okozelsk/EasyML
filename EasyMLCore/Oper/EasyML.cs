@@ -330,13 +330,13 @@ namespace EasyMLCore
         public NetworkModelConfig GetDefaultNetworkModelConfig(SampleDataset trainingData, bool verbose = true)
         {
             NetworkModelConfig config =
-                NetworkModelConfig.GetDefaultNetworkModelConfig(trainingData.InputVectorLength,
-                                                                trainingData.OutputVectorLength,
+                NetworkModelConfig.GetDefaultNetworkModelConfig(trainingData.FirstInputVectorLength,
+                                                                trainingData.FirstOutputVectorLength,
                                                                 trainingData.Count
                                                                 );
             if (verbose)
             {
-                Log.Write($"Default network config for InpLength={trainingData.InputVectorLength}, OutpLength={trainingData.OutputVectorLength} and NumOfSamples={trainingData.Count} is:");
+                Log.Write($"Default network config for InpLength={trainingData.FirstInputVectorLength}, OutpLength={trainingData.FirstOutputVectorLength} and NumOfSamples={trainingData.Count} is:");
                 Report(config, false, 0);
             }
             return config;
@@ -356,7 +356,7 @@ namespace EasyMLCore
 
             if (verbose)
             {
-                Log.Write($"Default model config for InpLength={trainingData.InputVectorLength}, OutpLength={trainingData.OutputVectorLength} and NumOfSamples={trainingData.Count} is:");
+                Log.Write($"Default model config for InpLength={trainingData.FirstInputVectorLength}, OutpLength={trainingData.FirstOutputVectorLength} and NumOfSamples={trainingData.Count} is:");
                 Report(modelCfg, false, 0);
             }
             return modelCfg;

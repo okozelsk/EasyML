@@ -1,6 +1,7 @@
 ﻿using EasyMLCore;
 using EasyMLCore.Data;
 using EasyMLCore.MLP;
+using EasyMLCore.MLP.Model;
 using EasyMLCore.TimeSeries;
 using EasyMLEduApp.Examples.MLP;
 using System;
@@ -10,68 +11,83 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
 {
     /// <summary>
     /// Example code demonstrates use of the ResComp component for
-    /// Regression tasks (forecasting).
+    /// Categorical tasks (classification).
     /// 
-    /// Data is organized as fixed length time series input pattern (input vector)
+    /// Data is organized as varying length time series input pattern (input vector)
     /// followed by expected output values (output vector).
     /// See txt files related to csv files for more info.
     /// Example uses following csv datafiles from ./Data subfolder:
-    ///   TTOO_patterns_train.csv and TTOO_patterns_test.csv
+    ///   AllGestureWiimoteX_train.csv and AllGestureWiimoteX_test.csv
     /// </summary>
     /// <seealso cref="MLPModelConfigs"/>
-    public static class ResCompPFRegressionTasks
+    public static class ResCompVPFCategoricalTasks
     {
 
         //Methods
-        private static void ExecuteResCompTTOOExample()
+
+        private static void ExecuteResCompAllGestureWiimoteXExample()
         {
-            string taskName = "TTOO Biosystems Share Prices";
-            //Output feature names of TTOO Biosystems Share Prices regression task
-            List<string> outputFeatureNames = new List<string>() { "High", "Low", "Adj Close" };
+            string taskName = "All Gesture WiimoteX";
+            //Output class labels of classification task
+            List<string> outputFeatureNames = new List<string>()
+            {
+                "pick-up",
+                "shake",
+                "one move to the right",
+                "one move to the left",
+                "one move to up",
+                "one move to down",
+                "one left circle",
+                "one right circle",
+                "one move toward the screen",
+                "one move away from the screen"
+            };
             //Training and Testing data
-            EasyML.Oper.Report("./Data/TTOO_patterns.txt");
+            EasyML.Oper.Report("./Data/AllGestureWiimoteX.txt");
             SampleDataset trainingData =
-                EasyML.Oper.LoadSampleData("./Data/TTOO_patterns_train.csv", //Training csv data file name
+                EasyML.Oper.LoadSampleData("./Data/AllGestureWiimoteX_train.csv", //Training csv data file name
                                            SampleDataset.CsvOutputFeaturesPosition.Last,
-                                           SampleDataset.CsvOutputFeaturesPresence.Separately,
-                                           outputFeatureNames.Count //Number of output features
+                                           SampleDataset.CsvOutputFeaturesPresence.ClassesAsNumberFrom1,
+                                           outputFeatureNames.Count //Number of output features (classes)
                                            );
             SampleDataset testingData =
-                EasyML.Oper.LoadSampleData("./Data/TTOO_patterns_test.csv", //Testing csv data file name
+                EasyML.Oper.LoadSampleData("./Data/AllGestureWiimoteX_test.csv", //Testing csv data file name
                                            SampleDataset.CsvOutputFeaturesPosition.Last,
-                                           SampleDataset.CsvOutputFeaturesPresence.Separately,
-                                           outputFeatureNames.Count //Number of output features
+                                           SampleDataset.CsvOutputFeaturesPresence.ClassesAsNumberFrom1,
+                                           outputFeatureNames.Count //Number of output features (classes)
                                            );
             ////////////////////////////////////////////////////////////////////////////
             //Reservoir config
             ReservoirConfig reservoirCfg =
-                new ReservoirConfig(new ReservoirInputConfig(trainingData.InputVectorLength, //45 Flat input pattern length
-                                                             3, //Three variables "High", "Low", "Adj Close"
-                                                             TimeSeriesPattern.FlatVarSchema.Groupped, //A row of 15 x "High", "Low", "Adj Close" triplets
-                                                             Reservoir.InputFeeding.Pattern, //Feeding regime
-                                                             20d, //Connections density of 1 input variable to hidden neurons
+                new ReservoirConfig(new ReservoirInputConfig(Reservoir.InputFeeding.PatternVarLength, //Feeding regime
+                                                             1, //One variable (X acceleration)
+                                                             TimeSeriesPattern.FlatVarSchema.VarSequence, //It does not matter in case of 1 variable
+                                                             0.1d, //Connections density of 1 input variable to hidden neurons
                                                              ReservoirInputConfig.DefaultMaxDelay, //Synaptic maximum delay
                                                              ReservoirInputConfig.DefaultMaxStrength //Max strength of input per hidden neuron
                                                              ),
-                                    new ReservoirHiddenLayerConfig(60, //Number of hidden neurons
-                                                                   ReservoirHiddenLayerConfig.DefaultDensity, //Density of hidden to hidden connection
+                                    new ReservoirHiddenLayerConfig(400, //Number of hidden neurons
+                                                                   0.15d, //Density of hidden to hidden connection
                                                                    ReservoirHiddenLayerConfig.DefaultMaxDelay, //Synaptic maximum delay
-                                                                   ReservoirHiddenLayerConfig.DefaultRetainment //Retainment
+                                                                   0.8d //Retainment
                                                                    )
                                     );
             ////////////////////////////////////////////////////////////////////////////
             //Tasks config
             //Allowed inputs (outputs from raservoir)
             ResCompTaskInputSectionsConfig inputSections =
-                new ResCompTaskInputSectionsConfig(Reservoir.OutSection.Activations,
-                                                   Reservoir.OutSection.SquaredActivations
+                new ResCompTaskInputSectionsConfig(Reservoir.OutSection.SpikesFadingTraces
                                                    );
+
+            NetworkModelConfig taskModelCfg =
+                new NetworkModelConfig(1, 10000, new AdamConfig(), null, null);
+
             ResCompTaskConfig taskConfig =
                 new ResCompTaskConfig(taskName,
-                                      OutputTaskType.Regression,
+                                      OutputTaskType.Categorical,
                                       inputSections,
                                       new FeaturesConfig(outputFeatureNames),
-                                      MLPModelConfigs.CreateRPropCrossValModelConfig(0.1d, 2, 500) //Model to be used
+                                      taskModelCfg
                                       );
             //Reservoir computer config
             ResCompConfig resCompCfg =
@@ -93,16 +109,18 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
             return;
         }
 
+
+
         /// <summary>
         /// Runs the example code.
         /// </summary>
         public static void Run()
         {
             Console.Clear();
-            ExecuteResCompTTOOExample();
+            ExecuteResCompAllGestureWiimoteXExample();
             return;
         }
 
-    }//ResCompPFRegressionTasks
+    }//ResCompVPFCategoricalTasks
 
 }//Namespace

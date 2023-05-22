@@ -71,10 +71,9 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
             ////////////////////////////////////////////////////////////////////////////
             //Reservoir config
             ReservoirConfig reservoirCfg =
-                new ReservoirConfig(new ReservoirInputConfig(trainingData.InputVectorLength, //200*204 Flat input pattern length
+                new ReservoirConfig(new ReservoirInputConfig(Reservoir.InputFeeding.PatternConstLength, //Feeding regime
                                                              204, //204 variables
                                                              TimeSeriesPattern.FlatVarSchema.VarSequence, //Variables are organized as noodles
-                                                             Reservoir.InputFeeding.Pattern, //Feeding regime
                                                              4d, //4 synaptical connections of 1 input variable to hidden neurons
                                                              ReservoirInputConfig.DefaultMaxDelay, //No delay
                                                              0.5d //Max strength of input per hidden neuron
@@ -93,8 +92,8 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
 
             //Task MLP model
             //ResCompTask has very simple end-model: output only network (no hidden layers).
-            //Without input dropout option, accuracy on test dataset is 69.07%.
-            //With input dropout option, accuracy on test dataset is 71.36%.
+            //Without input dropout option, accuracy on test dataset is 70.29%.
+            //With input dropout option, accuracy on test dataset is 71.52%.
             InputOptionsConfig ioc = new InputOptionsConfig(new DropoutConfig(0.5d, DropoutMode.Bernoulli));
             NetworkModelConfig taskModelCfg =
                 new NetworkModelConfig(1, 100, new AdamConfig(), null, ioc);

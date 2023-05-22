@@ -34,7 +34,9 @@ namespace EasyMLCore.Data
         {
             ID = id;
             InputVector = inputVector ?? throw new ArgumentNullException(nameof(inputVector));
+            if(InputVector.Length == 0) throw new ArgumentException($"Input vector can not have zero length.", nameof(inputVector));
             OutputVector = outputVector ?? throw new ArgumentNullException(nameof(outputVector));
+            if (OutputVector.Length == 0) throw new ArgumentException($"Output vector can not have zero length.", nameof(outputVector));
             return;
         }
 

@@ -84,7 +84,7 @@ namespace EasyMLCore.TimeSeries
                                         ModelBuildProgressChangedHandler progressInfoSubscriber = null
                                         )
         {
-            if (!trainingData.IsConsistent || trainingData.Count < 1 || !trainingData.IsConsistentInputLength())
+            if (!trainingData.IsUniform || trainingData.Count < 1)
             {
                 throw new ArgumentException($"Invalid or insufficient data.", nameof(trainingData));
             }

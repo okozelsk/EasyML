@@ -192,13 +192,14 @@ namespace EasyMLEduApp
                 //Menu
                 Console.Clear();
                 Console.WriteLine("Reservoir Computing code examples menu:");
-                Console.WriteLine("  1. Reservoir Computer (pattern feeding) Categorical tasks");
-                Console.WriteLine("  2. Reservoir Computer (pattern feeding) Binary tasks");
-                Console.WriteLine("  3. Reservoir Computer (pattern feeding) Regression tasks");
-                Console.WriteLine("  4. Reservoir Computer (pattern feeding) Simultaneous categorical, binary and regression tasks");
-                Console.WriteLine("  5. Reservoir Computer (pattern feeding) Deep tests");
-                Console.WriteLine("  6. Reservoir Computer (time point feeding) Regression tasks");
-                Console.WriteLine("  7. ICANN/PASCAL2 Challenge: MEG MindReading");
+                Console.WriteLine("  1. Reservoir Computer (const length pattern feeding) Categorical tasks");
+                Console.WriteLine("  2. Reservoir Computer (const length pattern feeding) Binary tasks");
+                Console.WriteLine("  3. Reservoir Computer (const length pattern feeding) Regression tasks");
+                Console.WriteLine("  4. Reservoir Computer (const length pattern feeding) Simultaneous categorical, binary and regression tasks");
+                Console.WriteLine("  5. Reservoir Computer (vary length pattern feeding) Categorical tasks");
+                Console.WriteLine("  6. Reservoir Computer (pattern feeding) Deep tests");
+                Console.WriteLine("  7. Reservoir Computer (time point feeding) Regression tasks");
+                Console.WriteLine("  8. ICANN/PASCAL2 Challenge: MEG MindReading");
                 Console.WriteLine("  X. Back to Root menu");
                 Console.WriteLine();
                 Console.WriteLine("  Press the digit or letter of your choice...");
@@ -209,7 +210,7 @@ namespace EasyMLEduApp
                     case "1":
                         try
                         {
-                            ResCompPFCategoricalTasks.Run();
+                            ResCompCPFCategoricalTasks.Run();
                         }
                         catch (Exception e)
                         {
@@ -220,7 +221,7 @@ namespace EasyMLEduApp
                     case "2":
                         try
                         {
-                            ResCompPFBinaryTasks.Run();
+                            ResCompCPFBinaryTasks.Run();
                         }
                         catch (Exception e)
                         {
@@ -231,7 +232,7 @@ namespace EasyMLEduApp
                     case "3":
                         try
                         {
-                            ResCompPFRegressionTasks.Run();
+                            ResCompCPFRegressionTasks.Run();
                         }
                         catch (Exception e)
                         {
@@ -242,7 +243,7 @@ namespace EasyMLEduApp
                     case "4":
                         try
                         {
-                            ResCompPFSimultaneousTasks.Run();
+                            ResCompCPFSimultaneousTasks.Run();
                         }
                         catch (Exception e)
                         {
@@ -253,7 +254,7 @@ namespace EasyMLEduApp
                     case "5":
                         try
                         {
-                            ResCompPFDeepTests.Run();
+                            ResCompVPFCategoricalTasks.Run();
                         }
                         catch (Exception e)
                         {
@@ -264,7 +265,7 @@ namespace EasyMLEduApp
                     case "6":
                         try
                         {
-                            ResCompTPRegressionTasks.Run();
+                            ResCompPFDeepTests.Run();
                         }
                         catch (Exception e)
                         {
@@ -273,6 +274,17 @@ namespace EasyMLEduApp
                         break;
 
                     case "7":
+                        try
+                        {
+                            ResCompTPRegressionTasks.Run();
+                        }
+                        catch (Exception e)
+                        {
+                            ReportException(e);
+                        }
+                        break;
+
+                    case "8":
                         try
                         {
                             ResCompMindReadingChallenge.Run();

@@ -107,6 +107,20 @@ namespace EasyMLCore.TimeSeries
             {
                 throw new ArgumentException($"Task names are not unique.", nameof(TaskCfgCollection));
             }
+            //Check ResInput vs varying length pattern feeding
+            if(ReservoirCfg.InputCfg.Feeding == Reservoir.InputFeeding.PatternVarLength)
+            {
+                foreach(ResCompTaskConfig taskCfg in TaskCfgCollection)
+                {
+                    foreach(ResCompTaskInputSectionConfig sectionCfg in taskCfg.InputSectionsCfg.InputSectionCfgCollection)
+                    {
+                        if(sectionCfg.Name == Reservoir.OutSection.ResInputs)
+                        {
+                            throw new ArgumentException($"Incompatible input section in one or more task configuratins. When reservoir's feeding mode is varying length patterns, reservoir input can not be used as an input to task.", nameof(TaskCfgCollection));
+                        }
+                    }
+                }
+            }
             return;
         }
 

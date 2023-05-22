@@ -33,6 +33,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Data\AllGestureWiimoteX.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\AllGestureWiimoteX_test.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\AllGestureWiimoteX_train.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Data\BeetleFly.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

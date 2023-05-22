@@ -35,21 +35,16 @@ namespace EasyMLCore.TimeSeries
 
 
         //Attributes
-        /// <summary>
-        /// The length of a flat input vector.
-        /// </summary>
-        public int FlatDataLength { get; }
+        /// <inheritdoc cref="Reservoir.InputFeeding"/>
+        public Reservoir.InputFeeding Feeding { get; }
 
         /// <summary>
         /// Number of input variables.
         /// </summary>
-        public int Variables { get; }
+        public int NumOfVariables { get; }
 
         /// <inheritdoc cref="TimeSeriesPattern.FlatVarSchema"/>
         public TimeSeriesPattern.FlatVarSchema VarSchema { get; }
-
-        /// <inheritdoc cref="Reservoir.InputFeeding"/>
-        public Reservoir.InputFeeding Feeding { get; }
 
         /// <summary>
         /// If it is a positive fraction less than 1 then specifies what proportion
@@ -73,26 +68,23 @@ namespace EasyMLCore.TimeSeries
         /// <summary>
         /// Creates an initialized instance.
         /// </summary>
-        /// <param name="flatDataLength">The length of a flat input vector.</param>
-        /// <param name="variables">Number of input variables.</param>
-        /// <param name="varSchema">Schema of input variables organization in the time series flat array.</param>
         /// <param name="feeding">Specifies regime of input data feeding.</param>
+        /// <param name="numOfVariables">Number of input variables.</param>
+        /// <param name="varSchema">Schema of input variables organization in the time series flat array.</param>
         /// <param name="density">If it is a positive fraction less than 1 then specifies what proportion of all hidden neurons to connect to each input variable. If it is an integer greater or equal to 1 then specifies exact number of hidden neurons to connect to each input variable. Default is 1/4.</param>
         /// <param name="maxDelay">Specifies the maximum delay of data transfer through an input synapse (the degree of delay is evenly distributed across the synapses). Default is 0 (no delay).</param>
         /// <param name="maxStrength">Specifies the maximum strength of input per hidden neuron (the minimum strength is then half of the maximum strength). Default is 2.</param>
-        public ReservoirInputConfig(int flatDataLength,
-                                    int variables,
+        public ReservoirInputConfig(Reservoir.InputFeeding feeding,
+                                    int numOfVariables,
                                     TimeSeriesPattern.FlatVarSchema varSchema,
-                                    Reservoir.InputFeeding feeding,
                                     double density = DefaultDensity,
                                     int maxDelay = DefaultMaxDelay,
                                     double maxStrength = DefaultMaxStrength
                                     )
         {
-            FlatDataLength = flatDataLength;
-            Variables = variables;
-            VarSchema = varSchema;
             Feeding = feeding;
+            NumOfVariables = numOfVariables;
+            VarSchema = varSchema;
             Density = density;
             MaxDelay = maxDelay;
             MaxStrength = maxStrength;
@@ -105,7 +97,7 @@ namespace EasyMLCore.TimeSeries
         /// </summary>
         /// <param name="source">The source instance.</param>
         public ReservoirInputConfig(ReservoirInputConfig source)
-            : this(source.FlatDataLength, source.Variables, source.VarSchema, source.Feeding,
+            : this(source.Feeding, source.NumOfVariables, source.VarSchema,
                    source.Density, source.MaxDelay, source.MaxStrength)
         {
             return;
@@ -120,10 +112,9 @@ namespace EasyMLCore.TimeSeries
             //Validation
             XElement validatedElem = Validate(elem, XsdTypeName);
             //Parsing
-            FlatDataLength = int.Parse(validatedElem.Attribute("flatDataLength").Value);
-            Variables = int.Parse(validatedElem.Attribute("variables").Value);
-            VarSchema = (TimeSeriesPattern.FlatVarSchema)Enum.Parse(typeof(TimeSeriesPattern.FlatVarSchema), validatedElem.Attribute("varSchema").Value);
             Feeding = (Reservoir.InputFeeding)Enum.Parse(typeof(Reservoir.InputFeeding), validatedElem.Attribute("feeding").Value);
+            NumOfVariables = int.Parse(validatedElem.Attribute("variables").Value);
+            VarSchema = (TimeSeriesPattern.FlatVarSchema)Enum.Parse(typeof(TimeSeriesPattern.FlatVarSchema), validatedElem.Attribute("varSchema").Value);
             Density = double.Parse(validatedElem.Attribute("density").Value, CultureInfo.InvariantCulture);
             MaxDelay = int.Parse(validatedElem.Attribute("maxDelay").Value);
             MaxStrength = double.Parse(validatedElem.Attribute("maxStrength").Value, CultureInfo.InvariantCulture);
@@ -151,21 +142,9 @@ namespace EasyMLCore.TimeSeries
         /// <inheritdoc/>
         protected override void Check()
         {
-            if (FlatDataLength <= 0)
+            if (NumOfVariables <= 0)
             {
-                throw new ArgumentException($"Invalid flat data length {FlatDataLength.ToString(CultureInfo.InvariantCulture)}. It must be GT 0.", nameof(FlatDataLength));
-            }
-            if (Variables <= 0)
-            {
-                throw new ArgumentException($"Invalid number of input variables {Variables.ToString(CultureInfo.InvariantCulture)}. It must be GT 0.", nameof(Variables));
-            }
-            if (Variables > FlatDataLength)
-            {
-                throw new ArgumentException($"Number of input variables {Variables.ToString(CultureInfo.InvariantCulture)} is GT flat data length {FlatDataLength.ToString(CultureInfo.InvariantCulture)}.", nameof(Variables));
-            }
-            if (FlatDataLength % Variables != 0)
-            {
-                throw new ArgumentException($"Incompatible number of input variables {Variables.ToString(CultureInfo.InvariantCulture)} and flat data length {FlatDataLength.ToString(CultureInfo.InvariantCulture)}. The length of the flat data must be a multiple of the number of variables.", nameof(Variables));
+                throw new ArgumentException($"Invalid number of input variables {NumOfVariables.ToString(CultureInfo.InvariantCulture)}. It must be GT 0.", nameof(NumOfVariables));
             }
             if (Density <= 0d)
             {
@@ -196,10 +175,9 @@ namespace EasyMLCore.TimeSeries
         public override XElement GetXml(string rootElemName, bool suppressDefaults)
         {
             XElement rootElem = new XElement(rootElemName,
-                                             new XAttribute("flatDataLength", FlatDataLength.ToString(CultureInfo.InvariantCulture)),
-                                             new XAttribute("variables", Variables.ToString(CultureInfo.InvariantCulture)),
-                                             new XAttribute("varSchema", VarSchema.ToString()),
-                                             new XAttribute("feeding", Feeding.ToString())
+                                             new XAttribute("feeding", Feeding.ToString()),
+                                             new XAttribute("variables", NumOfVariables.ToString(CultureInfo.InvariantCulture)),
+                                             new XAttribute("varSchema", VarSchema.ToString())
                                              );
 
             if (!suppressDefaults || !IsDefaultDensity)

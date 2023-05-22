@@ -392,7 +392,7 @@ namespace EasyMLCore.MLP
                 bool inFineTunePhase = false;
                 //Create network engine and trainer
                 //Network engine
-                MLPEngine engine = new MLPEngine(taskType, trainingData.InputVectorLength, outputFeatureNames, modelConfig);
+                MLPEngine engine = new MLPEngine(taskType, trainingData.FirstInputVectorLength, outputFeatureNames, modelConfig);
                 //Trainer
                 Trainer trainer = new Trainer(modelConfig, engine, trainingData, rand);
                 //Iterate training cycles
