@@ -33,7 +33,6 @@ If you want to write anything of your own to the log, use the EasyML.Oper.Log.Wr
 ### Activation (namespace EasyMLCore.Activation)
 Contains activation functions. Currently implemented [activations](./EasyMLCore/Activation) are: BentIdentity, ElliotSig, ELU, GELU, LeakyReLU, Linear, RadBas, ReLU, SELU, Sigmoid, Softmax, Softplus, TanH.
 <br />
-![TanH activation](./EasyMLCore/Docs/TanH.png)
 
 ### MLP (namespace EasyMLCore.MLP)
 Contains EasyML's MLP models. The mutual relationship is shown schematically in the following figure and will be described in more detail below.

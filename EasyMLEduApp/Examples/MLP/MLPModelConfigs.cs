@@ -387,19 +387,22 @@ namespace EasyMLEduApp.Examples.MLP
         /// </summary>
         public static RVFLModelConfig CreateRVFLModelConfig()
         {
+            //Pools to be used within hidden layers
             int poolSize = 512;
             RVFLHiddenPoolConfig pool1Cfg = new RVFLHiddenPoolConfig(poolSize, ActivationFnID.TanH, true);
             RVFLHiddenPoolConfig pool2Cfg = new RVFLHiddenPoolConfig(poolSize, ActivationFnID.LeakyReLU, true);
             RVFLHiddenPoolConfig pool3Cfg = new RVFLHiddenPoolConfig(poolSize, ActivationFnID.SELU, true);
+            //RVFL hidden layers
             RVFLHiddenLayersConfig hlsc =
-                new RVFLHiddenLayersConfig(new RVFLHiddenLayerConfig(pool1Cfg, pool2Cfg, pool3Cfg),
-                                           new RVFLHiddenLayerConfig(pool1Cfg),
-                                           new RVFLHiddenLayerConfig(pool2Cfg)
+                new RVFLHiddenLayersConfig(new RVFLHiddenLayerConfig(pool1Cfg, pool2Cfg, pool3Cfg), //First layer
+                                           new RVFLHiddenLayerConfig(pool1Cfg), //Second layer
+                                           new RVFLHiddenLayerConfig(pool2Cfg) //Third layer
                                            );
+            //RVFL model
             RVFLModelConfig rvflCfg =
                 new RVFLModelConfig(hlsc,
                                     CreateOutputOnlyNetworkModelConfig(), //Simple output only network
-                                    1.5d, //Scale factor the first layer's weights (first layer has uniform distribution of random weights)
+                                    RVFLModelConfig.DefaultScaleFactor, // (1.5) Scale factor the first layer's weights (first layer has uniform distribution of random weights)
                                     false //Do not provide original input to end-model
                                     );
             return rvflCfg;
