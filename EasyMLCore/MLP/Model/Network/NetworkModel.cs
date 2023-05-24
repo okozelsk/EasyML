@@ -354,7 +354,7 @@ namespace EasyMLCore.MLP
         /// <param name="trainingData">Training samples.</param>
         /// <param name="validationData">Validation samples (can be null).</param>
         /// <param name="progressInfoSubscriber">Subscriber will receive notification event about progress. (Parameter can be null).</param>
-        /// <returns>Built model.</returns>
+        /// <returns>Built network model.</returns>
         public static NetworkModel Build(IModelConfig cfg,
                                          string name,
                                          OutputTaskType taskType,
@@ -469,19 +469,19 @@ namespace EasyMLCore.MLP
                         stopCurrAttempt |= ((MultiplePrecisionErrStat)currNet.TrainingErrorStat.StatData).TotalPrecisionStat.RootMeanSquare < RMSETreshold;
                     }
                     //Progress info
-                    ModelBuildProgressInfo progressInfo =
-                        new ModelBuildProgressInfo(trainer.Attempt,
-                                                   trainer.MaxAttempts,
-                                                   trainer.AttemptEpoch,
-                                                   trainer.MaxAttemptEpochs,
-                                                   currNet,
-                                                   bestNet,
-                                                   bestNetAttempt,
-                                                   bestNetAttemptEpoch,
-                                                   stopCurrAttempt
-                                                   );
+                    NetworkBuildProgressInfo progressInfo =
+                        new NetworkBuildProgressInfo(trainer.Attempt,
+                                                     trainer.MaxAttempts,
+                                                     trainer.AttemptEpoch,
+                                                     trainer.MaxAttemptEpochs,
+                                                     currNet,
+                                                     bestNet,
+                                                     bestNetAttempt,
+                                                     bestNetAttemptEpoch,
+                                                     stopCurrAttempt
+                                                     );
                     //Raise notification event
-                    eventDisp.InvokeBuildProgressChanged(progressInfo);
+                    eventDisp.InvokeBuildProgressChanged(new ModelBuildProgressInfo(currNet.Name, null, progressInfo));
                     //Stop?
                     if (stopAllAttempts)
                     {

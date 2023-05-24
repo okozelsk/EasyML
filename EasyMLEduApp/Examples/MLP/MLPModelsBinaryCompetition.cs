@@ -9,7 +9,7 @@ namespace EasyMLEduApp.Examples.MLP
 {
     /// <summary>
     /// Example code demonstrates use of
-    /// Network, CrossVal, BHS, Stacking and Composite models
+    /// Network, CrossVal, BHS, Stacking, RVFL and Composite models
     /// to solve Binary decisions tasks (classification).
     /// Code also shows how objects of type dataset, configuration, error
     /// statistics or model can be easily serialized and deserialized.
@@ -34,6 +34,7 @@ namespace EasyMLEduApp.Examples.MLP
             List<IModelConfig> modelConfigCollection = new List<IModelConfig>()
             {
                 MLPModelConfigs.CreateNetworkModelConfig(ActivationFnID.LeakyReLU),
+                MLPModelConfigs.CreateRVFLModelConfig(),
                 MLPModelConfigs.CreateCrossValModelConfig(0.1d),
                 MLPModelConfigs.CreateBHSModelConfig(),
                 MLPModelConfigs.CreateStackingModelConfig(0.1d),

@@ -97,6 +97,8 @@ namespace EasyMLCore.TimeSeries
                 "networkModel" => new NetworkModelConfig(modelElem),
                 "crossValModel" => new CrossValModelConfig(modelElem),
                 "stackingModel" => new StackingModelConfig(modelElem),
+                "bhsModel" => new BHSModelConfig(modelElem),
+                "rvflModel" => new RVFLModelConfig(modelElem),
                 "compositeModel" => new CompositeModelConfig(modelElem),
                 _ => throw new ArgumentException($"Unknown model element name {modelElem.Name.LocalName}.", nameof(elem)),
             };

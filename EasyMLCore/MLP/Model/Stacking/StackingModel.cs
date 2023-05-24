@@ -358,6 +358,16 @@ namespace EasyMLCore.MLP
                                                   progressInfoSubscriber
                                                   );
             }
+            else if (metaLearnerCfgType == typeof(RVFLModelConfig))
+            {
+                metaLearnerModel = RVFLModel.Build(modelConfig.MetaLearnerCfg,
+                                                   metaLearnerModelStr,
+                                                   taskType,
+                                                   outputFeatureNames,
+                                                   metaLearnerTrainingData,
+                                                   progressInfoSubscriber
+                                                   );
+            }
             else if (metaLearnerCfgType == typeof(CompositeModelConfig))
             {
                 metaLearnerModel = CompositeModel.Build(modelConfig.MetaLearnerCfg,

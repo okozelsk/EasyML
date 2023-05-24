@@ -265,6 +265,18 @@ namespace EasyMLCore.MLP
                                        );
                     model.AddMember(subModel);
                 }
+                else if (subModelCfgType == typeof(RVFLModelConfig))
+                {
+                    RVFLModel subModel =
+                        RVFLModel.Build(modelConfig.SubModelCfgCollection[subModelIdx],
+                                        subModelName,
+                                        taskType,
+                                        outputFeatureNames,
+                                        trainingData,
+                                        progressInfoSubscriber
+                                        );
+                    model.AddMember(subModel);
+                }
                 else if (subModelCfgType == typeof(CompositeModelConfig))
                 {
                     CompositeModel subModel =

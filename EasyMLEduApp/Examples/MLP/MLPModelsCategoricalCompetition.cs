@@ -9,7 +9,7 @@ namespace EasyMLEduApp.Examples.MLP
 {
     /// <summary>
     /// Example code demonstrates use of
-    /// Network, CrossVal, BHS, Stacking and Composite models
+    /// Network, CrossVal, BHS, Stacking, RVFL and Composite models
     /// to solve Categorical tasks (classification).
     /// Code also shows DiagnosticTest of models.
     /// 
@@ -82,6 +82,7 @@ namespace EasyMLEduApp.Examples.MLP
             List<IModelConfig> modelConfigCollection = new List<IModelConfig>()
             {
                 MLPModelConfigs.CreateNetworkModelConfig(ActivationFnID.ReLU),
+                MLPModelConfigs.CreateRVFLModelConfig(),
                 MLPModelConfigs.CreateCrossValModelConfig(0.05d),
                 MLPModelConfigs.CreateBHSModelConfig(),
                 MLPModelConfigs.CreateStackingModelConfig(0.05d),
@@ -182,6 +183,7 @@ namespace EasyMLEduApp.Examples.MLP
             List<IModelConfig> modelConfigCollection = new List<IModelConfig>()
             {
                 MLPModelConfigs.CreateNetworkModelConfig(ActivationFnID.ReLU),
+                MLPModelConfigs.CreateRVFLModelConfig(),
                 MLPModelConfigs.CreateCrossValModelConfig(0.1d),
                 MLPModelConfigs.CreateBHSModelConfig(),
                 MLPModelConfigs.CreateStackingModelConfig(0.1d),

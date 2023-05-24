@@ -134,6 +134,16 @@ namespace EasyMLCore.TimeSeries
                                        progressInfoSubscriber
                                        );
             }
+            else if (modelCfgType == typeof(RVFLModelConfig))
+            {
+                model = RVFLModel.Build(cfg.ModelCfg,
+                                        modelNamePrefix,
+                                        resCompTask.TaskType,
+                                        resCompTask.OutputFeatureNames,
+                                        trainingData,
+                                        progressInfoSubscriber
+                                        );
+            }
             else if (modelCfgType == typeof(CompositeModelConfig))
             {
                 model = CompositeModel.Build(cfg.ModelCfg,

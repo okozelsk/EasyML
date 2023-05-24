@@ -84,6 +84,12 @@ namespace EasyMLCore.MLP
                     case "stackingModel":
                         SubModelCfgCollection.Add(new StackingModelConfig(modelElem));
                         break;
+                    case "bhsModel":
+                        SubModelCfgCollection.Add(new BHSModelConfig(modelElem));
+                        break;
+                    case "rvflModel":
+                        SubModelCfgCollection.Add(new RVFLModelConfig(modelElem));
+                        break;
                     case "compositeModel":
                         SubModelCfgCollection.Add(new CompositeModelConfig(modelElem));
                         break;

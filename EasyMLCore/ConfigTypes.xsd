@@ -63,6 +63,11 @@
           <xs:documentation xml:lang="en">Linear activation function (aka Identity).</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
+      <xs:enumeration value="RadBas">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Radial Basis (aka Gaussian) activation function.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
       <xs:enumeration value="ReLU">
         <xs:annotation>
           <xs:documentation xml:lang="en">Rectified Linear Unit activation function.</xs:documentation>
@@ -299,7 +304,7 @@
 
 
   <!-- Complex types -->
-  <!-- MLP Network -->
+  <!-- MLP Models -->
   <!-- Regularization -->
   <!-- Dropout configuration -->
   <xs:complexType name="DropoutConfig">
@@ -362,6 +367,7 @@
     </xs:attribute>
   </xs:complexType>
 
+  <!-- MLPEngine -->
   <!-- Hidden layer configuration -->
   <xs:complexType name="HiddenLayerConfig">
     <xs:sequence minOccurs="1" maxOccurs="1">
@@ -608,6 +614,7 @@
   </xs:complexType>
 
   <!-- Models -->
+  <!-- NetworkModel -->
   <!-- Configuration of the NetworkModel. -->
   <xs:complexType name="NetworkModelConfig">
     <xs:sequence minOccurs="1" maxOccurs="1">
@@ -663,7 +670,15 @@
       </xs:annotation>
     </xs:attribute>
   </xs:complexType>
-  
+
+  <!-- Configuration of a stack of NetworkModel(s) configurations. -->
+  <xs:complexType name="NetworkStackConfig">
+    <xs:sequence minOccurs="1" maxOccurs="1">
+      <xs:element type="NetworkModelConfig" name="networkModel" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- CrossValModel -->
   <!-- Configuration of a CrossValModel. -->
   <xs:complexType name="CrossValModelConfig">
     <xs:sequence minOccurs="1" maxOccurs="1">
@@ -676,13 +691,7 @@
     </xs:attribute>
   </xs:complexType>
 
-  <!-- Configuration of a stack of NetworkModel(s) configurations. -->
-  <xs:complexType name="NetworkStackConfig">
-    <xs:sequence minOccurs="1" maxOccurs="1">
-      <xs:element type="NetworkModelConfig" name="networkModel" minOccurs="1" maxOccurs="unbounded"/>
-    </xs:sequence>
-  </xs:complexType>
-
+  <!-- StackingModel -->
   <!-- Configuration of the StackingModel. -->
   <xs:complexType name="StackingModelConfig">
     <xs:sequence minOccurs="1" maxOccurs="1">
@@ -691,6 +700,8 @@
         <xs:element type="NetworkModelConfig" name="networkModel" minOccurs="0" maxOccurs="1"/>
         <xs:element type="CrossValModelConfig" name="crossValModel" minOccurs="0" maxOccurs="1"/>
         <xs:element type="StackingModelConfig" name="stackingModel" minOccurs="0" maxOccurs="1"/>
+        <xs:element type="BHSModelConfig" name="bhsModel" minOccurs="0" maxOccurs="1"/>
+        <xs:element type="RVFLModelConfig" name="rvflModel" minOccurs="0" maxOccurs="1"/>
         <xs:element type="CompositeModelConfig" name="compositeModel" minOccurs="0" maxOccurs="1"/>
       </xs:choice>
     </xs:sequence>
@@ -706,6 +717,7 @@
     </xs:attribute>
   </xs:complexType>
 
+  <!-- BHSModel -->
   <!-- Configuration of the HSModel. -->
   <xs:complexType name="HSModelConfig">
     <xs:sequence minOccurs="1" maxOccurs="1">
@@ -715,6 +727,7 @@
         <xs:element type="CrossValModelConfig" name="crossValModel" minOccurs="0" maxOccurs="1"/>
         <xs:element type="StackingModelConfig" name="stackingModel" minOccurs="0" maxOccurs="1"/>
         <xs:element type="BHSModelConfig" name="bhsModel" minOccurs="0" maxOccurs="1"/>
+        <xs:element type="RVFLModelConfig" name="rvflModel" minOccurs="0" maxOccurs="1"/>
         <xs:element type="CompositeModelConfig" name="compositeModel" minOccurs="0" maxOccurs="1"/>
       </xs:choice>
     </xs:sequence>
@@ -737,6 +750,65 @@
     </xs:attribute>
   </xs:complexType>
 
+  <!-- RVFLModel -->
+  <!-- RVFL hidden pool configuration -->
+  <xs:complexType name="RVFLHiddenPoolConfig">
+    <xs:attribute type="UIntGT0Type" name="neurons" use="required">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Number of pool neurons.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="ActivationEnum" name="activation" use="required">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Pool activation function.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="xs:boolean" name="useOutput" use="optional" default="true">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies whether to use output from this pool as an input for end-model. Default value is true.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <!-- RVFL hidden layer configuration -->
+  <xs:complexType name="RVFLHiddenLayerConfig">
+    <xs:sequence minOccurs="1" maxOccurs="1">
+      <xs:element type="RVFLHiddenPoolConfig" name="pool" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- RVFL Hidden layers configuration -->
+  <xs:complexType name="RVFLHiddenLayersConfig">
+    <xs:sequence minOccurs="1" maxOccurs="1">
+      <xs:element type="RVFLHiddenLayerConfig" name="layer" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Configuration of the RVFLModel. -->
+  <xs:complexType name="RVFLModelConfig">
+    <xs:sequence minOccurs="1" maxOccurs="1">
+      <xs:element type="RVFLHiddenLayersConfig" name="hiddenLayers" minOccurs="1" maxOccurs="1"/>
+      <xs:choice minOccurs="1" maxOccurs="1">
+        <xs:element type="NetworkModelConfig" name="networkModel" minOccurs="0" maxOccurs="1"/>
+        <xs:element type="CrossValModelConfig" name="crossValModel" minOccurs="0" maxOccurs="1"/>
+        <xs:element type="StackingModelConfig" name="stackingModel" minOccurs="0" maxOccurs="1"/>
+        <xs:element type="BHSModelConfig" name="bhsModel" minOccurs="0" maxOccurs="1"/>
+        <xs:element type="CompositeModelConfig" name="compositeModel" minOccurs="0" maxOccurs="1"/>
+      </xs:choice>
+    </xs:sequence>
+    <xs:attribute type="UDoubleGT0Type" name="scaleFactor" use="optional" default="1.5">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies the scale factor of the first layer's weights. Default value is 1.5.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute type="xs:boolean" name="routeInput" use="optional" default="true">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Specifies whether to provide original input to end-model. Default value is true.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <!-- CompositeModel -->
   <!-- Configuration of the CompositeModel. -->
   <xs:complexType name="CompositeModelConfig">
     <xs:choice minOccurs="1" maxOccurs="unbounded">
@@ -744,11 +816,12 @@
       <xs:element type="CrossValModelConfig" name="crossValModel" minOccurs="0" maxOccurs="1"/>
       <xs:element type="StackingModelConfig" name="stackingModel" minOccurs="0" maxOccurs="1"/>
       <xs:element type="BHSModelConfig" name="bhsModel" minOccurs="0" maxOccurs="1"/>
+      <xs:element type="RVFLModelConfig" name="rvflModel" minOccurs="0" maxOccurs="1"/>
       <xs:element type="CompositeModelConfig" name="compositeModel" minOccurs="0" maxOccurs="1"/>
     </xs:choice>
   </xs:complexType>
 
-
+  <!-- Time series -->
   <!-- Feature configuration -->
   <xs:complexType name="FeatureConfig">
     <xs:attribute type="xs:string" name="name" use="required">
@@ -882,6 +955,7 @@
         <xs:element type="CrossValModelConfig" name="crossValModel" minOccurs="0" maxOccurs="1"/>
         <xs:element type="StackingModelConfig" name="stackingModel" minOccurs="0" maxOccurs="1"/>
         <xs:element type="BHSModelConfig" name="bhsModel" minOccurs="0" maxOccurs="1"/>
+        <xs:element type="RVFLModelConfig" name="rvflModel" minOccurs="0" maxOccurs="1"/>
         <xs:element type="CompositeModelConfig" name="compositeModel" minOccurs="0" maxOccurs="1"/>
       </xs:choice>
     </xs:sequence>

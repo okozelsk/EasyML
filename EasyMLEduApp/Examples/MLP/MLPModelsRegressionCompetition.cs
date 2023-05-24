@@ -8,7 +8,7 @@ namespace EasyMLEduApp.Examples.MLP
 {
     /// <summary>
     /// Example code demonstrates use of
-    /// Network, CrossVal, BHS, Stacking and Composite models
+    /// Network, CrossVal, BHS, Stacking, RVFL and Composite models
     /// to solve Regression tasks (forecasting).
     /// 
     /// See txt files related to csv files for more info.
@@ -61,6 +61,7 @@ namespace EasyMLEduApp.Examples.MLP
             List<IModelConfig> modelConfigCollection = new List<IModelConfig>()
             {
                 MLPModelConfigs.CreateNetworkModelConfig(ActivationFnID.ELU),
+                MLPModelConfigs.CreateRVFLModelConfig(),
                 MLPModelConfigs.CreateRPropNetworkModelConfig(2, 2000, ActivationFnID.ELU),
                 MLPModelConfigs.CreateRPropCrossValModelConfig(0.25d, 2, 2000),
                 MLPModelConfigs.CreateBHSModelConfig(),

@@ -27,7 +27,6 @@ namespace EasyMLEduApp
 
         //Methods
 
-
         /// <summary>
         /// Playground's entry point.
         /// </summary>

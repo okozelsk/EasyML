@@ -5,7 +5,7 @@ namespace EasyMLEduApp.Examples.MLP
 {
     /// <summary>
     /// Shows how to create configurations of the NetworkModel, CrossValModel,
-    /// StackingModel, BHSModel and CompositeModel.
+    /// StackingModel, BHSModel, RVFLModel and CompositeModel.
     /// These configurations are used by other examples.
     /// </summary>
     public static class MLPModelConfigs
@@ -328,8 +328,7 @@ namespace EasyMLEduApp.Examples.MLP
         /// Creates configuration of a BHS model.
         /// </summary>
         /// <param name="routeInput">Specifies whether to provide original input to meta-learner.</param>
-        public static BHSModelConfig CreateBHSModelConfig(bool routeInput = HSModelConfig.DefaultRouteInput
-                                                          )
+        public static BHSModelConfig CreateBHSModelConfig(bool routeInput = HSModelConfig.DefaultRouteInput)
         {
             //Configuration of networks constituing a stack.
             NetworkStackConfig stackCfg =
@@ -356,8 +355,7 @@ namespace EasyMLEduApp.Examples.MLP
         /// Creates configuration of a BHS model with RProp optimizer (leading to BGD).
         /// </summary>
         /// <param name="routeInput">Specifies whether to provide original input to meta-learner.</param>
-        public static BHSModelConfig CreateRPropBHSModelConfig(bool routeInput = HSModelConfig.DefaultRouteInput
-                                                          )
+        public static BHSModelConfig CreateRPropBHSModelConfig(bool routeInput = HSModelConfig.DefaultRouteInput)
         {
             //Configuration of networks constituing a stack.
             NetworkStackConfig stackCfg =
@@ -381,10 +379,38 @@ namespace EasyMLEduApp.Examples.MLP
         }
 
         /*
+         * RVFL model configurations
+        */
+
+        /// <summary>
+        /// Creates RVFL model configuration having 3 hidden layers.
+        /// </summary>
+        public static RVFLModelConfig CreateRVFLModelConfig()
+        {
+            int poolSize = 512;
+            RVFLHiddenPoolConfig pool1Cfg = new RVFLHiddenPoolConfig(poolSize, ActivationFnID.TanH, true);
+            RVFLHiddenPoolConfig pool2Cfg = new RVFLHiddenPoolConfig(poolSize, ActivationFnID.LeakyReLU, true);
+            RVFLHiddenPoolConfig pool3Cfg = new RVFLHiddenPoolConfig(poolSize, ActivationFnID.SELU, true);
+            RVFLHiddenLayersConfig hlsc =
+                new RVFLHiddenLayersConfig(new RVFLHiddenLayerConfig(pool1Cfg, pool2Cfg, pool3Cfg),
+                                           new RVFLHiddenLayerConfig(pool1Cfg),
+                                           new RVFLHiddenLayerConfig(pool2Cfg)
+                                           );
+            RVFLModelConfig rvflCfg =
+                new RVFLModelConfig(hlsc,
+                                    CreateOutputOnlyNetworkModelConfig(), //Simple output only network
+                                    1.5d, //Scale factor the first layer's weights (first layer has uniform distribution of random weights)
+                                    false //Do not provide original input to end-model
+                                    );
+            return rvflCfg;
+        }
+
+
+        /*
          * Composite model configurations.
         */
         /// <summary>
-        /// Creates configuration of the small CompositeModel of three network models.
+        /// Creates configuration of the small CompositeModel of three network models and one RVFL model.
         /// </summary>
         /// <returns></returns>
         public static CompositeModelConfig CreateSmallCompositeModelConfig()
@@ -393,7 +419,8 @@ namespace EasyMLEduApp.Examples.MLP
             CompositeModelConfig modelCfg =
                 new CompositeModelConfig(CreateNetworkModelConfig(ActivationFnID.ReLU, 50, 2),
                                          CreateNetworkModelConfig(ActivationFnID.TanH, 50, 2),
-                                         CreateNetworkModelConfig(ActivationFnID.ReLU, 44, 1)
+                                         CreateNetworkModelConfig(ActivationFnID.ReLU, 44, 1),
+                                         CreateRVFLModelConfig()
                                          );
             return modelCfg;
         }

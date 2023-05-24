@@ -23,6 +23,7 @@ namespace EasyMLCore.Activation
                 ActivationFnID.GELU => new AFGELU(),
                 ActivationFnID.LeakyReLU => new AFLeakyReLU(),
                 ActivationFnID.Linear => new AFLinear(),
+                ActivationFnID.RadBas => new AFRadBas(),
                 ActivationFnID.ReLU => new AFReLU(),
                 ActivationFnID.SELU => new AFSELU(),
                 ActivationFnID.Sigmoid => new AFSigmoid(),

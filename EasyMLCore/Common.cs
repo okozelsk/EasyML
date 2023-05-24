@@ -54,6 +54,10 @@ namespace EasyMLCore
         /// </summary>
         Linear,
         /// <summary>
+        /// The Radial Basis (aka Gaussian) activation function.
+        /// </summary>
+        RadBas,
+        /// <summary>
         /// The Rectified Linear Unit activation function.
         /// </summary>
         ReLU,

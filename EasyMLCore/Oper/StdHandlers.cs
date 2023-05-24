@@ -74,13 +74,43 @@ namespace EasyMLCore
         /// <param name="progressInfo">The current state of the build process.</param>
         public void OnModelBuildProgressChanged(ModelBuildProgressInfo progressInfo)
         {
+            if(progressInfo.NetworkProgressInfo != null)
+            {
+                //Progress info
+                if (progressInfo.NetworkProgressInfo.ShouldBeReported || progressInfo.NetworkProgressInfo.CurrEpochNum == 1 || (progressInfo.NetworkProgressInfo.CurrEpochNum % _informInterval == 0))
+                {
+                    //Build progress report message
+                    string progressText = progressInfo.GetInfoText(0);
+                    //Report the progress
+                    Log.Write(progressText, !(progressInfo.NetworkProgressInfo.NewNet));
+                }
+            }
+            else
+            {
+                if (progressInfo.ShouldBeReported || progressInfo.PreparatoryStepsTracker.Current == 1 || (progressInfo.PreparatoryStepsTracker.Current % _informInterval == 0))
+                {
+                    //Build progress report message
+                    string progressText = progressInfo.GetInfoText(0);
+                    //Report the progress
+                    Log.Write(progressText, progressInfo.PreparatoryStepsTracker.Current > 1);
+                }
+            }
+            return;
+        }
+
+        /// <summary>
+        /// Continuously reports information about the RVFL preprocessor's initialization progress.
+        /// </summary>
+        /// <param name="progressInfo">The current state of the RVFL preprocessor's initialization.</param>
+        public void OnRVFLInitProgressChanged(RVFLInitProgressInfo progressInfo)
+        {
             //Progress info
-            if (progressInfo.ShouldBeReported || progressInfo.CurrEpochNum == 1 || (progressInfo.CurrEpochNum % _informInterval == 0))
+            if (progressInfo.ShouldBeReported || progressInfo.NumOfProcessedInputs == 1 || (progressInfo.NumOfProcessedInputs % _informInterval == 0))
             {
                 //Build progress report message
                 string progressText = progressInfo.GetInfoText(0);
                 //Report the progress
-                Log.Write(progressText, !(progressInfo.NewNet));
+                Log.Write(progressText, progressInfo.NumOfProcessedInputs > 1);
             }
             return;
         }

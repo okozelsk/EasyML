@@ -3,13 +3,13 @@ using System;
 using System.Globalization;
 using System.Text;
 
-namespace EasyMLCore.TimeSeries
+namespace EasyMLCore.MLP
 {
     /// <summary>
-    /// Holds progress information about the init process.
+    /// Holds progress information about the RVFL preprocessor init process.
     /// </summary>
     [Serializable]
-    public class ReservoirInitProgressInfo : ProgressInfoBase
+    public class RVFLInitProgressInfo : ProgressInfoBase
     {
         //Attribute properties
         /// <summary>
@@ -18,33 +18,16 @@ namespace EasyMLCore.TimeSeries
         public ProgressTracker ProcessedInputsTracker { get; }
 
         /// <summary>
-        /// Number of already prepared reservoir outputs.
-        /// </summary>
-        public int NumOfPreparedOutputs { get; }
-
-        /// <summary>
-        /// Reservoir's stat when finished.
-        /// </summary>
-        public ReservoirStat Stat { get; }
-
-        /// <summary>
         /// Creates an initialized instance.
         /// </summary>
         /// <param name="numOfProcessedInputs">Number of currently processed inputs.</param>
         /// <param name="totalNumOfInputs">Total number of inputs to be processed.</param>
-        /// <param name="numOfPreparedOutputs">Number of currently prepared outputs.</param>
-        /// <param name="numOfPreparedOutputs">Number of currently prepared outputs.</param>
-        /// <param name="stat">Reservoir's stat when finished.</param>
-        public ReservoirInitProgressInfo(int numOfProcessedInputs,
-                                         int totalNumOfInputs,
-                                         int numOfPreparedOutputs,
-                                         ReservoirStat stat
-                                         )
-            :base(Reservoir.ContextPathID)
+        public RVFLInitProgressInfo(int numOfProcessedInputs,
+                                    int totalNumOfInputs
+                                    )
+            :base(RVFLPreprocessor.ContextPathID)
         {
             ProcessedInputsTracker = new ProgressTracker((uint)totalNumOfInputs, (uint)numOfProcessedInputs);
-            NumOfPreparedOutputs = numOfPreparedOutputs;
-            Stat = stat;
             return;
         }
 
@@ -76,16 +59,6 @@ namespace EasyMLCore.TimeSeries
             return text.ToString();
         }
 
-        /// <summary>
-        /// Gets textual information about the number of prepared outputs.
-        /// </summary>
-        public string GetOutputsInfoText()
-        {
-            StringBuilder text = new StringBuilder();
-            text.Append($"Prepared outputs {NumOfPreparedOutputs.ToString(CultureInfo.InvariantCulture)}");
-            return text.ToString();
-        }
-
         /// <inheritdoc/>
         public override string GetInfoText(int margin = 0)
         {
@@ -96,16 +69,9 @@ namespace EasyMLCore.TimeSeries
             progressText.Append(ContextPath.ToString());
             progressText.Append("] ");
             progressText.Append(GetInputsInfoText());
-            progressText.Append(", ");
-            progressText.Append(GetOutputsInfoText());
-            if(Stat != null)
-            {
-                progressText.Append(Environment.NewLine);
-                progressText.Append(Stat.GetReportText(margin));
-            }
             return progressText.ToString();
         }
 
-    }//ReservoirInitProgressInfo
+    }//RVFLInitProgressInfo
 
 }//Namespace

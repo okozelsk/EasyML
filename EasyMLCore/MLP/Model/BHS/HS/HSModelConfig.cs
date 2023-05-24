@@ -87,7 +87,9 @@ namespace EasyMLCore.MLP
             {
                 "networkModel" => MetaLearnerCfg = new NetworkModelConfig(metaLearnerElem),
                 "crossValModel" => MetaLearnerCfg = new CrossValModelConfig(metaLearnerElem),
-                "stackingModel" => MetaLearnerCfg = new HSModelConfig(metaLearnerElem),
+                "stackingModel" => MetaLearnerCfg = new StackingModelConfig(metaLearnerElem),
+                "bhsModel" => MetaLearnerCfg = new BHSModelConfig(metaLearnerElem),
+                "rvflModel" => MetaLearnerCfg = new RVFLModelConfig(metaLearnerElem),
                 "compositeModel" => MetaLearnerCfg = new CompositeModelConfig(metaLearnerElem),
                 _ => throw new ArgumentException($"Unknown descendant element name {metaLearnerElem.Name.LocalName}.", nameof(elem)),
             };

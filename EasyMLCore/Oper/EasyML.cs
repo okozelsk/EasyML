@@ -460,6 +460,16 @@ namespace EasyMLCore
                                        verbose ? Handlers.OnModelBuildProgressChanged : null
                                        );
             }
+            else if (modelCfgType == typeof(RVFLModelConfig))
+            {
+                model = RVFLModel.Build(modelCfg,
+                                        modelNamePrefix,
+                                        taskType,
+                                        outputFeatureNames,
+                                        trainingData,
+                                       verbose ? Handlers.OnModelBuildProgressChanged : null
+                                        );
+            }
             else if (modelCfgType == typeof(CompositeModelConfig))
             {
                 model = CompositeModel.Build(modelCfg,
