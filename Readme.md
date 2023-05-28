@@ -31,7 +31,7 @@ If you want to write anything of your own to the log, use the EasyML.Oper.Log.Wr
 * Supported ML task types are: Categorical (multi-class classification), Binary (single or multiple decisions) and Regression (single or multiple forecasting)
 
 ### Activation (namespace EasyMLCore.Activation)
-Contains activation functions. Currently implemented [activations](./EasyMLCore/Activation) are: BentIdentity, ElliotSig, ELU, GELU, LeakyReLU, Linear, RadBas, ReLU, SELU, Sigmoid, Softmax, Softplus, TanH.
+Contains activation functions. Currently implemented [activations](./EasyMLCore/Activation) are: BentIdentity, ElliotSig, ELU, GELU, HardLim, LeakyReLU, Linear, RadBas, ReLU, SELU, Sigmoid, Sine, Softmax, Softplus, TanH.
 <br />
 
 ### MLP (namespace EasyMLCore.MLP)

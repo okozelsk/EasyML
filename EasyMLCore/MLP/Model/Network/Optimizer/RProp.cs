@@ -50,7 +50,7 @@ namespace EasyMLCore.MLP
         /// Determines the value sign. A value less than the zero tolerance is considered as zero.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private double Sign(double value)
+        private static double Sign(double value)
         {
             if (Math.Abs(value) <= ZeroTolerance)
             {

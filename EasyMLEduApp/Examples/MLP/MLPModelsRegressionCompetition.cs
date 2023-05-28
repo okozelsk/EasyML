@@ -19,9 +19,9 @@ namespace EasyMLEduApp.Examples.MLP
     public static class MLPModelsRegressionCompetition
     {
         //Methods
-        private static void ReportDetailOfFirst10Computations(ModelBase model, SampleDataset data)
+        private static void ReportDetailOfFirstNComputations(ModelBase model, SampleDataset data, int n)
         {
-            for (int i = 0; i < 10 && i < data.Count; i++)
+            for (int i = 0; i < n && i < data.Count; i++)
             {
                 EasyML.Oper.Log.Write($"Sample {i + 1}");
                 EasyML.Oper.Log.Write($"--------------");
@@ -61,7 +61,8 @@ namespace EasyMLEduApp.Examples.MLP
             List<IModelConfig> modelConfigCollection = new List<IModelConfig>()
             {
                 MLPModelConfigs.CreateNetworkModelConfig(ActivationFnID.ELU),
-                MLPModelConfigs.CreateRVFLModelConfig(),
+                MLPModelConfigs.CreateSingleLayerRVFLModelConfig(),
+                MLPModelConfigs.CreateDeepRVFLModelConfig(),
                 MLPModelConfigs.CreateRPropNetworkModelConfig(2, 2000, ActivationFnID.ELU),
                 MLPModelConfigs.CreateRPropCrossValModelConfig(0.25d, 2, 2000),
                 MLPModelConfigs.CreateBHSModelConfig(),
@@ -120,9 +121,9 @@ namespace EasyMLEduApp.Examples.MLP
             EasyML.Oper.Report(bestModel, false, 4);
             EasyML.Oper.Log.Write($"The best model results:");
             EasyML.Oper.Report(bestErrStat, false, 4);
-            //Now show first 10 computation details on testing data
-            EasyML.Oper.Log.Write($"First 10 computations of the best model");
-            ReportDetailOfFirst10Computations(bestModel, testingData);
+            //Now show first 3 computation details on testing data
+            EasyML.Oper.Log.Write($"First 3 computations of the best model");
+            ReportDetailOfFirstNComputations(bestModel, testingData, 3);
             return;
         }
 

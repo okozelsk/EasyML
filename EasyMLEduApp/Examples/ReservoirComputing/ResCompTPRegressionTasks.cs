@@ -217,7 +217,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
         public static void Run()
         {
             Console.Clear();
-            //ExecuteResCompTSLAExample();
+            ExecuteResCompTSLAExample();
             ExecuteResCompMackeyGlassExample();
             return;
         }

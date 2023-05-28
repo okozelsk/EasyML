@@ -55,7 +55,7 @@ namespace EasyMLCore.MathTools
         {
             if (probabilities == null)
             {
-                throw new ArgumentNullException("probabilities");
+                throw new ArgumentNullException(nameof(probabilities));
             }
             if (weights == null)
             {

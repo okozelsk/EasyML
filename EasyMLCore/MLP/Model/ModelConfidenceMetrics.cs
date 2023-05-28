@@ -17,7 +17,7 @@ namespace EasyMLCore.MLP
         /// If only training err stat is present this penalty is used to scale features confidences of such model.
         /// Aim is to favorize validated models during the bagging of models.
         /// </summary>
-        private const double MissingValidationErrStatFConfidencesPenalty = 0.5d;
+        private const double MissingValidationErrStatFConfidencesPenalty = 0.05d;
 
         /// <summary>
         /// Bellow 1d it favorizes training stat results over validation stat resusults.
@@ -112,7 +112,7 @@ namespace EasyMLCore.MLP
                 //Feature confidences
                 FeatureConfidences = trainingErrorStat.GetFeatureConfidences();
                 //Apply "missing test statistics" penalty
-                FeatureConfidences.Scale(MissingValidationErrStatFConfidencesPenalty);
+                FeatureConfidences.Scale(1d - MissingValidationErrStatFConfidencesPenalty);
             }
             else
             {

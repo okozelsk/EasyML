@@ -65,8 +65,8 @@ namespace EasyMLCore.MLP
             //Build the progress text message
             StringBuilder progressText = new StringBuilder();
             progressText.Append(new string(' ', margin));
-            progressText.Append("[");
-            progressText.Append(ContextPath.ToString());
+            progressText.Append('[');
+            progressText.Append(ContextPath);
             progressText.Append("] ");
             progressText.Append(GetInputsInfoText());
             return progressText.ToString();

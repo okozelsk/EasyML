@@ -12,7 +12,6 @@ namespace EasyMLEduApp.Examples.MLP
     {
         /*
          * Default constants and weights regularization options used in examples.
-         * Changes affects almost all examples.
         */
 
         //Constants
@@ -36,14 +35,10 @@ namespace EasyMLEduApp.Examples.MLP
         //50% Bernouli dropout on networks hidden layers
         private static readonly DropoutConfig HiddenDropoutCfg = new DropoutConfig(0.5d, DropoutMode.Bernoulli);
         //L1 regularization configuration
-        //No L1 regularization on networks hidden layers
         private static readonly RegL1Config HiddenRegL1Cfg = new RegL1Config(0d, false);
-        //No L1 regularization on networks output layers
         private static readonly RegL1Config OutputRegL1Cfg = new RegL1Config(0d, false);
         //L2 regularization configuration
-        //No L2 regularization on networks hidden layers
         private static readonly RegL2Config HiddenRegL2Cfg = new RegL2Config(0d, false);
-        //No L2 regularization on networks output layers
         private static readonly RegL2Config OutputRegL2Cfg = new RegL2Config(0d, false);
         //Norm constraints configuration
         //No norm constraint on networks hidden layers
@@ -383,9 +378,30 @@ namespace EasyMLEduApp.Examples.MLP
         */
 
         /// <summary>
+        /// Creates RVFL model configuration having 1 hidden layer.
+        /// </summary>
+        public static RVFLModelConfig CreateSingleLayerRVFLModelConfig()
+        {
+            //Pools to be used within hidden layers
+            int poolSize = 2000;
+            //RVFL hidden layers
+            RVFLHiddenLayersConfig hlsc =
+                new RVFLHiddenLayersConfig(new RVFLHiddenLayerConfig(new RVFLHiddenPoolConfig(poolSize, ActivationFnID.TanH, true)));
+
+            //RVFL model
+            RVFLModelConfig rvflCfg =
+                new RVFLModelConfig(hlsc,
+                                    CreateRPropOutputOnlyNetworkCrossValModelConfig(0.1d, 3, 1000), //end-model
+                                    RVFLModelConfig.DefaultScaleFactor, // (1.5) Scale factor the first layer's weights (first layer has uniform distribution of random weights)
+                                    false //Do not provide original input to end-model
+                                    );
+            return rvflCfg;
+        }
+
+        /// <summary>
         /// Creates RVFL model configuration having 3 hidden layers.
         /// </summary>
-        public static RVFLModelConfig CreateRVFLModelConfig()
+        public static RVFLModelConfig CreateDeepRVFLModelConfig()
         {
             //Pools to be used within hidden layers
             int poolSize = 512;
@@ -409,6 +425,7 @@ namespace EasyMLEduApp.Examples.MLP
         }
 
 
+
         /*
          * Composite model configurations.
         */
@@ -423,7 +440,7 @@ namespace EasyMLEduApp.Examples.MLP
                 new CompositeModelConfig(CreateNetworkModelConfig(ActivationFnID.ReLU, 50, 2),
                                          CreateNetworkModelConfig(ActivationFnID.TanH, 50, 2),
                                          CreateNetworkModelConfig(ActivationFnID.ReLU, 44, 1),
-                                         CreateRVFLModelConfig()
+                                         CreateDeepRVFLModelConfig()
                                          );
             return modelCfg;
         }

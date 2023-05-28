@@ -34,7 +34,8 @@ namespace EasyMLEduApp.Examples.MLP
             List<IModelConfig> modelConfigCollection = new List<IModelConfig>()
             {
                 MLPModelConfigs.CreateNetworkModelConfig(ActivationFnID.LeakyReLU),
-                MLPModelConfigs.CreateRVFLModelConfig(),
+                MLPModelConfigs.CreateSingleLayerRVFLModelConfig(),
+                MLPModelConfigs.CreateDeepRVFLModelConfig(),
                 MLPModelConfigs.CreateCrossValModelConfig(0.1d),
                 MLPModelConfigs.CreateBHSModelConfig(),
                 MLPModelConfigs.CreateStackingModelConfig(0.1d),

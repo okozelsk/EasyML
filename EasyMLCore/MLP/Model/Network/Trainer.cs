@@ -125,7 +125,8 @@ namespace EasyMLCore.MLP
             StdTrainingDataset =
                 _orgTrainingDataset.CreateStandardized(_engine.TaskType,
                                                       out FeatureFilterBase[] inputFilters,
-                                                      out FeatureFilterBase[] outputFilters
+                                                      out FeatureFilterBase[] outputFilters,
+                                                      MLPEngine.UseCenteredFeatures
                                                       );
             InputFilters = inputFilters;
             OutputFilters = outputFilters;
@@ -276,10 +277,13 @@ namespace EasyMLCore.MLP
                 _regL2WLambdas[i] = regL2Cfg.Strength;
                 _regL2BLambdas[i] = regL2Cfg.Biases ? regL2Cfg.Strength : 0d;
                 //Scale lambdas by total number of training samples
+                /*
+                 * Disabled. Common is to use penalty directly as is.
                 _regL1WLambdas[i] /= StdTrainingDataset.Count;
                 _regL1BLambdas[i] /= StdTrainingDataset.Count;
                 _regL2WLambdas[i] /= StdTrainingDataset.Count;
                 _regL2BLambdas[i] /= StdTrainingDataset.Count;
+                */
             }
             return;
         }
@@ -412,7 +416,7 @@ namespace EasyMLCore.MLP
                     //Naturalize
                     for (int i = 0; i < computed.Length; i++)
                     {
-                        computed[i] = OutputFilters[i].ApplyReverse(activations[aOutIdx + i]);
+                        computed[i] = OutputFilters[i].ApplyReverse(activations[aOutIdx + i], MLPEngine.UseCenteredFeatures);
                     }
                     //Update stat
                     rangeStat.Update(computed, _orgTrainingDataset.SampleCollection[sampleIdx].OutputVector);

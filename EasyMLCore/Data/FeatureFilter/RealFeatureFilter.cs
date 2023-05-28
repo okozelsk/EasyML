@@ -42,8 +42,23 @@ namespace EasyMLCore.Data
                                 (SamplesStat.Max - SamplesStat.ArithAvg) / (SamplesStat.StdDev == 0d ? 1d : SamplesStat.StdDev)
                                 );
         }
+
+        private double Scale(double stdValue)
+        {
+            Interval stdInterval = GetStdInterval();
+            double magnitude = Math.Max(Math.Abs(stdInterval.Min), Math.Abs(stdInterval.Max));
+            return stdValue / magnitude;
+        }
+
+        private double Rescale(double scaledValue)
+        {
+            Interval stdInterval = GetStdInterval();
+            double magnitude = Math.Max(Math.Abs(stdInterval.Min), Math.Abs(stdInterval.Max));
+            return scaledValue * magnitude;
+        }
+
         /// <inheritdoc/>
-        public override double ApplyFilter(double value)
+        public override double ApplyFilter(double value, bool centered)
         {
             if (!value.IsValid())
             {
@@ -58,7 +73,14 @@ namespace EasyMLCore.Data
             value -= SamplesStat.ArithAvg;
             value /= SamplesStat.StdDev;
             //Normalize
-            value = Interval.IntN1P1.Rescale(value, GetStdInterval());
+            if (centered)
+            {
+                value = Interval.IntN1P1.Rescale(value, GetStdInterval());
+            }
+            else
+            {
+                value = Scale(value);
+            }
             if(!value.IsValid())
             {
                 throw new ApplicationException("Filter ApplyFilter leads to unusable value.");
@@ -67,7 +89,7 @@ namespace EasyMLCore.Data
         }
 
         /// <inheritdoc/>
-        public override double ApplyReverse(double value)
+        public override double ApplyReverse(double value, bool centered)
         {
             if (!value.IsValid())
             {
@@ -78,9 +100,16 @@ namespace EasyMLCore.Data
                 //All sample values are the same
                 return SamplesStat.ArithAvg;
             }
-            //Denormalize
-            value = GetStdInterval().Rescale(value, Interval.IntN1P1);
-            //Destandardize
+            //Naturalize
+            if (centered)
+            {
+                value = GetStdInterval().Rescale(value, Interval.IntN1P1);
+            }
+            else
+            {
+                value = Rescale(value);
+            }
+            //Naturalize
             value *= SamplesStat.StdDev;
             value += SamplesStat.ArithAvg;
             if (!value.IsValid())

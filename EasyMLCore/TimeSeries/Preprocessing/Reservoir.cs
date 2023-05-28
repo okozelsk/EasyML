@@ -33,6 +33,11 @@ namespace EasyMLCore.TimeSeries
         /// </summary>
         public const string ContextPathID = "Reservoir";
 
+        /// <summary>
+        /// Specifies whether to center features when applaying feature filters.
+        /// </summary>
+        public const bool UseCenteredFeatures = true;
+
         //Static variables
         /// <summary>
         /// A number used to initialize pseudo random numbers.
@@ -549,7 +554,7 @@ namespace EasyMLCore.TimeSeries
             {
                 throw new ArgumentException("Inconsistent input data.", nameof(input));
             }
-            inputPattern.StandardizeData(_inputFilters);
+            inputPattern.StandardizeData(_inputFilters, UseCenteredFeatures);
             int numOfTimepoints = inputPattern.Length;
             if (ResCfg.InputCfg.Feeding == InputFeeding.TimePoint)
             {

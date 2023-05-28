@@ -64,7 +64,7 @@ namespace EasyMLCore.Log
                         StringBuilder emptyMsg = new StringBuilder(_lastMessageLength);
                         for (int i = 0; i < _lastMessageLength; i++)
                         {
-                            emptyMsg.Append(" ");
+                            emptyMsg.Append(' ');
                         }
                         Console.Write(emptyMsg.ToString());
                         Console.CursorLeft = _lastCursorLeft;

@@ -31,6 +31,11 @@ namespace EasyMLCore.MLP
         /// </summary>
         public const string ContextPathID = "RVFLPreprocessor";
 
+        /// <summary>
+        /// Specifies whether to center features when applaying feature filters.
+        /// </summary>
+        public const bool UseCenteredFeatures = true;
+
         //Events
         /// <summary>
         /// This informative event occurs each time the progress of the init process takes a step forward.
@@ -82,7 +87,7 @@ namespace EasyMLCore.MLP
         /// <summary>
         /// Scale factor of the first layer's weigths.
         /// </summary>
-        private double _scaleFactor;
+        private readonly double _scaleFactor;
         /// <summary>
         /// All weights in a flat structure.
         /// </summary>
@@ -179,14 +184,15 @@ namespace EasyMLCore.MLP
         /// <summary>
         /// Randomizes internal weights.
         /// </summary>
+        /// <param name="stdTrainingInputs">Standardized training input data.</param>
         /// <param name="rand">The random generator to be used.</param>
-        private void RandomizeWeights(Random rand)
+        private void RandomizeWeights(double[][] stdTrainingInputs, Random rand)
         {
             WeightsStat.Reset();
             BiasesStat.Reset();
             foreach (Layer layer in LayerCollection)
             {
-                layer.RandomizeWights(_flatWeights, rand, _scaleFactor);
+                layer.RandomizeWights(stdTrainingInputs, _flatWeights, rand, _scaleFactor);
                 WeightsStat.Merge(layer.WeightsStat);
                 BiasesStat.Merge(layer.BiasesStat);
             }
@@ -198,7 +204,7 @@ namespace EasyMLCore.MLP
             double[] stdInput = new double[input.Length];
             for(int i = 0; i < input.Length; i++)
             {
-                stdInput[i] = _inputFilters[i].ApplyFilter(input[i]);
+                stdInput[i] = _inputFilters[i].ApplyFilter(input[i], UseCenteredFeatures);
             }
             return stdInput;
         }
@@ -231,7 +237,7 @@ namespace EasyMLCore.MLP
         {
             if(input == null)
             {
-                throw new ArgumentNullException("input");
+                throw new ArgumentNullException(nameof(input));
             }
             if(input.Length != NumOfInputFeatures)
             {
@@ -260,8 +266,6 @@ namespace EasyMLCore.MLP
             {
                 //Initialization
                 Initialized = false;
-                //New weights
-                RandomizeWeights(rand);
                 //Input filters
                 for (int i = 0; i < _inputFilters.Length; i++)
                 {
@@ -284,9 +288,11 @@ namespace EasyMLCore.MLP
                 {
                     for (int sampleIdx = 0; sampleIdx < trainingData.SampleCollection.Count; sampleIdx++)
                     {
-                        stdInputs[sampleIdx][featureIdx] = _inputFilters[featureIdx].ApplyFilter(trainingData.SampleCollection[sampleIdx].InputVector[featureIdx]);
+                        stdInputs[sampleIdx][featureIdx] = _inputFilters[featureIdx].ApplyFilter(trainingData.SampleCollection[sampleIdx].InputVector[featureIdx], false);
                     }
                 });
+                //New weights
+                RandomizeWeights(stdInputs, rand);
                 //Output
                 SampleDataset outputData = new SampleDataset(trainingData.Count);
                 int numOfProcessedInputs = 0;
@@ -433,16 +439,17 @@ namespace EasyMLCore.MLP
             /// <summary>
             /// Randomly initializes layer weights.
             /// </summary>
+            /// <param name="stdTrainingInputs">Standardized training input data.</param>
             /// <param name="flatWeights">RVFL's weights in a flat structure.</param>
             /// <param name="rand">Random generator to be used.</param>
             /// <param name="scaleFactor">Scale factor of the first layer's weigths.</param>
-            internal void RandomizeWights(double[] flatWeights, Random rand, double scaleFactor)
+            internal void RandomizeWights(double[][] stdTrainingInputs, double[] flatWeights, Random rand, double scaleFactor)
             {
                 WeightsStat.Reset();
                 BiasesStat.Reset();
                 foreach (Pool pool in Pools)
                 {
-                    pool.RandomizeWights(flatWeights, rand, scaleFactor);
+                    pool.RandomizeWights(stdTrainingInputs, flatWeights, rand, scaleFactor);
                     WeightsStat.Merge(pool.WeightsStat);
                     BiasesStat.Merge(pool.BiasesStat);
                 }
@@ -582,41 +589,115 @@ namespace EasyMLCore.MLP
                     return new Pool(this);
                 }
 
-                /// <summary>
-                /// Randomly initializes pool weights.
-                /// </summary>
-                /// <param name="flatWeights">RVFL's weights in a flat structure.</param>
-                /// <param name="rand">Random generator to be used.</param>
-                /// <param name="scaleFactor">Scale factor of the first layer's weigths.</param>
-                internal void RandomizeWights(double[] flatWeights, Random rand, double scaleFactor)
+                private double[] GetL1NodeWeights(double[][] stdTrainingInputs, Random rand, int mode, double scaleFactor)
                 {
-                    if(LayerIdx == 0)
+                    double[] wVector = new double[NumOfInputNodes];
+                    if (mode == 0)
                     {
-                        RandomizeWightsUni(flatWeights, rand, scaleFactor);
+                        //Pure random weights
+                        rand.FillUniform(wVector, -1d, 1d, false);
                     }
-                    else
+                    else if (mode == 1)
                     {
-                        RandomizeWightsStd(flatWeights, rand);
+                        //Single randomly selected sample
+                        stdTrainingInputs[rand.Next(stdTrainingInputs.Length)].CopyTo(wVector, 0);
                     }
-
+                    else if (mode == 2)
+                    {
+                        //Sum of two randomly selected samples
+                        int idx1 = rand.Next(stdTrainingInputs.Length);
+                        stdTrainingInputs[idx1].CopyTo(wVector, 0);
+                        int idx2 = rand.Next(stdTrainingInputs.Length);
+                        if (idx2 != idx1)
+                        {
+                            double[] sampleVector2 = stdTrainingInputs[idx2];
+                            //Sum vectors
+                            for (int i = 0; i < sampleVector2.Length; i++)
+                            {
+                                wVector[i] += sampleVector2[i];
+                            }
+                        }
+                    }
+                    else if (mode == 3)
+                    {
+                        //Diff of two randomly selected samples
+                        int idx1 = rand.Next(stdTrainingInputs.Length);
+                        stdTrainingInputs[idx1].CopyTo(wVector, 0);
+                        int idx2 = rand.Next(stdTrainingInputs.Length);
+                        if (idx2 != idx1)
+                        {
+                            double[] sampleVector2 = stdTrainingInputs[idx2];
+                            //Sum vectors
+                            for (int i = 0; i < sampleVector2.Length; i++)
+                            {
+                                wVector[i] -= sampleVector2[i];
+                            }
+                        }
+                    }
+                    //Scale
+                    wVector.Scale(scaleFactor / wVector.Magnitude());
+                    return wVector;
                 }
 
-                internal void RandomizeWightsUni(double[] flatWeights, Random rand, double scaleFactor)
+                internal void SetL1SampleDrivenWeights(double[][] stdTrainingInputs, double[] flatWeights, Random rand, double scaleFactor)
                 {
                     double[] wBuff = new double[NumOfInputNodes * NumOfNeurons];
-                    rand.FillUniform(wBuff, -scaleFactor, scaleFactor, false);
+                    for (int neuronIdx = 0; neuronIdx < NumOfNeurons; neuronIdx++)
+                    {
+                        double[] wVector;
+                        wVector = GetL1NodeWeights(stdTrainingInputs, rand, 0, scaleFactor);
+                        //Use wVector as neuron weights
+                        wVector.CopyTo(wBuff, neuronIdx * NumOfInputNodes);
+                    }
                     wBuff.CopyTo(flatWeights, WeightsStartFlatIdx);
                     WeightsStat.Reset();
                     WeightsStat.AddSampleValues(wBuff);
                     double[] bBuff = new double[NumOfNeurons];
-                    rand.FillUniform(bBuff, -scaleFactor, scaleFactor, false);
+                    rand.FillUniform(bBuff, -1, 1, false);
+                    //bBuff.Scale(scaleFactor);
                     bBuff.CopyTo(flatWeights, BiasesStartFlatIdx);
                     BiasesStat.Reset();
                     BiasesStat.AddSampleValues(bBuff);
                     return;
                 }
 
-                internal void RandomizeWightsStd(double[] flatWeights, Random rand)
+                /// <summary>
+                /// Randomly initializes pool weights.
+                /// </summary>
+                /// <param name="stdTrainingInputs">Standardized training input data.</param>
+                /// <param name="flatWeights">RVFL's weights in a flat structure.</param>
+                /// <param name="rand">Random generator to be used.</param>
+                /// <param name="scaleFactor">Scale factor of the first layer's weigths.</param>
+                internal void RandomizeWights(double[][] stdTrainingInputs, double[] flatWeights, Random rand, double scaleFactor)
+                {
+                    if(LayerIdx == 0)
+                    {
+                        RandomizeWightsUniform(flatWeights, rand, scaleFactor);
+                    }
+                    else
+                    {
+                        RandomizeWightsGaussian(flatWeights, rand);
+                    }
+
+                }
+
+                internal void RandomizeWightsUniform(double[] flatWeights, Random rand, double scaleFactor)
+                {
+                    double[] wBuff = new double[NumOfInputNodes * NumOfNeurons];
+                    rand.FillUniform(wBuff, -1d, 1d, false);
+                    wBuff.Scale(scaleFactor / wBuff.Magnitude());
+                    wBuff.CopyTo(flatWeights, WeightsStartFlatIdx);
+                    WeightsStat.Reset();
+                    WeightsStat.AddSampleValues(wBuff);
+                    double[] bBuff = new double[NumOfNeurons];
+                    rand.FillUniform(bBuff, -1d, 1d, false);
+                    bBuff.CopyTo(flatWeights, BiasesStartFlatIdx);
+                    BiasesStat.Reset();
+                    BiasesStat.AddSampleValues(bBuff);
+                    return;
+                }
+
+                internal void RandomizeWightsGaussian(double[] flatWeights, Random rand)
                 {
                     double[] wBuff = new double[NumOfInputNodes * NumOfNeurons];
                     double reqStdDev = Activation.GetNormalInitWeightsStdDev(NumOfInputNodes, NumOfNeurons);
@@ -660,7 +741,7 @@ namespace EasyMLCore.MLP
                     }
                     else
                     {
-                        predictors = new double[0];
+                        predictors = Array.Empty<double>();
                     }
                     return activations;
                 }

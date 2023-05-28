@@ -162,7 +162,7 @@ namespace EasyMLCore.MLP
             double[] normVector = new double[natVector.Length];
             for (int i = 0; i < natVector.Length; i ++)
             {
-                normVector[i] = _inputFilters[i].ApplyFilter(natVector[i]);
+                normVector[i] = _inputFilters[i].ApplyFilter(natVector[i], MLPEngine.UseCenteredFeatures);
             }
             return normVector;
         }
@@ -174,7 +174,7 @@ namespace EasyMLCore.MLP
         {
             for (int i = 0; i < natVector.Length; i++)
             {
-                normVector[i] = _inputFilters[i].ApplyFilter(natVector[i]);
+                normVector[i] = _inputFilters[i].ApplyFilter(natVector[i], MLPEngine.UseCenteredFeatures);
             }
             return;
         }
@@ -187,7 +187,7 @@ namespace EasyMLCore.MLP
             double[] nVector = new double[vector.Length];
             for (int i = 0; i < vector.Length; i++)
             {
-                nVector[i] = _outputFilters[i].ApplyReverse(vector[i]);
+                nVector[i] = _outputFilters[i].ApplyReverse(vector[i], MLPEngine.UseCenteredFeatures);
             }
             return nVector;
         }
@@ -199,7 +199,7 @@ namespace EasyMLCore.MLP
         {
             for (int i = 0; i < natVector.Length; i++, aIdx++)
             {
-                natVector[i] = _outputFilters[i].ApplyReverse(activations[aIdx]);
+                natVector[i] = _outputFilters[i].ApplyReverse(activations[aIdx], MLPEngine.UseCenteredFeatures);
             }
             return;
         }

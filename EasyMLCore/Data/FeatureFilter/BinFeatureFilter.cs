@@ -62,7 +62,7 @@ namespace EasyMLCore.Data
         }
 
         /// <inheritdoc/>
-        public override double ApplyFilter(double value)
+        public override double ApplyFilter(double value, bool centered)
         {
             if (!value.IsValid())
             {
@@ -79,7 +79,7 @@ namespace EasyMLCore.Data
         }
 
         /// <inheritdoc/>
-        public override double ApplyReverse(double value)
+        public override double ApplyReverse(double value, bool centered)
         {
             if (!value.IsValid())
             {

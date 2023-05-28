@@ -151,7 +151,7 @@ namespace EasyMLCore.MLP
         /// Gets textual information about the specified network instance.
         /// </summary>
         /// <param name="network">An instance of network.</param>
-        public string GetNetworkInfoText(NetworkModel network)
+        public static string GetNetworkInfoText(NetworkModel network)
         {
             StringBuilder text = new StringBuilder();
             text.Append("RMSE: Train ");
@@ -203,8 +203,8 @@ namespace EasyMLCore.MLP
             //Build the progress text message
             StringBuilder progressText = new StringBuilder();
             progressText.Append(new string(' ', margin));
-            progressText.Append("[");
-            progressText.Append(ContextPath.ToString());
+            progressText.Append('[');
+            progressText.Append(ContextPath);
             progressText.Append("] ");
             progressText.Append(GetBasicProgressInfoText());
             progressText.Append(", ");
@@ -213,7 +213,7 @@ namespace EasyMLCore.MLP
             progressText.Append(GetNetworkInfoText(BestNet));
             progressText.Append("}, CurrNet-{");
             progressText.Append(GetNetworkInfoText(CurrNet));
-            progressText.Append("}");
+            progressText.Append('}');
             return progressText.ToString();
         }
 

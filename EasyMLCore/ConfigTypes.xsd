@@ -53,6 +53,11 @@
           <xs:documentation xml:lang="en">Gaussian Error Linear Unit activation function.</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
+      <xs:enumeration value="HardLim">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Hardlim (aka Binary step) activation function.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
       <xs:enumeration value="LeakyReLU">
         <xs:annotation>
           <xs:documentation xml:lang="en">Leaky Rectified Linear Unit activation function.</xs:documentation>
@@ -83,6 +88,11 @@
           <xs:documentation xml:lang="en">Sigmoid activation function.</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
+      <xs:enumeration value="Sine">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Sine activation function.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
       <xs:enumeration value="Softmax">
         <xs:annotation>
           <xs:documentation xml:lang="en">Softmax activation function.</xs:documentation>
@@ -107,6 +117,11 @@
       <xs:enumeration value="ElliotSig">
         <xs:annotation>
           <xs:documentation xml:lang="en">ElliotSig activation function (aka Softsign).</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="Sine">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Sine activation function.</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
       <xs:enumeration value="TanH">

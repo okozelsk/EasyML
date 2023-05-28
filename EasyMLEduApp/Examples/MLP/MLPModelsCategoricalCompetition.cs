@@ -82,7 +82,8 @@ namespace EasyMLEduApp.Examples.MLP
             List<IModelConfig> modelConfigCollection = new List<IModelConfig>()
             {
                 MLPModelConfigs.CreateNetworkModelConfig(),
-                MLPModelConfigs.CreateRVFLModelConfig(),
+                MLPModelConfigs.CreateSingleLayerRVFLModelConfig(),
+                MLPModelConfigs.CreateDeepRVFLModelConfig(),
                 MLPModelConfigs.CreateCrossValModelConfig(0.05d),
                 MLPModelConfigs.CreateBHSModelConfig(),
                 MLPModelConfigs.CreateStackingModelConfig(0.05d),
@@ -183,7 +184,8 @@ namespace EasyMLEduApp.Examples.MLP
             List<IModelConfig> modelConfigCollection = new List<IModelConfig>()
             {
                 MLPModelConfigs.CreateNetworkModelConfig(ActivationFnID.ReLU),
-                MLPModelConfigs.CreateRVFLModelConfig(),
+                MLPModelConfigs.CreateSingleLayerRVFLModelConfig(),
+                MLPModelConfigs.CreateDeepRVFLModelConfig(),
                 MLPModelConfigs.CreateCrossValModelConfig(0.1d),
                 MLPModelConfigs.CreateBHSModelConfig(),
                 MLPModelConfigs.CreateStackingModelConfig(0.1d),

@@ -968,9 +968,11 @@ namespace EasyMLCore.Data
         /// <param name="taskType">Network's output task type.</param>
         /// <param name="inputFilters">Prepared input filters.</param>
         /// <param name="outputFilters">Prepared output filters.</param>
+        /// <param name="centered">Specifies whether to center value between -1 an 1, so min value is -1 and max value is 1. If false, 0 is not the interval center but represents the average value and -1 or 1 represents the magnitude.</param>
         public SampleDataset CreateStandardized(OutputTaskType taskType,
                                                 out FeatureFilterBase[] inputFilters,
-                                                out FeatureFilterBase[] outputFilters
+                                                out FeatureFilterBase[] outputFilters,
+                                                bool centered
                                                 )
         {
             PrepareFeatureFilters(taskType,
@@ -990,14 +992,14 @@ namespace EasyMLCore.Data
             {
                 for (int sampleIdx = 0; sampleIdx < SampleCollection.Count; sampleIdx++)
                 {
-                    stdInputs[sampleIdx][featureIdx] = iFilters[featureIdx].ApplyFilter(SampleCollection[sampleIdx].InputVector[featureIdx]);
+                    stdInputs[sampleIdx][featureIdx] = iFilters[featureIdx].ApplyFilter(SampleCollection[sampleIdx].InputVector[featureIdx], centered);
                 }
             });
             Parallel.For(0, oFilters.Length, featureIdx =>
             {
                 for (int sampleIdx = 0; sampleIdx < SampleCollection.Count; sampleIdx++)
                 {
-                    stdOutputs[sampleIdx][featureIdx] = oFilters[featureIdx].ApplyFilter(SampleCollection[sampleIdx].OutputVector[featureIdx]);
+                    stdOutputs[sampleIdx][featureIdx] = oFilters[featureIdx].ApplyFilter(SampleCollection[sampleIdx].OutputVector[featureIdx], centered);
                 }
             });
             SampleDataset stdDataset = new SampleDataset(SampleCollection.Count);

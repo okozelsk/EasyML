@@ -225,7 +225,8 @@ namespace EasyMLCore.Data
         /// Standardizes variables' data using given filters.
         /// </summary>
         /// <param name="filters">Feature filters to be used (one per variable, in the same order).</param>
-        public void StandardizeData(IEnumerable<FeatureFilterBase> filters)
+        /// <param name="centered">Specifies whether to center value between -1 an 1, so min value is -1 and max value is 1. If false, 0 is not the interval center but represents the average value and -1 or 1 represents the magnitude.</param>
+        public void StandardizeData(IEnumerable<FeatureFilterBase> filters, bool centered)
         {
             if (!Consistent)
             {
@@ -236,7 +237,7 @@ namespace EasyMLCore.Data
             {
                 for(int i = 0; i < VariablesDataCollection[varIdx].Length; i++)
                 {
-                    VariablesDataCollection[varIdx][i] = filter.ApplyFilter(VariablesDataCollection[varIdx][i]);
+                    VariablesDataCollection[varIdx][i] = filter.ApplyFilter(VariablesDataCollection[varIdx][i], centered);
                 }
                 ++varIdx;
             }
@@ -247,7 +248,8 @@ namespace EasyMLCore.Data
         /// Naturalizes variables' data using given filters.
         /// </summary>
         /// <param name="filters">Feature filters to be used (one per variable, in the same order).</param>
-        public void NaturalizeData(IEnumerable<FeatureFilterBase> filters)
+        /// <param name="centered">Specifies whether data was centered.</param>
+        public void NaturalizeData(IEnumerable<FeatureFilterBase> filters, bool centered)
         {
             if (!Consistent)
             {
@@ -258,7 +260,7 @@ namespace EasyMLCore.Data
             {
                 for (int i = 0; i < VariablesDataCollection[varIdx].Length; i++)
                 {
-                    VariablesDataCollection[varIdx][i] = filter.ApplyReverse(VariablesDataCollection[varIdx][i]);
+                    VariablesDataCollection[varIdx][i] = filter.ApplyReverse(VariablesDataCollection[varIdx][i], centered);
                 }
                 ++varIdx;
             }

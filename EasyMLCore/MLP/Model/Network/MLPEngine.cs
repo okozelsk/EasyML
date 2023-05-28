@@ -16,6 +16,12 @@ namespace EasyMLCore.MLP
     [Serializable]
     public class MLPEngine : SerializableObject, IComputableTaskSpecific
     {
+        //Constants
+        /// <summary>
+        /// Specifies whether to center features when applaying feature filters.
+        /// </summary>
+        public const bool UseCenteredFeatures = true;
+
         //Enumerations
         //Attribute properties
         /// <inheritdoc cref="OutputTaskType"/>
@@ -198,6 +204,7 @@ namespace EasyMLCore.MLP
         private void ActualizeWeightsStat()
         {
             HLWeightsStat.Reset();
+            OLWeightsStat.Reset();
             for (int layerIdx = 0; layerIdx < LayerCollection.Count; layerIdx++)
             {
                 int weightFlatIdx = LayerCollection[layerIdx].WeightsStartFlatIdx;

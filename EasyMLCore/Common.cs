@@ -46,6 +46,10 @@ namespace EasyMLCore
         /// </summary>
         GELU,
         /// <summary>
+        /// The Hardlim (aka binary step) activation function.
+        /// </summary>
+        HardLim,
+        /// <summary>
         /// The Leaky Rectified Linear Unit activation function.
         /// </summary>
         LeakyReLU,
@@ -69,6 +73,10 @@ namespace EasyMLCore
         /// The Sigmoid activation function.
         /// </summary>
         Sigmoid,
+        /// <summary>
+        /// The Sine activation function.
+        /// </summary>
+        Sine,
         /// <summary>
         /// The Softmax activation function.
         /// </summary>

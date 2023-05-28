@@ -103,15 +103,17 @@ namespace EasyMLCore.Data
         /// Applies the filter.
         /// </summary>
         /// <param name="value">A value in original range.</param>
+        /// <param name="centered">Specifies whether to center value between -1 an 1, so min value is -1 and max value is 1. If false, 0 is not the interval center but represents the average value and -1 or 1 represents the magnitude.</param>
         /// <returns>A value in normalized range.</returns>
-        public abstract double ApplyFilter(double value);
+        public abstract double ApplyFilter(double value, bool centered);
 
         /// <summary>
         /// Applies the filter reverse.
         /// </summary>
         /// <param name="value">A value in normalized range.</param>
+        /// <param name="centered">Specifies whether ApplyFilter centered the value.</param>
         /// <returns>A value in original range.</returns>
-        public abstract double ApplyReverse(double value);
+        public abstract double ApplyReverse(double value, bool centered);
 
         /// <summary>
         /// Creates a deep clone.
