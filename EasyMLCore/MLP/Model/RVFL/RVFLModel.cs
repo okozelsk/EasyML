@@ -1,7 +1,5 @@
 ﻿using EasyMLCore.Data;
 using EasyMLCore.Extensions;
-using EasyMLCore.MLP.Model;
-using EasyMLCore.TimeSeries;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -15,19 +13,13 @@ namespace EasyMLCore.MLP
     /// Implements a RVFL (Random vector functional link network) model.
     /// </summary>
     [Serializable]
-    public class RVFLModel : ModelBase
+    public class RVFLModel : MLPModelBase
     {
         //Constants
         /// <summary>
         /// Short identifier in context path.
         /// </summary>
         public const string ContextPathID = "RVFL";
-
-        /// <summary>
-        /// This informative event occurs each time the progress of the build process takes a step forward.
-        /// </summary>
-        [field: NonSerialized]
-        internal event ModelBuildProgressChangedHandler BuildProgressChanged;
 
         //Attribute properties
         /// <summary>
@@ -38,7 +30,7 @@ namespace EasyMLCore.MLP
         /// <summary>
         /// End MLP model.
         /// </summary>
-        public ModelBase EndModel { get; private set; }
+        public MLPModelBase EndModel { get; private set; }
 
         //Constructor
         /// <summary>
@@ -49,10 +41,10 @@ namespace EasyMLCore.MLP
         /// <param name="taskType">Output task.</param>
         /// <param name="outputFeatureNames">Names of output features.</param>
         private RVFLModel(RVFLModelConfig modelConfig,
-                               string name,
-                               OutputTaskType taskType,
-                               IEnumerable<string> outputFeatureNames
-                               )
+                          string name,
+                          OutputTaskType taskType,
+                          IEnumerable<string> outputFeatureNames
+                          )
             : base(modelConfig, name, taskType, outputFeatureNames)
         {
             Preprocessor = null;
@@ -73,24 +65,25 @@ namespace EasyMLCore.MLP
         }
 
         //Methods
-        private void OnRVFLInitProgressChanged(RVFLInitProgressInfo progressInfo)
+        private void OnRVFLInitProgressChanged(ProgressInfoBase progressInfo)
         {
+            progressInfo.ExtendContextPath(Name);
             ModelBuildProgressInfo trainProgressInfo =
-                new ModelBuildProgressInfo(Name, progressInfo.ProcessedInputsTracker, null);
-            BuildProgressChanged?.Invoke(trainProgressInfo);
+                new ModelBuildProgressInfo(Name, progressInfo, null);
+            InvokeProgressChanged(trainProgressInfo);
             return;
         }
 
-        private void OnModelBuildProgressChanged(ModelBuildProgressInfo progressInfo)
+        private void OnModelBuildProgressChanged(ProgressInfoBase progressInfo)
         {
-            BuildProgressChanged?.Invoke(progressInfo);
+            InvokeProgressChanged(progressInfo);
             return;
         }
 
         /// <summary>
         /// Sets the model operationable.
         /// </summary>
-        private void SetOperationable(ModelBase endModel)
+        private void SetOperationable(MLPModelBase endModel)
         {
             EndModel = endModel;
             //Finalize model
@@ -130,16 +123,16 @@ namespace EasyMLCore.MLP
 
 
         /// <inheritdoc/>
-        public override ModelDiagnosticData DiagnosticTest(SampleDataset testingData, ModelTestProgressChangedHandler progressInfoSubscriber = null)
+        public override MLPModelDiagnosticData DiagnosticTest(SampleDataset testingData, ProgressChangedHandler progressInfoSubscriber = null)
         {
-            ModelErrStat errStat = Test(testingData, out _, progressInfoSubscriber);
-            ModelDiagnosticData diagData = new ModelDiagnosticData(Name, errStat);
+            MLPModelErrStat errStat = Test(testingData, out _, progressInfoSubscriber);
+            MLPModelDiagnosticData diagData = new MLPModelDiagnosticData(Name, errStat);
             diagData.SetFinalized();
             return diagData;
         }
 
         /// <inheritdoc/>
-        public override ModelBase DeepClone()
+        public override MLPModelBase DeepClone()
         {
             return new RVFLModel(this);
         }
@@ -160,7 +153,7 @@ namespace EasyMLCore.MLP
                                       OutputTaskType taskType,
                                       List<string> outputFeatureNames,
                                       SampleDataset trainingData,
-                                      ModelBuildProgressChangedHandler progressInfoSubscriber = null
+                                      ProgressChangedHandler progressInfoSubscriber = null
                                       )
         {
             //Checks
@@ -181,7 +174,7 @@ namespace EasyMLCore.MLP
                                             );
             if(progressInfoSubscriber != null)
             {
-                model.BuildProgressChanged += progressInfoSubscriber;
+                model.ProgressChanged += progressInfoSubscriber;
             }
             try
             {
@@ -194,7 +187,7 @@ namespace EasyMLCore.MLP
                                             model.OnRVFLInitProgressChanged
                                             );
                 //Build end model
-                ModelBase endModel = null;
+                MLPModelBase endModel = null;
                 string endModelName = $"{model.Name}.EndModel-";
                 Type endModelCfgType = modelConfig.EndModelCfg.GetType();
                 if (endModelCfgType == typeof(NetworkModelConfig))
@@ -262,7 +255,7 @@ namespace EasyMLCore.MLP
             {
                 if(progressInfoSubscriber != null)
                 {
-                    model.BuildProgressChanged -= progressInfoSubscriber;
+                    model.ProgressChanged -= progressInfoSubscriber;
                 }
             }
         }

@@ -1,7 +1,6 @@
 ﻿using EasyMLCore.Data;
 using EasyMLCore.Extensions;
 using EasyMLCore.MathTools;
-using EasyMLCore.MLP.Model;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -15,7 +14,7 @@ namespace EasyMLCore.MLP
     /// Implements a MLP network model encapsulating the core MLP engine.
     /// </summary>
     [Serializable]
-    public class NetworkModel : ModelBase
+    public class NetworkModel : MLPModelBase
     {
         //Static params
         /// <summary>
@@ -43,12 +42,12 @@ namespace EasyMLCore.MLP
         /// <summary>
         /// Error statistics of the network on training data.
         /// </summary>
-        public ModelErrStat TrainingErrorStat { get; }
+        public MLPModelErrStat TrainingErrorStat { get; }
 
         /// <summary>
         /// Error statistics of the network on validation data.
         /// </summary>
-        public ModelErrStat ValidationErrorStat { get; }
+        public MLPModelErrStat ValidationErrorStat { get; }
 
         //Attributes
         private readonly FeatureFilterBase[] _inputFilters;
@@ -72,7 +71,7 @@ namespace EasyMLCore.MLP
                              MLPEngine engine,
                              FeatureFilterBase[] inputFilters,
                              FeatureFilterBase[] outputFilters,
-                             ModelErrStat trainingErrStat,
+                             MLPModelErrStat trainingErrStat,
                              SampleDataset validationData
                              )
             : base(modelConfig, name, engine.TaskType, outputFeatureNames)
@@ -104,7 +103,7 @@ namespace EasyMLCore.MLP
                 ValidationErrorStat = null;
             }
             //Finalize model
-            FinalizeModel(new ModelConfidenceMetrics(TrainingErrorStat, ValidationErrorStat));
+            FinalizeModel(new MLPModelConfidenceMetrics(TrainingErrorStat, ValidationErrorStat));
             return;
         }
 
@@ -147,7 +146,7 @@ namespace EasyMLCore.MLP
             }
             else
             {
-                return ModelConfidenceMetrics.Comparer(ConfidenceMetrics,
+                return MLPModelConfidenceMetrics.Comparer(ConfidenceMetrics,
                                                        otherModel.ConfidenceMetrics
                                                        ) == 1;
             }
@@ -211,7 +210,7 @@ namespace EasyMLCore.MLP
         }
 
         /// <inheritdoc/>
-        public override ModelBase DeepClone()
+        public override MLPModelBase DeepClone()
         {
             return new NetworkModel(this);
         }
@@ -222,14 +221,14 @@ namespace EasyMLCore.MLP
         /// <param name="dataset">Sample dataset to be computed.</param>
         /// <param name="errStat">Resulting error statistics.</param>
         /// <returns>Computed vectors in the same order as in sample dataset.</returns>
-        public double[][] ComputeSampleDataset(SampleDataset dataset, out ModelErrStat errStat)
+        public double[][] ComputeSampleDataset(SampleDataset dataset, out MLPModelErrStat errStat)
         {
             double[][] computedVectors = new double[dataset.Count][];
-            ModelErrStat batchErrStat = new ModelErrStat(TaskType, OutputFeatureNames);
+            MLPModelErrStat batchErrStat = new MLPModelErrStat(TaskType, OutputFeatureNames);
             object monitor = new object();
             Parallel.ForEach(Partitioner.Create(0, dataset.Count), range =>
             {
-                ModelErrStat rangeStat = new ModelErrStat(Engine.TaskType, OutputFeatureNames);
+                MLPModelErrStat rangeStat = new MLPModelErrStat(Engine.TaskType, OutputFeatureNames);
                 //Reusable buffers
                 double[] sums = new double[Engine.NumOfNeurons];
                 double[] activations = new double[Engine.NumOfInputFeatures + Engine.NumOfNeurons];
@@ -256,13 +255,13 @@ namespace EasyMLCore.MLP
             return computedVectors;
         }
 
-        private ModelErrStat ComputeBatchErrStat(SampleDataset dataset)
+        private MLPModelErrStat ComputeBatchErrStat(SampleDataset dataset)
         {
-            ModelErrStat batchErrStat = new ModelErrStat(TaskType, OutputFeatureNames);
+            MLPModelErrStat batchErrStat = new MLPModelErrStat(TaskType, OutputFeatureNames);
             object monitor = new object();
             Parallel.ForEach(Partitioner.Create(0, dataset.Count), range =>
             {
-                ModelErrStat rangeStat = new ModelErrStat(Engine.TaskType, OutputFeatureNames);
+                MLPModelErrStat rangeStat = new MLPModelErrStat(Engine.TaskType, OutputFeatureNames);
                 //Reusable buffers
                 double[] sums = new double[Engine.NumOfNeurons];
                 double[] activations = new double[Engine.NumOfInputFeatures + Engine.NumOfNeurons];
@@ -335,10 +334,10 @@ namespace EasyMLCore.MLP
         }
 
         /// <inheritdoc/>
-        public override ModelDiagnosticData DiagnosticTest(SampleDataset testingData, ModelTestProgressChangedHandler progressInfoSubscriber = null)
+        public override MLPModelDiagnosticData DiagnosticTest(SampleDataset testingData, ProgressChangedHandler progressInfoSubscriber = null)
         {
-            ModelErrStat errStat = Test(testingData, out _, progressInfoSubscriber);
-            ModelDiagnosticData diagData = new ModelDiagnosticData(Name, errStat);
+            MLPModelErrStat errStat = Test(testingData, out _, progressInfoSubscriber);
+            MLPModelDiagnosticData diagData = new MLPModelDiagnosticData(Name, errStat);
             diagData.SetFinalized();
             return diagData;
         }
@@ -361,7 +360,7 @@ namespace EasyMLCore.MLP
                                          IEnumerable<string> outputFeatureNames,
                                          SampleDataset trainingData,
                                          SampleDataset validationData,
-                                         ModelBuildProgressChangedHandler progressInfoSubscriber = null
+                                         ProgressChangedHandler progressInfoSubscriber = null
                                         )
         {
             //Checks
@@ -373,10 +372,10 @@ namespace EasyMLCore.MLP
             {
                 throw new ArgumentException($"Wrong type of configuration. Expected {typeof(NetworkModelConfig)} but received {cfg.GetType()}.", nameof(cfg));
             }
-            BuildChangedEventDisp eventDisp = new BuildChangedEventDisp();
+            ProgressChangedEventDisp eventDisp = new ProgressChangedEventDisp();
             if (progressInfoSubscriber != null)
             {
-                eventDisp.BuildProgressChanged += progressInfoSubscriber;
+                eventDisp.ProgressChanged += progressInfoSubscriber;
             }
             //Build
             try
@@ -504,30 +503,30 @@ namespace EasyMLCore.MLP
                 //Unsubscibe from event
                 if (progressInfoSubscriber != null)
                 {
-                    eventDisp.BuildProgressChanged -= progressInfoSubscriber;
+                    eventDisp.ProgressChanged -= progressInfoSubscriber;
                 }
             }
         }
 
         //Inner classes
-        internal class BuildChangedEventDisp
+        internal class ProgressChangedEventDisp
         {
             /// <summary>
             /// This informative event occurs each time the progress of the build process takes a step forward.
             /// </summary>
             [field: NonSerialized]
-            internal event ModelBuildProgressChangedHandler BuildProgressChanged;
+            internal event ProgressChangedHandler ProgressChanged;
 
             /// <summary>
             /// Invokes BuildProgressChanged.
             /// </summary>
             /// <param name="progressInfo">Progress info.</param>
-            internal void InvokeBuildProgressChanged(ModelBuildProgressInfo progressInfo)
+            internal void InvokeBuildProgressChanged(ProgressInfoBase progressInfo)
             {
-                BuildProgressChanged?.Invoke(progressInfo);
+                ProgressChanged?.Invoke(progressInfo);
                 return;
             }
-        }//BuildChangedEventDisp
+        }//ProgressChangedEventDisp
 
 
     }//NetworkModel

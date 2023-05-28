@@ -61,7 +61,7 @@ namespace EasyMLCore.MLP
         /// <summary>
         /// Last epoch error statistics.
         /// </summary>
-        public ModelErrStat EpochErrStat { get; private set; }
+        public MLPModelErrStat EpochErrStat { get; private set; }
 
 
         //Attributes
@@ -396,11 +396,11 @@ namespace EasyMLCore.MLP
         private void FinalizeEpoch()
         {
             object monitor = new object();
-            EpochErrStat = new ModelErrStat(_engine.TaskType, _engine.OutputFeatureNames);
+            EpochErrStat = new MLPModelErrStat(_engine.TaskType, _engine.OutputFeatureNames);
             _engine.SetWeights(_flatWeights);
             Parallel.ForEach(Partitioner.Create(0, StdTrainingDataset.Count), range =>
             {
-                ModelErrStat rangeStat = new ModelErrStat(_engine.TaskType, _engine.OutputFeatureNames);
+                MLPModelErrStat rangeStat = new MLPModelErrStat(_engine.TaskType, _engine.OutputFeatureNames);
                 //Reusable buffers
                 double[] sums = new double[_engine.NumOfNeurons];
                 double[] activations = new double[_engine.NumOfInputFeatures + _engine.NumOfNeurons];

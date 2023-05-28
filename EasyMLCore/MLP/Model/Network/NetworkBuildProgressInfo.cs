@@ -3,6 +3,7 @@ using EasyMLCore.MiscTools;
 using System;
 using System.Globalization;
 using System.Text;
+using System.Threading;
 
 namespace EasyMLCore.MLP
 {
@@ -99,15 +100,6 @@ namespace EasyMLCore.MLP
             }
         }
 
-        /// <inheritdoc/>
-        public override bool ShouldBeReported
-        {
-            get
-            {
-                return WillBeStopped || NewNet || CurrentIsBest || AttemptEpochsTracker.Last;
-            }
-        }
-
         /// <summary>
         /// Gets currently processed build epoch number.
         /// </summary>
@@ -118,6 +110,26 @@ namespace EasyMLCore.MLP
                 return (int)AttemptEpochsTracker.Current;
             }
         }
+
+        /// <inheritdoc/>
+        public override bool ShouldBeReported
+        {
+            get
+            {
+                return WillBeStopped || NewNet || CurrentIsBest || AttemptEpochsTracker.Last ||
+                       CurrEpochNum == 1 || (CurrEpochNum % InformInterval == 0);
+            }
+        }
+
+        /// <inheritdoc/>
+        public override bool NewInfoBlock
+        {
+            get
+            {
+                return NewNet;
+            }
+        }
+
 
         //Methods
         /// <summary>

@@ -6,10 +6,10 @@ using System.Collections.Generic;
 namespace EasyMLCore.MLP
 {
     /// <summary>
-    /// Encapsulates model task-appropriate error statistics and provides user friendly access.
+    /// Encapsulates MLP model error statistics and provides user friendly access.
     /// </summary>
     [Serializable]
-    public class ModelErrStat : SerializableObject
+    public class MLPModelErrStat : SerializableObject
     {
         //Attribute properties
         /// <inheritdoc cref="OutputTaskType"/>
@@ -27,7 +27,7 @@ namespace EasyMLCore.MLP
         /// </summary>
         /// <param name="taskType">Type of model's computation task.</param>
         /// <param name="outputFeatureNames">Names of model task's output features.</param>
-        public ModelErrStat(OutputTaskType taskType, IEnumerable<string> outputFeatureNames)
+        public MLPModelErrStat(OutputTaskType taskType, IEnumerable<string> outputFeatureNames)
         {
             TaskType = taskType;
             StatData = TaskType switch
@@ -44,7 +44,7 @@ namespace EasyMLCore.MLP
         /// </summary>
         /// <param name="computableUnit">A computable unit.</param>
         /// <param name="dataset">Sample dataset.</param>
-        public ModelErrStat(IComputableTaskSpecific computableUnit, SampleDataset dataset)
+        public MLPModelErrStat(IComputableTaskSpecific computableUnit, SampleDataset dataset)
             : this(computableUnit.TaskType, computableUnit.OutputFeatureNames)
         {
             for (int i = 0; i < dataset.Count; i++)
@@ -63,7 +63,7 @@ namespace EasyMLCore.MLP
         /// <param name="outputFeatureNames">Names of model task's output features.</param>
         /// <param name="dataset">Sample dataset.</param>
         /// <param name="computedVectorCollection">The collection of computed vectors.</param>
-        public ModelErrStat(OutputTaskType taskType,
+        public MLPModelErrStat(OutputTaskType taskType,
                             IEnumerable<string> outputFeatureNames,
                             SampleDataset dataset,
                             IEnumerable<double[]> computedVectorCollection
@@ -87,7 +87,7 @@ namespace EasyMLCore.MLP
         /// <param name="outputFeatureNames">Names of model task's output features.</param>
         /// <param name="computedVectorCollection">The collection of computed vectors.</param>
         /// <param name="idealVectorCollection">The collection of ideal vectors.</param>
-        public ModelErrStat(OutputTaskType taskType,
+        public MLPModelErrStat(OutputTaskType taskType,
                             IEnumerable<string> outputFeatureNames,
                             IEnumerable<double[]> computedVectorCollection,
                             IEnumerable<double[]> idealVectorCollection
@@ -102,7 +102,7 @@ namespace EasyMLCore.MLP
         /// Copy constructor.
         /// </summary>
         /// <param name="source">The source instance.</param>
-        public ModelErrStat(ModelErrStat source)
+        public MLPModelErrStat(MLPModelErrStat source)
         {
             TaskType = source.TaskType;
             StatData = TaskType switch
@@ -120,7 +120,7 @@ namespace EasyMLCore.MLP
         /// <param name="taskType">Output computation task.</param>
         /// <param name="outputFeatureNames">Names of model task's output features.</param>
         /// <param name="sources">Source instances.</param>
-        public ModelErrStat(OutputTaskType taskType, IEnumerable<string> outputFeatureNames, IEnumerable<ModelErrStat> sources)
+        public MLPModelErrStat(OutputTaskType taskType, IEnumerable<string> outputFeatureNames, IEnumerable<MLPModelErrStat> sources)
             : this(taskType, outputFeatureNames)
         {
             Merge(sources);
@@ -142,7 +142,7 @@ namespace EasyMLCore.MLP
         /// Merges another statistics with this statistics.
         /// </summary>
         /// <param name="source">Another statistics.</param>
-        public void Merge(ModelErrStat source)
+        public void Merge(MLPModelErrStat source)
         {
             if (TaskType != source.TaskType)
             {
@@ -160,9 +160,9 @@ namespace EasyMLCore.MLP
         /// Merges collection of other statistics with this statistics.
         /// </summary>
         /// <param name="sources">Collection of other statistics.</param>
-        public void Merge(IEnumerable<ModelErrStat> sources)
+        public void Merge(IEnumerable<MLPModelErrStat> sources)
         {
-            foreach (ModelErrStat source in sources)
+            foreach (MLPModelErrStat source in sources)
             {
                 Merge(source);
             }
@@ -219,7 +219,7 @@ namespace EasyMLCore.MLP
         }
 
         /// <inheritdoc cref="TaskErrStatBase.IsBetter(TaskErrStatBase)"/>
-        public bool IsBetter(ModelErrStat otherStat)
+        public bool IsBetter(MLPModelErrStat otherStat)
         {
             return StatData.IsBetter(otherStat.StatData);
         }
@@ -227,9 +227,9 @@ namespace EasyMLCore.MLP
         /// <summary>
         /// Creates a deep clone.
         /// </summary>
-        public ModelErrStat DeepClone()
+        public MLPModelErrStat DeepClone()
         {
-            return new ModelErrStat(this);
+            return new MLPModelErrStat(this);
         }
 
         /// <summary>
@@ -242,6 +242,6 @@ namespace EasyMLCore.MLP
             return StatData.GetReportText(detail, margin);
         }
 
-    }//ModelErrStat
+    }//MLPModelErrStat
 
 }//Namespace

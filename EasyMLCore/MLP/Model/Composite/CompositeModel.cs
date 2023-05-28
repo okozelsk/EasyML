@@ -1,6 +1,5 @@
 ﻿using EasyMLCore.Data;
 using EasyMLCore.Extensions;
-using EasyMLCore.MLP.Model;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -16,7 +15,7 @@ namespace EasyMLCore.MLP
     /// Model output is weighted average of root child models outputs.
     /// </summary>
     [Serializable]
-    public class CompositeModel : ModelBase
+    public class CompositeModel : MLPModelBase
     {
         //Constants
         /// <summary>
@@ -25,7 +24,7 @@ namespace EasyMLCore.MLP
         public const string ContextPathID = "Composite";
 
         //Attributes
-        private readonly List<ModelBase> _members;
+        private readonly List<MLPModelBase> _members;
         private double[][] _weights;
 
         //Constructor
@@ -43,7 +42,7 @@ namespace EasyMLCore.MLP
                                )
             : base(modelConfig, name, taskType, outputFeatureNames)
         {
-            _members = new List<ModelBase>();
+            _members = new List<MLPModelBase>();
             _weights = null;
             return;
         }
@@ -55,8 +54,8 @@ namespace EasyMLCore.MLP
         public CompositeModel(CompositeModel source)
             : base(source)
         {
-            _members = new List<ModelBase>();
-            foreach (ModelBase member in source._members)
+            _members = new List<MLPModelBase>();
+            foreach (MLPModelBase member in source._members)
             {
                 _members.Add(member.DeepClone());
             }
@@ -69,7 +68,7 @@ namespace EasyMLCore.MLP
         /// Adds a new member.
         /// </summary>
         /// <param name="newMember">A new member to be added.</param>
-        private void AddMember(ModelBase newMember)
+        private void AddMember(MLPModelBase newMember)
         {
             //Checks
             if (newMember.NumOfOutputFeatures != NumOfOutputFeatures)
@@ -99,7 +98,7 @@ namespace EasyMLCore.MLP
             _weights = GetWeights(_members);
             //Set metrics
             //Finalize model
-            FinalizeModel(new ModelConfidenceMetrics(TaskType, (from member in _members select member.ConfidenceMetrics)));
+            FinalizeModel(new MLPModelConfidenceMetrics(TaskType, (from member in _members select member.ConfidenceMetrics)));
             return;
         }
 
@@ -156,13 +155,13 @@ namespace EasyMLCore.MLP
 
 
         /// <inheritdoc/>
-        public override ModelDiagnosticData DiagnosticTest(SampleDataset testingData, ModelTestProgressChangedHandler progressInfoSubscriber = null)
+        public override MLPModelDiagnosticData DiagnosticTest(SampleDataset testingData, ProgressChangedHandler progressInfoSubscriber = null)
         {
-            ModelErrStat errStat = Test(testingData, out _, progressInfoSubscriber);
-            ModelDiagnosticData diagData = new ModelDiagnosticData(Name, errStat);
-            foreach(ModelBase model in _members)
+            MLPModelErrStat errStat = Test(testingData, out _, progressInfoSubscriber);
+            MLPModelDiagnosticData diagData = new MLPModelDiagnosticData(Name, errStat);
+            foreach(MLPModelBase model in _members)
             {
-                ModelDiagnosticData memberDiagData = model.DiagnosticTest(testingData, progressInfoSubscriber);
+                MLPModelDiagnosticData memberDiagData = model.DiagnosticTest(testingData, progressInfoSubscriber);
                 diagData.AddSubModelDiagData(memberDiagData);
             }
             diagData.SetFinalized();
@@ -170,7 +169,7 @@ namespace EasyMLCore.MLP
         }
 
         /// <inheritdoc/>
-        public override ModelBase DeepClone()
+        public override MLPModelBase DeepClone()
         {
             return new CompositeModel(this);
         }
@@ -191,7 +190,7 @@ namespace EasyMLCore.MLP
                                            OutputTaskType taskType,
                                            List<string> outputFeatureNames,
                                            SampleDataset trainingData,
-                                           ModelBuildProgressChangedHandler progressInfoSubscriber = null
+                                           ProgressChangedHandler progressInfoSubscriber = null
                                            )
         {
             //Checks

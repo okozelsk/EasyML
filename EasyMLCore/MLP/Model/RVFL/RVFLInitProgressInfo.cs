@@ -32,10 +32,6 @@ namespace EasyMLCore.MLP
         }
 
         //Properties
-        /// <inheritdoc/>
-        public override bool ShouldBeReported { get { return ProcessedInputsTracker.Last; } }
-
-
         /// <summary>
         /// Gets number of currently processed inputs.
         /// </summary>
@@ -44,6 +40,24 @@ namespace EasyMLCore.MLP
             get
             {
                 return (int)ProcessedInputsTracker.Current;
+            }
+        }
+
+        /// <inheritdoc/>
+        public override bool ShouldBeReported
+        {
+            get
+            {
+                return ProcessedInputsTracker.Last || NumOfProcessedInputs == 1 || (NumOfProcessedInputs % InformInterval) == 0;
+            }
+        }
+
+        /// <inheritdoc/>
+        public override bool NewInfoBlock
+        {
+            get
+            {
+                return NumOfProcessedInputs == 1;
             }
         }
 

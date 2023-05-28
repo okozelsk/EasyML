@@ -1,15 +1,13 @@
 ﻿using EasyMLCore.Data;
-using EasyMLCore.MLP;
+using EasyMLCore.Extensions;
 using EasyMLCore.Log;
+using EasyMLCore.MLP;
+using EasyMLCore.TimeSeries;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using EasyMLCore.TimeSeries;
-using EasyMLCore.Extensions;
 using System.IO;
 using System.Diagnostics;
-using static EasyMLCore.Data.SampleDataset;
-using EasyMLCore.MLP.Model;
 
 namespace EasyMLCore
 {
@@ -193,7 +191,7 @@ namespace EasyMLCore
         /// <param name="errStat">Error statistics to be reported.</param>
         /// <param name="detail">Specifies whether to report max available detail.</param>
         /// <param name="margin">Specifies left margin.</param>
-        public void Report(ModelErrStat errStat, bool detail = false, int margin = 0)
+        public void Report(MLPModelErrStat errStat, bool detail = false, int margin = 0)
         {
             if (errStat == null)
             {
@@ -233,7 +231,7 @@ namespace EasyMLCore
         /// <param name="model">Model to be reported.</param>
         /// <param name="detail">Specifies whether to report max available detail.</param>
         /// <param name="margin">Specifies left margin.</param>
-        public void Report(ModelBase model, bool detail = false, int margin = 0)
+        public void Report(MLPModelBase model, bool detail = false, int margin = 0)
         {
             if (model == null)
             {
@@ -272,8 +270,8 @@ namespace EasyMLCore
         /// <param name="numOfOutputFeatures">Number of output features. Important: in case of classification it is a number of classes.</param>
         /// <param name="verbose">Specifies whether to report progress.</param>
         public SampleDataset LoadSampleData(string csvFileName,
-                                            CsvOutputFeaturesPosition outputFeaturesPosition,
-                                            CsvOutputFeaturesPresence outputFeaturesPresence,
+                                            SampleDataset.CsvOutputFeaturesPosition outputFeaturesPosition,
+                                            SampleDataset.CsvOutputFeaturesPresence outputFeaturesPresence,
                                             int numOfOutputFeatures,
                                             bool verbose = true
                                             )
@@ -397,14 +395,14 @@ namespace EasyMLCore
         /// <param name="verbose">Specifies whether to report progress.</param>
         /// <param name="detail">Specifies whether to report max available detail.</param>
         /// <returns>Built model.</returns>
-        public ModelBase Build(IModelConfig modelCfg,
-                               string taskName,
-                               OutputTaskType taskType,
-                               List<string> outputFeatureNames,
-                               SampleDataset trainingData,
-                               bool verbose = true,
-                               bool detail = false
-                               )
+        public MLPModelBase Build(IModelConfig modelCfg,
+                                  string taskName,
+                                  OutputTaskType taskType,
+                                  List<string> outputFeatureNames,
+                                  SampleDataset trainingData,
+                                  bool verbose = true,
+                                  bool detail = false
+                                  )
         {
             if (verbose)
             {
@@ -418,7 +416,7 @@ namespace EasyMLCore
             //Build a model
             Type modelCfgType = modelCfg.GetType();
             string modelNamePrefix = $"({taskName})-";
-            ModelBase model = null;
+            MLPModelBase model = null;
             if (modelCfgType == typeof(NetworkModelConfig))
             {
                 model = NetworkModel.Build(modelCfg,
@@ -427,7 +425,7 @@ namespace EasyMLCore
                                            outputFeatureNames,
                                            trainingData,
                                            null,
-                                           verbose ? Handlers.OnModelBuildProgressChanged : null
+                                           verbose ? Handlers.OnProgressChanged : null
                                            );
             }
             else if (modelCfgType == typeof(CrossValModelConfig))
@@ -437,7 +435,7 @@ namespace EasyMLCore
                                             taskType,
                                             outputFeatureNames,
                                             trainingData,
-                                            verbose ? Handlers.OnModelBuildProgressChanged : null
+                                            verbose ? Handlers.OnProgressChanged : null
                                             );
             }
             else if (modelCfgType == typeof(StackingModelConfig))
@@ -447,7 +445,7 @@ namespace EasyMLCore
                                             taskType,
                                             outputFeatureNames,
                                             trainingData,
-                                            verbose ? Handlers.OnModelBuildProgressChanged : null
+                                            verbose ? Handlers.OnProgressChanged : null
                                             );
             }
             else if (modelCfgType == typeof(BHSModelConfig))
@@ -457,7 +455,7 @@ namespace EasyMLCore
                                        taskType,
                                        outputFeatureNames,
                                        trainingData,
-                                       verbose ? Handlers.OnModelBuildProgressChanged : null
+                                       verbose ? Handlers.OnProgressChanged : null
                                        );
             }
             else if (modelCfgType == typeof(RVFLModelConfig))
@@ -467,7 +465,7 @@ namespace EasyMLCore
                                         taskType,
                                         outputFeatureNames,
                                         trainingData,
-                                       verbose ? Handlers.OnModelBuildProgressChanged : null
+                                       verbose ? Handlers.OnProgressChanged : null
                                         );
             }
             else if (modelCfgType == typeof(CompositeModelConfig))
@@ -477,7 +475,7 @@ namespace EasyMLCore
                                              taskType,
                                              outputFeatureNames,
                                              trainingData,
-                                             verbose ? Handlers.OnModelBuildProgressChanged : null
+                                             verbose ? Handlers.OnProgressChanged : null
                                              );
             }
             else
@@ -504,20 +502,20 @@ namespace EasyMLCore
         /// <param name="verbose">Specifies whether to report progress.</param>
         /// <param name="detail">Specifies whether to report max available detail.</param>
         /// <returns>Error statistics of the model test.</returns>
-        public ModelErrStat Test(ModelBase model,
-                                 SampleDataset testingData,
-                                 out ResultDataset resultDataset,
-                                 bool verbose = true,
-                                 bool detail = false
-                                 )
+        public MLPModelErrStat Test(MLPModelBase model,
+                                    SampleDataset testingData,
+                                    out ResultDataset resultDataset,
+                                    bool verbose = true,
+                                    bool detail = false
+                                    )
         {
             if (verbose)
             {
                 Log.Write($"Test of the model {model.Name} is running...");
             }
-            ModelErrStat errStat = model.Test(testingData,
+            MLPModelErrStat errStat = model.Test(testingData,
                                                 out resultDataset,
-                                                verbose ? Handlers.OnModelTestProgressChanged : null
+                                                verbose ? Handlers.OnProgressChanged : null
                                                 );
             if (verbose)
             {
@@ -535,17 +533,17 @@ namespace EasyMLCore
         /// <param name="verbose">Specifies whether to report progress.</param>
         /// <param name="detail">Specifies whether to report max available detail.</param>
         /// <returns>Diagnostics data of the model and all its sub-models.</returns>
-        public ModelDiagnosticData DiagnosticTest(ModelBase model,
-                                                  SampleDataset testingData,
-                                                  bool verbose = true,
-                                                  bool detail = false
-                                                  )
+        public MLPModelDiagnosticData DiagnosticTest(MLPModelBase model,
+                                                     SampleDataset testingData,
+                                                     bool verbose = true,
+                                                     bool detail = false
+                                                     )
         {
             if (verbose)
             {
                 Log.Write($"Diagnostic test of the model {model.Name} is running...");
             }
-            ModelDiagnosticData diagnosticData = model.DiagnosticTest(testingData, verbose ? Handlers.OnModelTestProgressChanged : null);
+            MLPModelDiagnosticData diagnosticData = model.DiagnosticTest(testingData, verbose ? Handlers.OnProgressChanged : null);
             if (verbose)
             {
                 Log.Write(diagnosticData.GetInfoText(detail, 0));
@@ -569,14 +567,14 @@ namespace EasyMLCore
         /// <param name="origTestingData">Original testing samples.</param>
         /// <param name="rounds">Specifies number of deep test rounds.</param>
         /// <returns>Aggregated error stat.</returns>
-        public ModelErrStat DeepTest(IModelConfig cfg,
-                                     string taskName,
-                                     OutputTaskType taskType,
-                                     List<string> outputFeatureNames,
-                                     SampleDataset origTrainingData,
-                                     SampleDataset origTestingData,
-                                     int rounds = 10
-                                     )
+        public MLPModelErrStat DeepTest(IModelConfig cfg,
+                                        string taskName,
+                                        OutputTaskType taskType,
+                                        List<string> outputFeatureNames,
+                                        SampleDataset origTrainingData,
+                                        SampleDataset origTestingData,
+                                        int rounds = 10
+                                        )
         {
             if (cfg == null)
             {
@@ -587,7 +585,7 @@ namespace EasyMLCore
                 throw new ArgumentException($"Number of deep test rounds must be GT 0.", nameof(rounds));
             }
             Stopwatch stopwatch = Stopwatch.StartNew();
-            ModelErrStat aggregatedErrStat = null;
+            MLPModelErrStat aggregatedErrStat = null;
             Random rand = new Random(0);
             Log.Write($"DEEP TEST started...");
             for (int round = 0; round < rounds; round++)
@@ -605,7 +603,7 @@ namespace EasyMLCore
                 ////////////////////////////////////////////////////////////////////////////
                 //Build and testing
                 //Build
-                ModelBase model =
+                MLPModelBase model =
                     Oper.Build(cfg, //Model configuration
                                taskName,
                                taskType,
@@ -613,7 +611,7 @@ namespace EasyMLCore
                                newTrainingData
                                );
                 //Testing
-                ModelErrStat roundErrStats =
+                MLPModelErrStat roundErrStats =
                     Oper.Test(model, //Our built model
                               newTestingData, //Testing data
                               out _ //Testing samples together with computed data
@@ -663,7 +661,7 @@ namespace EasyMLCore
                 Log.Write($"Build is running...");
             }
             //Build
-            ResComp resComp = ResComp.Build(cfg, trainingData, out reservoirStat, verbose ? Handlers.OnResCompBuildProgressChanged : null);
+            ResComp resComp = ResComp.Build(cfg, trainingData, out reservoirStat, verbose ? Handlers.OnProgressChanged : null);
             if (verbose)
             {
                 Log.Write(string.Empty);
@@ -684,20 +682,20 @@ namespace EasyMLCore
         /// <param name="verbose">Specifies whether to report progress.</param>
         /// <param name="detail">Specifies whether to report max available detail.</param>
         /// <returns>Error statistics of the RC test.</returns>
-        public List<ModelErrStat> Test(ResComp resComp,
-                                       SampleDataset testingData,
-                                       out ResultDataset resultDataset,
-                                       bool verbose = true,
-                                       bool detail = false
-                                       )
+        public List<MLPModelErrStat> Test(ResComp resComp,
+                                          SampleDataset testingData,
+                                          out ResultDataset resultDataset,
+                                          bool verbose = true,
+                                          bool detail = false
+                                          )
         {
             if (verbose)
             {
                 Log.Write($"Test of the reservoir computer is running...");
             }
-            List<ModelErrStat> errStats = resComp.Test(testingData,
+            List<MLPModelErrStat> errStats = resComp.Test(testingData,
                                                          out resultDataset,
-                                                         verbose ? Handlers.OnResCompTestProgressChanged : null
+                                                         verbose ? Handlers.OnProgressChanged : null
                                                          );
             if (verbose)
             {
@@ -723,11 +721,11 @@ namespace EasyMLCore
         /// <param name="origTestingData">Original testing samples.</param>
         /// <param name="rounds">Specifies number of deep test rounds.</param>
         /// <returns>Aggregated error stat of the RC task.</returns>
-        public ModelErrStat DeepTest(ResCompConfig cfg,
-                                     SampleDataset origTrainingData,
-                                     SampleDataset origTestingData,
-                                     int rounds = 10
-                                     )
+        public MLPModelErrStat DeepTest(ResCompConfig cfg,
+                                        SampleDataset origTrainingData,
+                                        SampleDataset origTestingData,
+                                        int rounds = 10
+                                        )
         {
             if (cfg == null)
             {
@@ -742,7 +740,7 @@ namespace EasyMLCore
                 throw new ArgumentException($"Number of deep test rounds must be GT 0.", nameof(rounds));
             }
             Stopwatch stopwatch = Stopwatch.StartNew();
-            ModelErrStat aggregatedErrStat = null;
+            MLPModelErrStat aggregatedErrStat = null;
             Random rand = new Random(0);
             Log.Write($"DEEP TEST started...");
             for(int round = 0; round < rounds; round++)
@@ -766,7 +764,7 @@ namespace EasyMLCore
                                out _ //Stat data of the reservoir
                                );
                 //Testing
-                List<ModelErrStat> roundErrStats =
+                List<MLPModelErrStat> roundErrStats =
                     EasyML.Oper.Test(resComp, //Our built reservoir computer
                                      newTestingData, //Testing data
                                      out _ //Original testing samples together with computed data
@@ -798,17 +796,17 @@ namespace EasyMLCore
         /// <param name="verbose">Specifies whether to report progress.</param>
         /// <param name="detail">Specifies whether to report max available detail.</param>
         /// <returns>Diagnostics data of the model and all its sub-models.</returns>
-        public List<ModelDiagnosticData> DiagnosticTest(ResComp resComp,
-                                                        SampleDataset testingData,
-                                                        bool verbose = true,
-                                                        bool detail = false
-                                                        )
+        public List<MLPModelDiagnosticData> DiagnosticTest(ResComp resComp,
+                                                           SampleDataset testingData,
+                                                           bool verbose = true,
+                                                           bool detail = false
+                                                           )
         {
             if (verbose)
             {
                 Log.Write($"Diagnostic test of the Reservoir Computer is running...");
             }
-            List<ModelDiagnosticData> tasksDiagData = resComp.DiagnosticTest(testingData, verbose ? Handlers.OnResCompTestProgressChanged : null);
+            List<MLPModelDiagnosticData> tasksDiagData = resComp.DiagnosticTest(testingData, verbose ? Handlers.OnProgressChanged : null);
             if (verbose)
             {
                 //Log.Write(string.Empty);
@@ -822,10 +820,6 @@ namespace EasyMLCore
             }
             return tasksDiagData;
         }
-
-
-
-
 
 
     }//EasyML

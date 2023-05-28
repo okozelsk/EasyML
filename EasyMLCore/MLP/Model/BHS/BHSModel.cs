@@ -1,6 +1,5 @@
 ﻿using EasyMLCore.Data;
 using EasyMLCore.Extensions;
-using EasyMLCore.MLP.Model;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -15,7 +14,7 @@ namespace EasyMLCore.MLP
     /// Model output is weighted average of inner half-stacking models outputs (bagging).
     /// </summary>
     [Serializable]
-    public class BHSModel : ModelBase
+    public class BHSModel : MLPModelBase
     {
         //Constants
         /// <summary>
@@ -95,9 +94,9 @@ namespace EasyMLCore.MLP
                 throw new InvalidOperationException("At least one member must be added before the finalization.");
             }
             //Set weights
-            _weights = GetWeights(_members.ToList<ModelBase>());
+            _weights = GetWeights(_members.ToList<MLPModelBase>());
             //Set metrics
-            FinalizeModel(new ModelConfidenceMetrics(TaskType, (from member in _members select member.ConfidenceMetrics)));
+            FinalizeModel(new MLPModelConfidenceMetrics(TaskType, (from member in _members select member.ConfidenceMetrics)));
             return;
         }
 
@@ -152,13 +151,13 @@ namespace EasyMLCore.MLP
         }
 
         /// <inheritdoc/>
-        public override ModelDiagnosticData DiagnosticTest(SampleDataset testingData, ModelTestProgressChangedHandler progressInfoSubscriber = null)
+        public override MLPModelDiagnosticData DiagnosticTest(SampleDataset testingData, ProgressChangedHandler progressInfoSubscriber = null)
         {
-            ModelErrStat errStat = Test(testingData, out _, progressInfoSubscriber);
-            ModelDiagnosticData diagData = new ModelDiagnosticData(Name, errStat);
-            foreach (ModelBase model in _members)
+            MLPModelErrStat errStat = Test(testingData, out _, progressInfoSubscriber);
+            MLPModelDiagnosticData diagData = new MLPModelDiagnosticData(Name, errStat);
+            foreach (MLPModelBase model in _members)
             {
-                ModelDiagnosticData memberDiagData = model.DiagnosticTest(testingData, progressInfoSubscriber);
+                MLPModelDiagnosticData memberDiagData = model.DiagnosticTest(testingData, progressInfoSubscriber);
                 diagData.AddSubModelDiagData(memberDiagData);
             }
             diagData.SetFinalized();
@@ -166,7 +165,7 @@ namespace EasyMLCore.MLP
         }
 
         /// <inheritdoc/>
-        public override ModelBase DeepClone()
+        public override MLPModelBase DeepClone()
         {
             return new BHSModel(this);
         }
@@ -187,7 +186,7 @@ namespace EasyMLCore.MLP
                                      OutputTaskType taskType,
                                      List<string> outputFeatureNames,
                                      SampleDataset trainingData,
-                                     ModelBuildProgressChangedHandler progressInfoSubscriber = null
+                                     ProgressChangedHandler progressInfoSubscriber = null
                                      )
         {
             //Checks

@@ -1,30 +1,16 @@
 ﻿using EasyMLCore.Data;
 using EasyMLCore.Extensions;
 using EasyMLCore.MathTools;
-using EasyMLCore.MLP.Model;
 using System;
 using System.Collections.Generic;
 
 namespace EasyMLCore.MLP
 {
-    //Delegates
     /// <summary>
-    /// Delegate of the model's build progress changed event handler.
-    /// </summary>
-    /// <param name="progressInfo">Current state of the model's build process.</param>
-    public delegate void ModelBuildProgressChangedHandler(ModelBuildProgressInfo progressInfo);
-
-    /// <summary>
-    /// Delegate of the model testing progress changed event handler.
-    /// </summary>
-    /// <param name="progressInfo">Current state of the computation process.</param>
-    public delegate void ModelTestProgressChangedHandler(ModelTestProgressInfo progressInfo);
-
-    /// <summary>
-    /// Common base class of all models.
+    /// Common base class of all MLP models.
     /// </summary>
     [Serializable]
-    public abstract class ModelBase : SerializableObject, IComputableTaskSpecific
+    public abstract class MLPModelBase : SerializableObject, IComputableTaskSpecific
     {
         //Static variables
         /// <summary>
@@ -34,11 +20,11 @@ namespace EasyMLCore.MLP
 
         //Events
         /// <summary>
-        /// This informative event occurs each time the progress of the model
-        /// testing process takes a step forward.
+        /// This informative event occurs each time the particular process
+        /// progress takes a step forward.
         /// </summary>
         [field: NonSerialized]
-        protected event ModelTestProgressChangedHandler ModelTestProgressChanged;
+        protected event ProgressChangedHandler ProgressChanged;
 
         //Attribute properties
         /// <summary>
@@ -57,8 +43,8 @@ namespace EasyMLCore.MLP
         /// <inheritdoc/>
         public List<string> OutputFeatureNames { get; }
 
-        /// <inheritdoc cref="ModelConfidenceMetrics"/>
-        public ModelConfidenceMetrics ConfidenceMetrics { get; private set; }
+        /// <inheritdoc cref="MLPModelConfidenceMetrics"/>
+        public MLPModelConfidenceMetrics ConfidenceMetrics { get; private set; }
 
         /// <summary>
         /// Protected constructor.
@@ -67,11 +53,11 @@ namespace EasyMLCore.MLP
         /// <param name="name">Name.</param>
         /// <param name="taskType">Output task.</param>
         /// <param name="outputFeatureNames">A collection of output feature names.</param>
-        protected ModelBase(IModelConfig modelConfig,
-                            string name,
-                            OutputTaskType taskType,
-                            IEnumerable<string> outputFeatureNames
-                            )
+        protected MLPModelBase(IModelConfig modelConfig,
+                               string name,
+                               OutputTaskType taskType,
+                               IEnumerable<string> outputFeatureNames
+                               )
         {
             if (modelConfig == null)
             {
@@ -101,7 +87,7 @@ namespace EasyMLCore.MLP
         /// Copy constructor.
         /// </summary>
         /// <param name="source">The source instance.</param>
-        protected ModelBase(ModelBase source)
+        protected MLPModelBase(MLPModelBase source)
         {
             ModelConfig = (IModelConfig)source.ModelConfig.DeepClone();
             Name = source.Name;
@@ -136,11 +122,17 @@ namespace EasyMLCore.MLP
         }
 
         //Methods
+        protected void InvokeProgressChanged(ProgressInfoBase progressInfo)
+        {
+            ProgressChanged?.Invoke(progressInfo);
+            return;
+        }
+
         /// <summary>
         /// Gets sub-models confidence weights for each output feature.
         /// </summary>
         /// <param name="subModels">The collection of sub-models.</param>
-        protected double[][] GetWeights(List<ModelBase> subModels)
+        protected double[][] GetWeights(List<MLPModelBase> subModels)
         {
             int numOfSubModels = subModels.Count;
             double[][] weights = new double[NumOfOutputFeatures][];
@@ -206,7 +198,7 @@ namespace EasyMLCore.MLP
         /// <summary>
         /// Finalizes the model.
         /// </summary>
-        protected void FinalizeModel(ModelConfidenceMetrics confidenceMetrics)
+        protected void FinalizeModel(MLPModelConfidenceMetrics confidenceMetrics)
         {
             //Confidence metrics
             ConfidenceMetrics = confidenceMetrics.DeepClone();
@@ -226,14 +218,14 @@ namespace EasyMLCore.MLP
         /// <param name="resultDataset">Result dataset.</param>
         /// <param name="progressInfoSubscriber">Subscriber will receive notification event about progress. (Parameter can be null).</param>
         /// <returns>Resulting error statistics.</returns>
-        public ModelErrStat Test(SampleDataset testingData,
-                                 out ResultDataset resultDataset,
-                                 ModelTestProgressChangedHandler progressInfoSubscriber = null
-                                 )
+        public MLPModelErrStat Test(SampleDataset testingData,
+                                    out ResultDataset resultDataset,
+                                    ProgressChangedHandler progressInfoSubscriber = null
+                                    )
         {
             if (progressInfoSubscriber != null)
             {
-                ModelTestProgressChanged += progressInfoSubscriber;
+                ProgressChanged += progressInfoSubscriber;
             }
             try
             {
@@ -243,16 +235,16 @@ namespace EasyMLCore.MLP
                 {
                     double[] computedVector = Compute(sample.InputVector);
                     computedVectorCollection.Add(computedVector);
-                    ModelTestProgressChanged?.Invoke(new ModelTestProgressInfo(Name, ++numOfProcessedSamples, testingData.Count));
+                    ProgressChanged?.Invoke(new ModelTestProgressInfo(Name, ++numOfProcessedSamples, testingData.Count));
                 }
                 resultDataset = new ResultDataset(testingData, computedVectorCollection);
-                return new ModelErrStat(TaskType, OutputFeatureNames, testingData, computedVectorCollection);
+                return new MLPModelErrStat(TaskType, OutputFeatureNames, testingData, computedVectorCollection);
             }
             finally
             {
                 if (progressInfoSubscriber != null)
                 {
-                    ModelTestProgressChanged -= progressInfoSubscriber;
+                    ProgressChanged -= progressInfoSubscriber;
                 }
             }
         }
@@ -266,9 +258,9 @@ namespace EasyMLCore.MLP
         /// <param name="testingData">Testing samples.</param>
         /// <param name="progressInfoSubscriber">Subscriber will receive notification event about progress. (Parameter can be null).</param>
         /// <returns>Resulting diagnostics data of the model and all inner sub-models.</returns>
-        public abstract ModelDiagnosticData DiagnosticTest(SampleDataset testingData,
-                                                           ModelTestProgressChangedHandler progressInfoSubscriber = null
-                                                           );
+        public abstract MLPModelDiagnosticData DiagnosticTest(SampleDataset testingData,
+                                                              ProgressChangedHandler progressInfoSubscriber = null
+                                                              );
 
 
         /// <inheritdoc/>
@@ -286,7 +278,7 @@ namespace EasyMLCore.MLP
         /// <summary>
         /// Creates a deep clone.
         /// </summary>
-        public abstract ModelBase DeepClone();
+        public abstract MLPModelBase DeepClone();
 
         /// <summary>
         /// Gets formatted informative text about this model instance.
@@ -297,6 +289,6 @@ namespace EasyMLCore.MLP
         public abstract string GetInfoText(bool detail = false, int margin = 0);
 
 
-    }//ModelBase
+    }//MLPModelBase
 
 }//Namespace

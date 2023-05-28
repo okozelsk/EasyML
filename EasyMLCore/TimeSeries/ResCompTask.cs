@@ -1,7 +1,6 @@
 ﻿using EasyMLCore.Data;
 using EasyMLCore.Extensions;
 using EasyMLCore.MLP;
-using EasyMLCore.MLP.Model;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -27,7 +26,7 @@ namespace EasyMLCore.TimeSeries
         /// <summary>
         /// Inner MLP model.
         /// </summary>
-        public ModelBase Model {get; private set;}
+        public MLPModelBase Model {get; private set;}
 
 
         /// <inheritdoc/>
@@ -81,7 +80,7 @@ namespace EasyMLCore.TimeSeries
         /// <returns>Confidence metrics of built model.</returns>
         public static ResCompTask Build(ResCompTaskConfig cfg,
                                         SampleDataset trainingData,
-                                        ModelBuildProgressChangedHandler progressInfoSubscriber = null
+                                        ProgressChangedHandler progressInfoSubscriber = null
                                         )
         {
             if (!trainingData.IsUniform || trainingData.Count < 1)
@@ -92,7 +91,7 @@ namespace EasyMLCore.TimeSeries
             ResCompTask resCompTask = new ResCompTask(cfg);
             Type modelCfgType = cfg.ModelCfg.GetType();
             string modelNamePrefix = $"({resCompTask.Name}){ContextPathID}-";
-            ModelBase model = null;
+            MLPModelBase model = null;
             if (modelCfgType == typeof(NetworkModelConfig))
             {
                 model = NetworkModel.Build(cfg.ModelCfg,
@@ -199,9 +198,9 @@ namespace EasyMLCore.TimeSeries
         /// <param name="resultDataset">Result dataset containing original samples together with computed data.</param>
         /// <param name="progressInfoSubscriber">Subscriber will receive notification event about progress. (Parameter can be null).</param>
         /// <returns>Resulting error statistics.</returns>
-        public ModelErrStat Test(SampleDataset testingData,
+        public MLPModelErrStat Test(SampleDataset testingData,
                                  out ResultDataset resultDataset,
-                                 ModelTestProgressChangedHandler progressInfoSubscriber = null
+                                 ProgressChangedHandler progressInfoSubscriber = null
                                  )
         {
             return Model.Test(testingData, out resultDataset, progressInfoSubscriber);
@@ -216,9 +215,9 @@ namespace EasyMLCore.TimeSeries
         /// <param name="testingData">Testing samples.</param>
         /// <param name="progressInfoSubscriber">Subscriber will receive notification event about progress. (Parameter can be null).</param>
         /// <returns>Resulting diagnostics data of the RC task's model and all its inner sub-models.</returns>
-        public ModelDiagnosticData DiagnosticTest(SampleDataset testingData,
-                                                  ModelTestProgressChangedHandler progressInfoSubscriber = null
-                                                  )
+        public MLPModelDiagnosticData DiagnosticTest(SampleDataset testingData,
+                                                     ProgressChangedHandler progressInfoSubscriber = null
+                                                     )
         {
             return Model.DiagnosticTest(testingData, progressInfoSubscriber);
         }

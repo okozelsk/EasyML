@@ -63,13 +63,13 @@ namespace EasyMLEduApp.Examples.MLP
                                            outputFeatureNames.Count //Number of output features
                                            );
             EasyML.Oper.Log.Write(string.Empty);
-            ModelBase bestModel = null;
+            MLPModelBase bestModel = null;
             IModelConfig bestModelConfig = null;
-            ModelErrStat bestModelErrStat = null;
+            MLPModelErrStat bestModelErrStat = null;
             ResultDataset bestmodelResultDataset = null;
             foreach (IModelConfig modelCfg in modelConfigCollection)
             {
-                ModelBase model =
+                MLPModelBase model =
                     EasyML.Oper.Build(modelCfg, //Model config
                                       taskName, //Out task name
                                       OutputTaskType.Binary, //Our task type
@@ -78,7 +78,7 @@ namespace EasyMLEduApp.Examples.MLP
                                       true, //We want to report progress and results
                                       false //We do not require to report all details
                                       );
-                ModelErrStat errStat =
+                MLPModelErrStat errStat =
                     EasyML.Oper.Test(model, //Our built model
                                      testingData, //Sample testing data
                                      out ResultDataset resultDataset, //Original testing samples together with computed data
@@ -125,9 +125,9 @@ namespace EasyMLEduApp.Examples.MLP
         {
             //Deserialize previously serialized objects
             string fileNamePrefix = "./Temp/BeetleFly_winner_";
-            ModelBase bestModel = (ModelBase)SerializableObject.Deserialize(fileNamePrefix + "model.bin");
+            MLPModelBase bestModel = (MLPModelBase)SerializableObject.Deserialize(fileNamePrefix + "model.bin");
             IModelConfig bestModelConfig = (IModelConfig)SerializableObject.Deserialize(fileNamePrefix + "config.bin");
-            ModelErrStat bestErrStat = (ModelErrStat)SerializableObject.Deserialize(fileNamePrefix + "errStat.bin");
+            MLPModelErrStat bestErrStat = (MLPModelErrStat)SerializableObject.Deserialize(fileNamePrefix + "errStat.bin");
             ResultDataset bestResultDataset = (ResultDataset)SerializableObject.Deserialize(fileNamePrefix + "resDataset.bin");
 
             //Report the best model

@@ -13,7 +13,7 @@ The purpose is to support the usual machine-learning scenario in an easy way.
 ![Typical ML scenario](./EasyMLCore/Docs/ML_scenario.png)
 
 The EasyMLCore namespace is a root namespace of the library. It contains some common elements but the main thing it contains is the [EasyML class with its Oper](./EasyMLCore/EasyML.cs) interface, which provides basic functionalities supporting the ML process in a user-friendly way. The EasyML.Oper interface is a singleton. It is immediately usable and its main methods are LoadSampleData, Report, Build, Test, DiagnosticTest and DeepTest. Unless otherwise stated, the methods log the progress of the operation in the system console by default. To redirect logs elsewhere, it is sufficient to set any instance of a custom object implementing the trivial [IOutputLog](./EasyMLCore/Log/IOutputLog.cs) interface using the EasyML.Oper.ChangeOutputLog method.
-If you want to write anything of your own to the log, use the EasyML.Oper.Log.Write method.
+If you want to write anything of your own to the log, simply use the EasyML.Oper.Log.Write method.
 <br />
 <br />
 **General characteristics and limitations**

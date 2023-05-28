@@ -19,7 +19,7 @@ namespace EasyMLEduApp.Examples.MLP
     public static class MLPModelsRegressionCompetition
     {
         //Methods
-        private static void ReportDetailOfFirstNComputations(ModelBase model, SampleDataset data, int n)
+        private static void ReportDetailOfFirstNComputations(MLPModelBase model, SampleDataset data, int n)
         {
             for (int i = 0; i < n && i < data.Count; i++)
             {
@@ -75,12 +75,12 @@ namespace EasyMLEduApp.Examples.MLP
             //Select the best one and report its configuration and testing results again.
             EasyML.Oper.Log.Write($"MODELS COMPETITION STARTED");
             EasyML.Oper.Log.Write($"--------------------------");
-            ModelBase bestModel = null;
+            MLPModelBase bestModel = null;
             IModelConfig bestModelConfig = null;
-            ModelErrStat bestErrStat = null;
+            MLPModelErrStat bestErrStat = null;
             foreach (IModelConfig modelCfg in modelConfigCollection)
             {
-                ModelBase model =
+                MLPModelBase model =
                     EasyML.Oper.Build(modelCfg, //Model config
                                       taskName, //Out task name
                                       OutputTaskType.Regression, //Our task type
@@ -89,7 +89,7 @@ namespace EasyMLEduApp.Examples.MLP
                                       true, //We want to report progress and results
                                       false //We do not require to report all details
                                       );
-                ModelErrStat errStat =
+                MLPModelErrStat errStat =
                     EasyML.Oper.Test(model, //Our built model
                                        testingData, //Sample testing data
                                        out ResultDataset resultData, //Original testing samples together with computed data

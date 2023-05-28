@@ -7,7 +7,6 @@ using EasyMLCore.Loss;
 using EasyMLCore.MathTools;
 using EasyMLCore.MiscTools;
 using EasyMLCore.MLP;
-using EasyMLCore.MLP.Model;
 using EasyMLCore.TimeSeries;
 using EasyMLEduApp.Examples.MLP;
 using System;

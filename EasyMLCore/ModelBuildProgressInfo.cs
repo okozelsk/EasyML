@@ -1,14 +1,13 @@
-﻿using EasyMLCore.Data;
-using EasyMLCore.MiscTools;
+﻿using EasyMLCore.MLP;
 using System;
 using System.Globalization;
 using System.Text;
 
-namespace EasyMLCore.MLP
+namespace EasyMLCore
 {
     /// <summary>
     /// It provides information about the currently building part of the target
-    /// model (context path) as well as detailed information that always
+    /// ML model as well as detailed information that always
     /// relates to the build process of a specific underlying NetworkModel.
     /// </summary>
     [Serializable]
@@ -16,12 +15,12 @@ namespace EasyMLCore.MLP
     {
         //Attribute properties
         /// <summary>
-        /// Preparatory steps tracker (if necessary).
+        /// Information about the progress of preparatory steps (if necessary).
         /// </summary>
-        public ProgressTracker PreparatoryStepsTracker { get; }
+        public ProgressInfoBase PreparatoryStepsProgressInfo { get; }
 
         /// <summary>
-        /// Information about the progress of build process of underlaying network.
+        /// Information about the progress of build process of particular underlying network.
         /// </summary>
         public NetworkBuildProgressInfo NetworkProgressInfo { get; }
 
@@ -29,15 +28,15 @@ namespace EasyMLCore.MLP
         /// Creates an initialized instance.
         /// </summary>
         /// <param name="name">Model name.</param>
-        /// <param name="preparatoryStepsTracker">Preparatory steps tracker (if necessary).</param>
+        /// <param name="preparatoryStepsProgressInfo">Information about the progress of preparatory steps (if necessary).</param>
         /// <param name="networkProgressInfo">Information about the progress of build process of underlaying network.</param>
         public ModelBuildProgressInfo(string name,
-                                      ProgressTracker preparatoryStepsTracker,
+                                      ProgressInfoBase preparatoryStepsProgressInfo,
                                       NetworkBuildProgressInfo networkProgressInfo
                                       )
             :base(name)
         {
-            PreparatoryStepsTracker = preparatoryStepsTracker;
+            PreparatoryStepsProgressInfo = preparatoryStepsProgressInfo;
             NetworkProgressInfo = networkProgressInfo;
             return;
         }
@@ -48,26 +47,24 @@ namespace EasyMLCore.MLP
         {
             get
             {
-                return (NetworkProgressInfo == null) ? PreparatoryStepsTracker.Last : NetworkProgressInfo.ShouldBeReported;
+                return (NetworkProgressInfo == null) ? PreparatoryStepsProgressInfo.ShouldBeReported : NetworkProgressInfo.ShouldBeReported;
+            }
+        }
+
+        /// <inheritdoc/>
+        public override bool NewInfoBlock
+        {
+            get
+            {
+                return (NetworkProgressInfo == null) ? PreparatoryStepsProgressInfo.NewInfoBlock : NetworkProgressInfo.NewInfoBlock;
             }
         }
 
         //Methods
-        /// <summary>
-        /// Gets textual information about the number of processed preparatory steps.
-        /// </summary>
-        public string GetPreparatoryInfoText(int margin = 0)
-        {
-            StringBuilder text = new StringBuilder();
-            text.Append($"{new string(' ', margin)}[{ContextPath}] Preparatory step {PreparatoryStepsTracker.Current.ToString(CultureInfo.InvariantCulture)}");
-            text.Append($"/{PreparatoryStepsTracker.Target.ToString(CultureInfo.InvariantCulture)}");
-            return text.ToString();
-        }
-
         /// <inheritdoc/>
         public override string GetInfoText(int margin = 0)
         {
-            return (NetworkProgressInfo == null) ? GetPreparatoryInfoText(margin) : NetworkProgressInfo.GetInfoText(margin);
+            return (NetworkProgressInfo == null) ? PreparatoryStepsProgressInfo.GetInfoText(margin) : NetworkProgressInfo.GetInfoText(margin);
         }
 
     }//ModelBuildProgressInfo

@@ -30,7 +30,7 @@ namespace EasyMLEduApp.Examples.MLP
         public const int DeepTestRounds = 30;
         
         //Methods
-        private static ModelErrStat ExecuteLibrasMovementDeepTest()
+        private static MLPModelErrStat ExecuteLibrasMovementDeepTest()
         {
             string taskName = "Libras Movement";
             //Output class labels of classification task
@@ -77,7 +77,7 @@ namespace EasyMLEduApp.Examples.MLP
                                         );
         }
 
-        private static ModelErrStat ExecuteProximalPhalanxOutlineAgeGroupDeepTest()
+        private static MLPModelErrStat ExecuteProximalPhalanxOutlineAgeGroupDeepTest()
         {
             string taskName = "Age Group";
             //Output class labels of Proximal Phalanx Outline Age Group classification task
@@ -120,14 +120,14 @@ namespace EasyMLEduApp.Examples.MLP
         {
             Console.Clear();
             Stopwatch stopwatch = Stopwatch.StartNew();
-            List<Tuple<string, ModelErrStat>> modelErrStats = new List<Tuple<string, ModelErrStat>>();
-            modelErrStats.Add(new Tuple<string, ModelErrStat>("LibrasMovementDeepTest", ExecuteLibrasMovementDeepTest()));
-            modelErrStats.Add(new Tuple<string, ModelErrStat>("ProximalPhalanxOutlineAgeGroupDeepTest", ExecuteProximalPhalanxOutlineAgeGroupDeepTest()));
+            List<Tuple<string, MLPModelErrStat>> modelErrStats = new List<Tuple<string, MLPModelErrStat>>();
+            modelErrStats.Add(new Tuple<string, MLPModelErrStat>("LibrasMovementDeepTest", ExecuteLibrasMovementDeepTest()));
+            modelErrStats.Add(new Tuple<string, MLPModelErrStat>("ProximalPhalanxOutlineAgeGroupDeepTest", ExecuteProximalPhalanxOutlineAgeGroupDeepTest()));
             stopwatch.Stop();
             EasyML.Oper.Log.Write(string.Empty);
             EasyML.Oper.Log.Write($"Deep tests final results");
             EasyML.Oper.Log.Write($"------------------------");
-            foreach (Tuple<string, ModelErrStat> statEntry in modelErrStats)
+            foreach (Tuple<string, MLPModelErrStat> statEntry in modelErrStats)
             {
                 EasyML.Oper.Log.Write($"Aggregated result of {statEntry.Item1}:");
                 EasyML.Oper.Report(statEntry.Item2, false, 4);

@@ -36,7 +36,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
         public const int DeepTestRounds = 30;
         
         //Methods
-        private static ModelErrStat ExecuteResCompLibrasMovementDeepTest()
+        private static MLPModelErrStat ExecuteResCompLibrasMovementDeepTest()
         {
             string taskName = "Libras Movement";
             //Output class labels of classification task
@@ -121,7 +121,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
             return EasyML.Oper.DeepTest(resCompCfg, trainingData, testingData, DeepTestRounds);
         }
 
-        private static ModelErrStat ExecuteResCompProximalPhalanxOutlineAgeGroupDeepTest()
+        private static MLPModelErrStat ExecuteResCompProximalPhalanxOutlineAgeGroupDeepTest()
         {
             string taskName = "Age Group";
             //Output class labels of Proximal Phalanx Outline Age Group classification task
@@ -191,7 +191,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
             return EasyML.Oper.DeepTest(resCompCfg, trainingData, testingData, DeepTestRounds);
         }
 
-        private static ModelErrStat ExecuteResCompLargeKitchenAppliancesDeepTest()
+        private static MLPModelErrStat ExecuteResCompLargeKitchenAppliancesDeepTest()
         {
             //Our task name
             string taskName = "Kitchen Appliance";
@@ -262,7 +262,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
             return EasyML.Oper.DeepTest(resCompCfg, trainingData, testingData, DeepTestRounds);
         }
 
-        private static ModelErrStat ExecuteResCompCricketXDeepTest()
+        private static MLPModelErrStat ExecuteResCompCricketXDeepTest()
         {
             string taskName = "CricketX";
             //Output class labels of classification task
@@ -342,7 +342,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
             return EasyML.Oper.DeepTest(resCompCfg, trainingData, testingData, DeepTestRounds);
         }
 
-        private static ModelErrStat ExecuteResCompWormsDeepTest()
+        private static MLPModelErrStat ExecuteResCompWormsDeepTest()
         {
             string taskName = "Worms";
             //Output class labels of classification task
@@ -415,7 +415,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
             return EasyML.Oper.DeepTest(resCompCfg, trainingData, testingData, DeepTestRounds);
         }
 
-        private static ModelErrStat ExecuteResCompBeetleFlyDeepTest()
+        private static MLPModelErrStat ExecuteResCompBeetleFlyDeepTest()
         {
             string taskName = "Beetle (1) or Fly (0)";
             //Output feature names of binary decision task
@@ -485,7 +485,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
             return EasyML.Oper.DeepTest(resCompCfg, trainingData, testingData, DeepTestRounds);
         }
 
-        private static ModelErrStat ExecuteResCompEarthquakesDeepTest()
+        private static MLPModelErrStat ExecuteResCompEarthquakesDeepTest()
         {
             string taskName = "Earthquakes";
             //Output feature names of binary decision task
@@ -566,19 +566,19 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
         {
             Console.Clear();
             Stopwatch stopwatch = Stopwatch.StartNew();
-            List<Tuple<string, ModelErrStat>> modelErrStats = new List<Tuple<string, ModelErrStat>>();
-            modelErrStats.Add(new Tuple<string, ModelErrStat>("LibrasMovementDeepTest", ExecuteResCompLibrasMovementDeepTest()));
-            modelErrStats.Add(new Tuple<string, ModelErrStat>("ProximalPhalanxOutlineAgeGroupDeepTest", ExecuteResCompProximalPhalanxOutlineAgeGroupDeepTest()));
-            modelErrStats.Add(new Tuple<string, ModelErrStat>("LargeKitchenAppliancesDeepTest", ExecuteResCompLargeKitchenAppliancesDeepTest()));
-            modelErrStats.Add(new Tuple<string, ModelErrStat>("CricketXDeepTest", ExecuteResCompCricketXDeepTest()));
-            modelErrStats.Add(new Tuple<string, ModelErrStat>("WormsDeepTest", ExecuteResCompWormsDeepTest()));
-            modelErrStats.Add(new Tuple<string, ModelErrStat>("BeetleFlyDeepTest", ExecuteResCompBeetleFlyDeepTest()));
-            modelErrStats.Add(new Tuple<string, ModelErrStat>("EarthquakesDeepTest", ExecuteResCompEarthquakesDeepTest()));
+            List<Tuple<string, MLPModelErrStat>> modelErrStats = new List<Tuple<string, MLPModelErrStat>>();
+            modelErrStats.Add(new Tuple<string, MLPModelErrStat>("LibrasMovementDeepTest", ExecuteResCompLibrasMovementDeepTest()));
+            modelErrStats.Add(new Tuple<string, MLPModelErrStat>("ProximalPhalanxOutlineAgeGroupDeepTest", ExecuteResCompProximalPhalanxOutlineAgeGroupDeepTest()));
+            modelErrStats.Add(new Tuple<string, MLPModelErrStat>("LargeKitchenAppliancesDeepTest", ExecuteResCompLargeKitchenAppliancesDeepTest()));
+            modelErrStats.Add(new Tuple<string, MLPModelErrStat>("CricketXDeepTest", ExecuteResCompCricketXDeepTest()));
+            modelErrStats.Add(new Tuple<string, MLPModelErrStat>("WormsDeepTest", ExecuteResCompWormsDeepTest()));
+            modelErrStats.Add(new Tuple<string, MLPModelErrStat>("BeetleFlyDeepTest", ExecuteResCompBeetleFlyDeepTest()));
+            modelErrStats.Add(new Tuple<string, MLPModelErrStat>("EarthquakesDeepTest", ExecuteResCompEarthquakesDeepTest()));
             stopwatch.Stop();
             EasyML.Oper.Log.Write(string.Empty);
             EasyML.Oper.Log.Write($"Deep tests final results");
             EasyML.Oper.Log.Write($"------------------------");
-            foreach (Tuple<string, ModelErrStat> statEntry in modelErrStats)
+            foreach (Tuple<string, MLPModelErrStat> statEntry in modelErrStats)
             {
                 EasyML.Oper.Log.Write($"Aggregated result of {statEntry.Item1}:");
                 EasyML.Oper.Report(statEntry.Item2, false, 4);

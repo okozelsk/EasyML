@@ -41,7 +41,7 @@ namespace EasyMLCore.MLP
         /// This informative event occurs each time the progress of the init process takes a step forward.
         /// </summary>
         [field: NonSerialized]
-        private event RVFLInitProgressChangedHandler InitProgressChanged;
+        private event ProgressChangedHandler InitProgressChanged;
 
 
         //Attribute properties
@@ -255,7 +255,7 @@ namespace EasyMLCore.MLP
         /// <returns>Preprocessed data.</returns>
         public SampleDataset Init(SampleDataset trainingData,
                                   Random rand,
-                                  RVFLInitProgressChangedHandler progressInfoSubscriber = null
+                                  ProgressChangedHandler progressInfoSubscriber = null
                                   )
         {
             if (progressInfoSubscriber != null)

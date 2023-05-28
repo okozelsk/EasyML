@@ -5,13 +5,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EasyMLCore.MLP.Model
+namespace EasyMLCore.MLP
 {
     /// <summary>
-    /// Holds diagnostic data related to model.
+    /// Holds diagnostic data related to MLP model.
     /// </summary>
     [Serializable]
-    public class ModelDiagnosticData : SerializableObject
+    public class MLPModelDiagnosticData : SerializableObject
     {
         //Attribute properties
         /// <summary>
@@ -22,12 +22,12 @@ namespace EasyMLCore.MLP.Model
         /// <summary>
         /// Model's error statistics on test samples.
         /// </summary>
-        public ModelErrStat TestErrStat { get; }
+        public MLPModelErrStat TestErrStat { get; }
 
         /// <summary>
         /// Holds diagnostic data related to model's sub-models (if there are any).
         /// </summary>
-        public List<ModelDiagnosticData> SubModelsDiagData { get; }
+        public List<MLPModelDiagnosticData> SubModelsDiagData { get; }
 
         /// <summary>
         /// Indexes in SubModelsDiagData of better sub models.
@@ -45,13 +45,13 @@ namespace EasyMLCore.MLP.Model
         /// </summary>
         /// <param name="modelName">Name of diagnosed model.</param>
         /// <param name="testErrStat">Model's error statistics on test samples.</param>
-        public ModelDiagnosticData(string modelName,
-                                   ModelErrStat testErrStat
+        public MLPModelDiagnosticData(string modelName,
+                                   MLPModelErrStat testErrStat
                                    )
         {
             ModelName = modelName;
             TestErrStat = testErrStat;
-            SubModelsDiagData = new List<ModelDiagnosticData>();
+            SubModelsDiagData = new List<MLPModelDiagnosticData>();
             BetterSubModelsIndexes = new List<int>();
             Finalized = false;
             return;
@@ -61,14 +61,14 @@ namespace EasyMLCore.MLP.Model
         /// Deep copy constructor.
         /// </summary>
         /// <param name="source">Source instance.</param>
-        public ModelDiagnosticData(ModelDiagnosticData source)
+        public MLPModelDiagnosticData(MLPModelDiagnosticData source)
         {
             ModelName = source.ModelName;
-            TestErrStat = new ModelErrStat(source.TestErrStat);
-            SubModelsDiagData = new List<ModelDiagnosticData>(source.SubModelsDiagData.Count);
-            foreach(ModelDiagnosticData subModelDiagData in source.SubModelsDiagData)
+            TestErrStat = new MLPModelErrStat(source.TestErrStat);
+            SubModelsDiagData = new List<MLPModelDiagnosticData>(source.SubModelsDiagData.Count);
+            foreach(MLPModelDiagnosticData subModelDiagData in source.SubModelsDiagData)
             {
-                SubModelsDiagData.Add(new ModelDiagnosticData(subModelDiagData));
+                SubModelsDiagData.Add(new MLPModelDiagnosticData(subModelDiagData));
             }
             BetterSubModelsIndexes = new List<int>(source.BetterSubModelsIndexes);
             Finalized = source.Finalized;
@@ -86,7 +86,7 @@ namespace EasyMLCore.MLP.Model
         /// Adds next sub-model diagnostics data.
         /// </summary>
         /// <param name="data">Sub-model's diagnostics data.</param>
-        public void AddSubModelDiagData(ModelDiagnosticData data)
+        public void AddSubModelDiagData(MLPModelDiagnosticData data)
         {
             if(data == this)
             {
@@ -104,7 +104,7 @@ namespace EasyMLCore.MLP.Model
             if(!Finalized)
             {
                 int idx = 0;
-                foreach (ModelDiagnosticData diagData in SubModelsDiagData)
+                foreach (MLPModelDiagnosticData diagData in SubModelsDiagData)
                 {
                     if (TestErrStat.IsBetter(diagData.TestErrStat))
                     {
@@ -121,9 +121,9 @@ namespace EasyMLCore.MLP.Model
         /// <summary>
         /// Creates a deep clone.
         /// </summary>
-        public ModelDiagnosticData DeepClone()
+        public MLPModelDiagnosticData DeepClone()
         {
-            return new ModelDiagnosticData(this);
+            return new MLPModelDiagnosticData(this);
         }
 
         /// <summary>
@@ -153,7 +153,7 @@ namespace EasyMLCore.MLP.Model
             if (SubModelsDiagData.Count > 0)
             {
                 infoText.Append($"{marginStr}    All sub-models {SubModelsDiagData.Count.ToString(CultureInfo.InvariantCulture)}:{Environment.NewLine}");
-                foreach (ModelDiagnosticData diagnosticData in SubModelsDiagData)
+                foreach (MLPModelDiagnosticData diagnosticData in SubModelsDiagData)
                 {
                     infoText.Append(diagnosticData.GetInfoText(detail, margin + 8));
                 }
@@ -161,5 +161,5 @@ namespace EasyMLCore.MLP.Model
             return infoText.ToString();
         }
 
-    }//ModelDiagnosticData
+    }//MLPModelDiagnosticData
 }//Namespace

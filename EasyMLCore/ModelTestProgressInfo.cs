@@ -3,10 +3,10 @@ using System;
 using System.Globalization;
 using System.Text;
 
-namespace EasyMLCore.MLP
+namespace EasyMLCore
 {
     /// <summary>
-    /// Holds progress information about the model testing process.
+    /// Holds progress information about the ML model testing process.
     /// </summary>
     [Serializable]
     public class ModelTestProgressInfo : ProgressInfoBase
@@ -29,9 +29,9 @@ namespace EasyMLCore.MLP
         /// <param name="numOfProcessedInputs">Number of currently processed inputs.</param>
         /// <param name="totalNumOfInputs">Total number of inputs to be processed.</param>
         public ModelTestProgressInfo(string name,
-                                       int numOfProcessedInputs,
-                                       int totalNumOfInputs
-                                       )
+                                     int numOfProcessedInputs,
+                                     int totalNumOfInputs
+                                     )
             :base(name)
         {
             Name = name;
@@ -40,9 +40,6 @@ namespace EasyMLCore.MLP
         }
 
         //Properties
-        /// <inheritdoc/>
-        public override bool ShouldBeReported { get { return (ProcessedInputsTracker.Last); } }
-
         /// <summary>
         /// Gets number of currently processed inputs.
         /// </summary>
@@ -51,6 +48,24 @@ namespace EasyMLCore.MLP
             get
             {
                 return (int)ProcessedInputsTracker.Current;
+            }
+        }
+
+        /// <inheritdoc/>
+        public override bool ShouldBeReported
+        {
+            get
+            {
+                return ProcessedInputsTracker.Last || NumOfProcessedInputs == 1 || (NumOfProcessedInputs % InformInterval == 0);
+            }
+        }
+
+        /// <inheritdoc/>
+        public override bool NewInfoBlock
+        {
+            get
+            {
+                return NumOfProcessedInputs == 1;
             }
         }
 

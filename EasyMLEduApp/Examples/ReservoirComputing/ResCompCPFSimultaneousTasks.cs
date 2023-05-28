@@ -1,7 +1,6 @@
 ﻿using EasyMLCore;
 using EasyMLCore.Data;
 using EasyMLCore.MLP;
-using EasyMLCore.MLP.Model;
 using EasyMLCore.TimeSeries;
 using EasyMLEduApp.Examples.MLP;
 using System;
@@ -137,7 +136,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
                                   true //Max detail
                                   );
             //Test
-            List<ModelErrStat> errStats =
+            List<MLPModelErrStat> errStats =
                 EasyML.Oper.Test(resComp, //Our built reservoir computer
                                    testingData, //Testing data
                                    out ResultDataset resultDataset, //Original testing samples together with computed data
@@ -145,7 +144,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
                                    true //Max detail
                                    );
             //Diagnostic test (an alternative to Test)
-            List<ModelDiagnosticData> tasksDiagData =
+            List<MLPModelDiagnosticData> tasksDiagData =
                 EasyML.Oper.DiagnosticTest(resComp, //Our built reservoir computer
                                            testingData, //Testing data
                                            true, //Verbose

@@ -119,7 +119,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
             buildRCSW.Stop();
             Stopwatch testRCSW = Stopwatch.StartNew();
             //Testing
-            List<ModelErrStat> errStats =
+            List<MLPModelErrStat> errStats =
                 EasyML.Oper.Test(resComp, //Our built reservoir computer
                                  testingData, //Testing data
                                  out _, //We do not need original testing samples together with computed data

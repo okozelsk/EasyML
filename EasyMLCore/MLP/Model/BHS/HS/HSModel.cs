@@ -1,6 +1,5 @@
 ﻿using EasyMLCore.Data;
 using EasyMLCore.Extensions;
-using EasyMLCore.MLP.Model;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -18,7 +17,7 @@ namespace EasyMLCore.MLP
     /// This model serves as a part of BHS model and is not intended to be used for the final predictions.
     /// </summary>
     [Serializable]
-    public class HSModel : ModelBase
+    public class HSModel : MLPModelBase
     {
         //Constants
         /// <summary>
@@ -28,7 +27,7 @@ namespace EasyMLCore.MLP
 
         //Attributes
         private readonly List<NetworkModel> _stack;
-        private ModelBase _metaLearner;
+        private MLPModelBase _metaLearner;
         private readonly bool _routeInput;
 
         //Constructor
@@ -91,7 +90,7 @@ namespace EasyMLCore.MLP
         /// Sets the model operationable.
         /// </summary>
         /// <param name="metaLearner">A meta-learner model combining outputs od the stack members.</param>
-        private void SetOperationable(ModelBase metaLearner)
+        private void SetOperationable(MLPModelBase metaLearner)
         {
             //Checks
             if (metaLearner.TaskType != TaskType || metaLearner.NumOfOutputFeatures != NumOfOutputFeatures)
@@ -162,13 +161,13 @@ namespace EasyMLCore.MLP
         }
 
         /// <inheritdoc/>
-        public override ModelDiagnosticData DiagnosticTest(SampleDataset testingData, ModelTestProgressChangedHandler progressInfoSubscriber = null)
+        public override MLPModelDiagnosticData DiagnosticTest(SampleDataset testingData, ProgressChangedHandler progressInfoSubscriber = null)
         {
-            ModelErrStat errStat = Test(testingData, out _, progressInfoSubscriber);
-            ModelDiagnosticData diagData = new ModelDiagnosticData(Name, errStat);
-            foreach (ModelBase model in _stack)
+            MLPModelErrStat errStat = Test(testingData, out _, progressInfoSubscriber);
+            MLPModelDiagnosticData diagData = new MLPModelDiagnosticData(Name, errStat);
+            foreach (MLPModelBase model in _stack)
             {
-                ModelDiagnosticData memberDiagData = model.DiagnosticTest(testingData, progressInfoSubscriber);
+                MLPModelDiagnosticData memberDiagData = model.DiagnosticTest(testingData, progressInfoSubscriber);
                 diagData.AddSubModelDiagData(memberDiagData);
             }
             diagData.SetFinalized();
@@ -176,7 +175,7 @@ namespace EasyMLCore.MLP
         }
 
         /// <inheritdoc/>
-        public override ModelBase DeepClone()
+        public override MLPModelBase DeepClone()
         {
             return new HSModel(this);
         }
@@ -199,7 +198,7 @@ namespace EasyMLCore.MLP
                                     List<string> outputFeatureNames,
                                     SampleDataset trainingData,
                                     SampleDataset validationData,
-                                    ModelBuildProgressChangedHandler progressInfoSubscriber = null
+                                    ProgressChangedHandler progressInfoSubscriber = null
                                     )
         {
             //Checks
@@ -279,7 +278,7 @@ namespace EasyMLCore.MLP
             //Build the meta-learner
             Type metaLearnerCfgType = modelConfig.MetaLearnerCfg.GetType();
             string metaLearnerModelStr = $"{model.Name}.Meta-Learner-";
-            ModelBase metaLearnerModel = null;
+            MLPModelBase metaLearnerModel = null;
             if (metaLearnerCfgType == typeof(NetworkModelConfig))
             {
                 metaLearnerModel = NetworkModel.Build(modelConfig.MetaLearnerCfg,

@@ -77,7 +77,7 @@ namespace EasyMLEduApp.Examples.MLP
             return new NetworkModelConfig(XElement.Parse(xmlStr));
         }
 
-        private static void CalculateAndReportOutputs(ModelBase model)
+        private static void CalculateAndReportOutputs(MLPModelBase model)
         {
             for (int b1 = 0; b1 <= 1; b1++)
             {
@@ -104,7 +104,7 @@ namespace EasyMLEduApp.Examples.MLP
             NetworkModelConfig networkModelCfg = CreateNetworkConfig();
             SampleDataset samples = CreateBooleanAlgebraSampleData();
             //Build model
-            ModelBase model = EasyML.Oper.Build(networkModelCfg, //Network model configuration
+            MLPModelBase model = EasyML.Oper.Build(networkModelCfg, //Network model configuration
                                                 "Solving boolean algebra", //Our name of the task
                                                 OutputTaskType.Binary, //Type of the task
                                                 _outputFeatureNames, //Output feature names
@@ -113,7 +113,7 @@ namespace EasyMLEduApp.Examples.MLP
                                                 true //We want to report max detail
                                                 );
             //Test model
-            ModelErrStat errStat = EasyML.Oper.Test(model, //Our built model
+            MLPModelErrStat errStat = EasyML.Oper.Test(model, //Our built model
                                                     samples, //Testing samples (here the same as training samples)
                                                     out ResultDataset resultData, //Original testing samples together with computed data
                                                     true, //We want to report progress and results
@@ -137,7 +137,7 @@ namespace EasyMLEduApp.Examples.MLP
             NetworkModelConfig networkModelCfg = CreateNetworkConfigFromXml();
             SampleDataset samples = CreateBooleanAlgebraSampleData();
             //Build model
-            ModelBase model = EasyML.Oper.Build(networkModelCfg, //Network model configuration
+            MLPModelBase model = EasyML.Oper.Build(networkModelCfg, //Network model configuration
                                                 "Solving boolean algebra", //Our name of the task
                                                 OutputTaskType.Binary, //Type of the task
                                                 _outputFeatureNames, //Output feature names
@@ -146,7 +146,7 @@ namespace EasyMLEduApp.Examples.MLP
                                                 true //We want to report max detail
                                                 );
             //Test model
-            ModelErrStat errStat = EasyML.Oper.Test(model, //Our built model
+            MLPModelErrStat errStat = EasyML.Oper.Test(model, //Our built model
                                                       samples, //Testing samples (here the same as training samples)
                                                       out ResultDataset resultData, //Original testing samples together with computed data
                                                       true, //We want to report progress

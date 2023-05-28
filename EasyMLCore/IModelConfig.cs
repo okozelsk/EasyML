@@ -1,9 +1,9 @@
 ﻿using System.Xml.Linq;
 
-namespace EasyMLCore.MLP
+namespace EasyMLCore
 {
     /// <summary>
-    /// Common interface of all model configurations.
+    /// Common interface of all ML models configurations.
     /// </summary>
     public interface IModelConfig
     {

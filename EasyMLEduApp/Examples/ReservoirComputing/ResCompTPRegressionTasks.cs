@@ -86,7 +86,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
                                   out ReservoirStat resStat //Stat data of the reservoir
                                   );
             //Testing
-            List<ModelErrStat> errStats =
+            List<MLPModelErrStat> errStats =
                 EasyML.Oper.Test(resComp, //Our built reservoir computer
                                  testingData, //Testing data
                                  out ResultDataset resultDataset //Original testing samples together with computed data
@@ -168,7 +168,7 @@ namespace EasyMLEduApp.Examples.ReservoirComputing
             //Store RC at this point for later use
             ResComp savedResComp = resComp.DeepClone();
             //Classical testing
-            List<ModelErrStat> errStats =
+            List<MLPModelErrStat> errStats =
                 EasyML.Oper.Test(resComp, //Our built reservoir computer
                                  testingData, //Testing data
                                  out ResultDataset resultDataset //Original testing samples together with computed data

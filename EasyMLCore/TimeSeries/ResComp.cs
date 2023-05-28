@@ -2,28 +2,15 @@
 using EasyMLCore.Extensions;
 using EasyMLCore.MiscTools;
 using EasyMLCore.MLP;
-using EasyMLCore.MLP.Model;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Xml.Linq;
 
 namespace EasyMLCore.TimeSeries
 {
-    //Delegates
-    /// <summary>
-    /// Delegate of the reservoir computer's build progress changed event handler.
-    /// </summary>
-    /// <param name="progressInfo">Current state of the reservoir computer's build process.</param>
-    public delegate void ResCompBuildProgressChangedHandler(ResCompBuildProgressInfo progressInfo);
-
-    /// <summary>
-    /// Delegate of the reservoir computer test progress changed event handler.
-    /// </summary>
-    /// <param name="progressInfo">Current state of the reservoir computer test process.</param>
-    public delegate void ResCompTestProgressChangedHandler(ResCompTestProgressInfo progressInfo);
-
     /// <summary>
     /// Implements the Reservoir computer doing Regression, Categorical and Binary decision tasks on multivariate time series data.
     /// </summary>
@@ -38,17 +25,10 @@ namespace EasyMLCore.TimeSeries
 
         //Events
         /// <summary>
-        /// This informative event occurs each time the progress of the reservoir's build process takes a step forward.
+        /// This informative event occurs each time the progress takes a step forward.
         /// </summary>
         [field: NonSerialized]
-        private event ResCompBuildProgressChangedHandler BuildProgressChanged;
-
-        /// <summary>
-        /// This informative event occurs each time the progress of the reservoir computer
-        /// test process takes a step forward.
-        /// </summary>
-        [field: NonSerialized]
-        private event ResCompTestProgressChangedHandler TestProgressChanged;
+        private event ProgressChangedHandler ProgressChanged;
 
         //Attribute properties
         /// <summary>
@@ -130,30 +110,26 @@ namespace EasyMLCore.TimeSeries
         }
 
         //Methods
-        private void OnReservoirInitProgressChanged(ReservoirInitProgressInfo progressInfo)
+        private void OnReservoirInitProgressChanged(ProgressInfoBase progressInfo)
         {
             progressInfo.ExtendContextPath(ContextPathID);
-            ResCompBuildProgressInfo trainProgressInfo =
-                new ResCompBuildProgressInfo(progressInfo, null);
-            BuildProgressChanged?.Invoke(trainProgressInfo);
+            ModelBuildProgressInfo trainProgressInfo =
+                new ModelBuildProgressInfo(ContextPathID, progressInfo, null);
+            ProgressChanged?.Invoke(trainProgressInfo);
             return;
         }
 
-        private void OnModelBuildProgressChanged(ModelBuildProgressInfo progressInfo)
+        private void OnModelBuildProgressChanged(ProgressInfoBase progressInfo)
         {
             progressInfo.ExtendContextPath(ContextPathID);
-            ResCompBuildProgressInfo trainingProgressInfo =
-                new ResCompBuildProgressInfo(null, progressInfo);
-            BuildProgressChanged?.Invoke(trainingProgressInfo);
+            ProgressChanged?.Invoke(progressInfo);
             return;
         }
 
-        private void OnModelTestProgressChanged(ModelTestProgressInfo progressInfo)
+        private void OnModelTestProgressChanged(ProgressInfoBase progressInfo)
         {
             progressInfo.ExtendContextPath(ContextPathID);
-            ResCompTestProgressInfo testingProgressInfo =
-                new ResCompTestProgressInfo(null, progressInfo);
-            TestProgressChanged?.Invoke(testingProgressInfo);
+            ProgressChanged?.Invoke(progressInfo);
             return;
         }
 
@@ -207,14 +183,14 @@ namespace EasyMLCore.TimeSeries
         public static ResComp Build(ResCompConfig cfg,
                                     SampleDataset trainingData,
                                     out ReservoirStat reservoirStat,
-                                    ResCompBuildProgressChangedHandler progressInfoSubscriber = null
+                                    ProgressChangedHandler progressInfoSubscriber = null
                                     )
         {
             ResComp resComp = new ResComp(cfg);
             reservoirStat = null;
             if (progressInfoSubscriber != null)
             {
-                resComp.BuildProgressChanged += progressInfoSubscriber;
+                resComp.ProgressChanged += progressInfoSubscriber;
             }
             try
             {
@@ -238,7 +214,7 @@ namespace EasyMLCore.TimeSeries
             {
                 if(progressInfoSubscriber != null)
                 {
-                    resComp.BuildProgressChanged -= progressInfoSubscriber;
+                    resComp.ProgressChanged -= progressInfoSubscriber;
                 }
             }
         }
@@ -276,14 +252,14 @@ namespace EasyMLCore.TimeSeries
         /// <param name="resultDataset">Result dataset containing triplets (input, computed, ideal).</param>
         /// <param name="progressInfoSubscriber">Subscriber will receive notification event about progress. (Parameter can be null).</param>
         /// <returns>Resulting error stats for each inner ResCompTask.</returns>
-        public List<ModelErrStat> Test(SampleDataset testingData,
-                                       out ResultDataset resultDataset,
-                                       ResCompTestProgressChangedHandler progressInfoSubscriber = null
-                                       )
+        public List<MLPModelErrStat> Test(SampleDataset testingData,
+                                          out ResultDataset resultDataset,
+                                          ProgressChangedHandler progressInfoSubscriber = null
+                                          )
         {
             if (progressInfoSubscriber != null)
             {
-                TestProgressChanged += progressInfoSubscriber;
+                ProgressChanged += progressInfoSubscriber;
             }
             try
             {
@@ -304,11 +280,11 @@ namespace EasyMLCore.TimeSeries
                         taskTestDatasets[taskIdx].AddSample(sample.ID, taskInputVector, taskOutputVector);
                     }
                     ++sampleIdx;
-                    ResCompTestProgressInfo pinfo = new ResCompTestProgressInfo(new ProgressTracker((uint)testingData.SampleCollection.Count, (uint)sampleIdx), null);
-                    TestProgressChanged?.Invoke(pinfo);
+                    ModelTestProgressInfo pinfo = new ModelTestProgressInfo(ContextPathID, sampleIdx, testingData.SampleCollection.Count);
+                    ProgressChanged?.Invoke(pinfo);
                 }
                 //Test tasks
-                List<ModelErrStat> taskErrStats = new List<ModelErrStat>(ResCompCfg.TaskCfgCollection.Count);
+                List<MLPModelErrStat> taskErrStats = new List<MLPModelErrStat>(ResCompCfg.TaskCfgCollection.Count);
                 List<ResultDataset> taskResultDatasets = new List<ResultDataset>(ResCompCfg.TaskCfgCollection.Count);
                 for (int taskIdx = 0; taskIdx < ResCompCfg.TaskCfgCollection.Count; taskIdx++)
                 {
@@ -335,7 +311,7 @@ namespace EasyMLCore.TimeSeries
             {
                 if (progressInfoSubscriber != null)
                 {
-                    TestProgressChanged -= progressInfoSubscriber;
+                    ProgressChanged -= progressInfoSubscriber;
                 }
             }
         }
@@ -349,13 +325,13 @@ namespace EasyMLCore.TimeSeries
         /// <param name="testingData">Testing samples.</param>
         /// <param name="progressInfoSubscriber">Subscriber will receive notification event about progress. (Parameter can be null).</param>
         /// <returns>Resulting diagnostics data of each RC task's model and all its inner sub-models.</returns>
-        public List<ModelDiagnosticData> DiagnosticTest(SampleDataset testingData,
-                                                        ResCompTestProgressChangedHandler progressInfoSubscriber = null
-                                                        )
+        public List<MLPModelDiagnosticData> DiagnosticTest(SampleDataset testingData,
+                                                           ProgressChangedHandler progressInfoSubscriber = null
+                                                           )
         {
             if (progressInfoSubscriber != null)
             {
-                TestProgressChanged += progressInfoSubscriber;
+                ProgressChanged += progressInfoSubscriber;
             }
             try
             {
@@ -376,11 +352,11 @@ namespace EasyMLCore.TimeSeries
                         taskTestDatasets[taskIdx].AddSample(sample.ID, taskInputVector, taskOutputVector);
                     }
                     ++sampleIdx;
-                    ResCompTestProgressInfo pinfo = new ResCompTestProgressInfo(new ProgressTracker((uint)testingData.SampleCollection.Count, (uint)sampleIdx), null);
-                    TestProgressChanged?.Invoke(pinfo);
+                    ModelTestProgressInfo pinfo = new ModelTestProgressInfo(ContextPathID, sampleIdx, testingData.SampleCollection.Count);
+                    ProgressChanged?.Invoke(pinfo);
                 }
                 //Diagnostic tests
-                List<ModelDiagnosticData> tasksDiagData = new List<ModelDiagnosticData>(ResCompCfg.TaskCfgCollection.Count);
+                List<MLPModelDiagnosticData> tasksDiagData = new List<MLPModelDiagnosticData>(ResCompCfg.TaskCfgCollection.Count);
                 for (int taskIdx = 0; taskIdx < ResCompCfg.TaskCfgCollection.Count; taskIdx++)
                 {
                     tasksDiagData.Add(Tasks[taskIdx].DiagnosticTest(taskTestDatasets[taskIdx], OnModelTestProgressChanged));
@@ -391,7 +367,7 @@ namespace EasyMLCore.TimeSeries
             {
                 if (progressInfoSubscriber != null)
                 {
-                    TestProgressChanged -= progressInfoSubscriber;
+                    ProgressChanged -= progressInfoSubscriber;
                 }
             }
         }

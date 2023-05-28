@@ -7,10 +7,10 @@ using System.Collections.Generic;
 namespace EasyMLCore.MLP
 {
     /// <summary>
-    /// Holds confidence metrics related to a model.
+    /// Holds confidence metrics related to a MLP model.
     /// </summary>
     [Serializable]
-    public class ModelConfidenceMetrics : SerializableObject
+    public class MLPModelConfidenceMetrics : SerializableObject
     {
         //Constants
         /// <summary>
@@ -64,7 +64,7 @@ namespace EasyMLCore.MLP
         /// <param name="binaryAccuracy">Averaged expected binary accuracy.</param>
         /// <param name="featureConfidences">Contains confidence indicators of output features.</param>
         /// <param name="featureConfidencesStat">Basic stat over confidence indicators of output features.</param>
-        public ModelConfidenceMetrics(OutputTaskType taskType,
+        public MLPModelConfidenceMetrics(OutputTaskType taskType,
                                       double costIndicator,
                                       double categoricalAccuracy,
                                       double binaryAccuracy,
@@ -86,7 +86,7 @@ namespace EasyMLCore.MLP
         /// </summary>
         /// <param name="trainingErrorStat">Training error statistics.</param>
         /// <param name="validationErrorStat">Validation error statistics.</param>
-        public ModelConfidenceMetrics(ModelErrStat trainingErrorStat, ModelErrStat validationErrorStat = null)
+        public MLPModelConfidenceMetrics(MLPModelErrStat trainingErrorStat, MLPModelErrStat validationErrorStat = null)
         {
             TaskType = trainingErrorStat.TaskType;
             if (validationErrorStat == null)
@@ -160,14 +160,14 @@ namespace EasyMLCore.MLP
         /// </summary>
         /// <param name="taskType">Output task type.</param>
         /// <param name="confidenceMetricsCollection">Collection of confidence metrics.</param>
-        public ModelConfidenceMetrics(OutputTaskType taskType, IEnumerable<ModelConfidenceMetrics> confidenceMetricsCollection)
+        public MLPModelConfidenceMetrics(OutputTaskType taskType, IEnumerable<MLPModelConfidenceMetrics> confidenceMetricsCollection)
         {
             TaskType = taskType;
             List<double[]> subConfidencies = new List<double[]>();
             WeightedAvg costAvg = new WeightedAvg();
             WeightedAvg catAccAvg = new WeightedAvg();
             WeightedAvg binAccAvg = new WeightedAvg();
-            foreach(ModelConfidenceMetrics subMetrics in confidenceMetricsCollection)
+            foreach(MLPModelConfidenceMetrics subMetrics in confidenceMetricsCollection)
             {
                 costAvg.AddSample(subMetrics.CostIndicator);
                 catAccAvg.AddSample(subMetrics.CategoricalAccuracy);
@@ -198,7 +198,7 @@ namespace EasyMLCore.MLP
         /// <param name="metrics1">Model confidence metrics 1.</param>
         /// <param name="metrics2">Model confidence metrics 2.</param>
         /// <returns>-1 if metrics1 is better, 1 if metrics2 is better, 0 if no difference.</returns>
-        public static int Comparer(ModelConfidenceMetrics metrics1, ModelConfidenceMetrics metrics2)
+        public static int Comparer(MLPModelConfidenceMetrics metrics1, MLPModelConfidenceMetrics metrics2)
         {
             if (metrics1.TaskType == OutputTaskType.Categorical)
             {
@@ -258,10 +258,10 @@ namespace EasyMLCore.MLP
         /// Creates the deep copy instance of this instance.
         /// </summary>
         /// <returns></returns>
-        public ModelConfidenceMetrics DeepClone()
+        public MLPModelConfidenceMetrics DeepClone()
         {
-            return new ModelConfidenceMetrics(TaskType, CostIndicator, CategoricalAccuracy, BinaryAccuracy, FeatureConfidences, FeatureConfidencesStat);
+            return new MLPModelConfidenceMetrics(TaskType, CostIndicator, CategoricalAccuracy, BinaryAccuracy, FeatureConfidences, FeatureConfidencesStat);
         }
 
-    }//ModelConfidenceMetrics
+    }//MLPModelConfidenceMetrics
 }//Namespace
