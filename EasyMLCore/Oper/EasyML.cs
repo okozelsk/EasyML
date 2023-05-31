@@ -385,7 +385,7 @@ namespace EasyMLCore
         }
 
         /// <summary>
-        /// Builds a model based on given configuration and given training data.
+        /// Builds a MLP model based on given configuration and given training data.
         /// </summary>
         /// <param name="modelCfg">Model configuration.</param>
         /// <param name="taskName">Task name.</param>
@@ -465,7 +465,8 @@ namespace EasyMLCore
                                         taskType,
                                         outputFeatureNames,
                                         trainingData,
-                                       verbose ? Handlers.OnProgressChanged : null
+                                        out _,
+                                        verbose ? Handlers.OnProgressChanged : null
                                         );
             }
             else if (modelCfgType == typeof(CompositeModelConfig))
@@ -486,6 +487,60 @@ namespace EasyMLCore
             {
                 Log.Write(string.Empty);
                 if(detail)
+                {
+                    Report(model, detail, 0);
+                }
+            }
+            return model;
+        }
+
+        /// <summary>
+        /// Builds a RVFL model based on given configuration and given training data.
+        /// </summary>
+        /// <param name="modelCfg">RVFL model configuration.</param>
+        /// <param name="taskName">Task name.</param>
+        /// <param name="taskType">Task type.</param>
+        /// <param name="outputFeatureNames">Output feature names.</param>
+        /// <param name="trainingData">Training samples.</param>
+        /// <param name="preprocessorStat">RVFL preprocessor's statistics.</param>
+        /// <param name="verbose">Specifies whether to report progress.</param>
+        /// <param name="detail">Specifies whether to report max available detail.</param>
+        /// <returns>Built model.</returns>
+        public RVFLModel Build(RVFLModelConfig modelCfg,
+                               string taskName,
+                               OutputTaskType taskType,
+                               List<string> outputFeatureNames,
+                               SampleDataset trainingData,
+                               out RVFLPreprocessorStat preprocessorStat,
+                               bool verbose = true,
+                               bool detail = false
+                               )
+        {
+            if (verbose)
+            {
+                Log.Write($"Build model for {taskType} task {taskName}.");
+                Log.Write($"{modelCfg.GetType()}:");
+                Log.Write(modelCfg.ToString());
+                Log.Write(string.Empty);
+                Log.Write($"Build is running...");
+            }
+
+            //Build a model
+            Type modelCfgType = modelCfg.GetType();
+            string modelNamePrefix = $"({taskName})-";
+            RVFLModel model =
+                RVFLModel.Build(modelCfg,
+                                modelNamePrefix,
+                                taskType,
+                                outputFeatureNames,
+                                trainingData,
+                                out preprocessorStat,
+                                verbose ? Handlers.OnProgressChanged : null
+                                );
+            if (verbose)
+            {
+                Log.Write(string.Empty);
+                if (detail)
                 {
                     Report(model, detail, 0);
                 }
@@ -789,13 +844,13 @@ namespace EasyMLCore
         }
 
         /// <summary>
-        /// Performs diagnostic test of a model and all its sub-models on given data.
+        /// Performs diagnostic test of all RC's inner MLP models and all theirs sub-models on given data.
         /// </summary>
-        /// <param name="resComp">Model to be tested.</param>
+        /// <param name="resComp">Reservoir Computer to be tested.</param>
         /// <param name="testingData">Testing samples.</param>
         /// <param name="verbose">Specifies whether to report progress.</param>
         /// <param name="detail">Specifies whether to report max available detail.</param>
-        /// <returns>Diagnostics data of the model and all its sub-models.</returns>
+        /// <returns>Diagnostics data of all inner MLP models (tasks) and all theirs sub-models.</returns>
         public List<MLPModelDiagnosticData> DiagnosticTest(ResComp resComp,
                                                            SampleDataset testingData,
                                                            bool verbose = true,

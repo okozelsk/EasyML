@@ -9,7 +9,7 @@ namespace EasyMLCore.TimeSeries
     /// Configuration of the ResCompTask.
     /// </summary>
     [Serializable]
-    public class ResCompTaskConfig : ConfigBase
+    public class ResCompTaskConfig : ConfigBase, IModelConfig
     {
         //Constants
         /// <summary>

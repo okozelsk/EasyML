@@ -382,7 +382,7 @@ namespace EasyMLCore.TimeSeries
         /// <param name="biases">Array to be filled.</param>
         private static void FillBias(double magnitude, double[] biases)
         {
-            new Random(0).FillUniform(biases, -magnitude, +magnitude, false);
+            new Random(0).FillUniformDouble(biases, -magnitude, +magnitude, false);
             return;
         }
 

@@ -1,5 +1,6 @@
 ﻿using EasyMLCore.MLP;
 using EasyMLCore;
+using System;
 
 namespace EasyMLEduApp.Examples.MLP
 {
@@ -382,17 +383,19 @@ namespace EasyMLEduApp.Examples.MLP
         /// </summary>
         public static RVFLModelConfig CreateSingleLayerRVFLModelConfig()
         {
-            //Pools to be used within hidden layers
-            int poolSize = 2000;
+            int poolSize = 512;
             //RVFL hidden layers
             RVFLHiddenLayersConfig hlsc =
-                new RVFLHiddenLayersConfig(new RVFLHiddenLayerConfig(new RVFLHiddenPoolConfig(poolSize, ActivationFnID.TanH, true)));
+                new RVFLHiddenLayersConfig(new RVFLHiddenLayerConfig(new RVFLHiddenPoolConfig(poolSize, ActivationFnID.Sigmoid, true),
+                                                                     new RVFLHiddenPoolConfig(poolSize, ActivationFnID.HardLim, true)
+                                                                     )
+                                           );
 
             //RVFL model
             RVFLModelConfig rvflCfg =
                 new RVFLModelConfig(hlsc,
                                     CreateRPropOutputOnlyNetworkCrossValModelConfig(0.1d, 3, 1000), //end-model
-                                    RVFLModelConfig.DefaultScaleFactor, // (1.5) Scale factor the first layer's weights (first layer has uniform distribution of random weights)
+                                    RVFLModelConfig.DefaultScaleFactor, //Scale factor of the first layer's weights (first layer has uniform distribution of random weights)
                                     false //Do not provide original input to end-model
                                     );
             return rvflCfg;
@@ -418,7 +421,7 @@ namespace EasyMLEduApp.Examples.MLP
             RVFLModelConfig rvflCfg =
                 new RVFLModelConfig(hlsc,
                                     CreateOutputOnlyNetworkModelConfig(), //Simple output only network
-                                    RVFLModelConfig.DefaultScaleFactor, // (1.5) Scale factor the first layer's weights (first layer has uniform distribution of random weights)
+                                    RVFLModelConfig.DefaultScaleFactor, // Scale factor of the first layer's weights (first layer has uniform distribution of random weights)
                                     false //Do not provide original input to end-model
                                     );
             return rvflCfg;

@@ -146,6 +146,7 @@ namespace EasyMLCore.MLP
         /// <param name="taskType">Output task type.</param>
         /// <param name="outputFeatureNames">Names of output features.</param>
         /// <param name="trainingData">Training samples.</param>
+        /// <param name="preprocessorStat">RVFL preprocessor's statistics.</param>
         /// <param name="progressInfoSubscriber">Subscriber will receive notification event about progress. (Parameter can be null).</param>
         /// <returns>Built model.</returns>
         public static RVFLModel Build(IModelConfig cfg,
@@ -153,6 +154,7 @@ namespace EasyMLCore.MLP
                                       OutputTaskType taskType,
                                       List<string> outputFeatureNames,
                                       SampleDataset trainingData,
+                                      out RVFLPreprocessorStat preprocessorStat,
                                       ProgressChangedHandler progressInfoSubscriber = null
                                       )
         {
@@ -184,6 +186,7 @@ namespace EasyMLCore.MLP
                 SampleDataset rvflTrainingData =
                     model.Preprocessor.Init(trainingData,
                                             new Random(GetRandomSeed()),
+                                            out preprocessorStat,
                                             model.OnRVFLInitProgressChanged
                                             );
                 //Build end model

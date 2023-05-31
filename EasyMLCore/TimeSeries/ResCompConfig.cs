@@ -10,7 +10,7 @@ namespace EasyMLCore.TimeSeries
     /// Configuration of a reservoir computer.
     /// </summary>
     [Serializable]
-    public class ResCompConfig : ConfigBase
+    public class ResCompConfig : ConfigBase, IModelConfig
     {
         //Constants
         /// <summary>

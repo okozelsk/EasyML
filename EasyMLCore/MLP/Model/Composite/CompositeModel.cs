@@ -272,6 +272,7 @@ namespace EasyMLCore.MLP
                                         taskType,
                                         outputFeatureNames,
                                         trainingData,
+                                        out _,
                                         progressInfoSubscriber
                                         );
                     model.AddMember(subModel);

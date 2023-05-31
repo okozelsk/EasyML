@@ -364,6 +364,7 @@ namespace EasyMLCore.MLP
                                                    taskType,
                                                    outputFeatureNames,
                                                    metaLearnerTrainingData,
+                                                   out _,
                                                    progressInfoSubscriber
                                                    );
             }

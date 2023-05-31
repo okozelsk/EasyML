@@ -18,13 +18,13 @@ namespace EasyMLCore.MLP
         /// </summary>
         public const string XsdTypeName = "RVFLModelConfig";
         /// <summary>
-        /// Default value of the parameter specifying the scale factor of the first layer's weights. Default value is 1.5.
+        /// Default value of the parameter specifying the scale factor of the first layer's weights. Default value is 1.
         /// </summary>
-        public const double DefaultScaleFactor = 1.5d;
+        public const double DefaultScaleFactor = 1d;
         /// <summary>
-        /// Default value of the parameter specifying whether to provide original input to end-model. Default value is true.
+        /// Default value of the parameter specifying whether to provide original input to end-model. Default value is false.
         /// </summary>
-        public const bool DefaultRouteInput = true;
+        public const bool DefaultRouteInput = false;
 
         //Attribute properties
         /// <summary>
@@ -54,8 +54,8 @@ namespace EasyMLCore.MLP
         /// </summary>
         /// <param name="layersCfg">Configuration of hidden layers.</param>
         /// <param name="endModelCfg">Configuration of an end-model.</param>
-        /// <param name="scaleFactor">Specifies the scale factor of the first layer's weights. Default value is 1.5.</param>
-        /// <param name="routeInput">Specifies whether to provide original input to end-model. Default value is true.</param>
+        /// <param name="scaleFactor">Specifies the scale factor of the first layer's weights. Default value is 1.</param>
+        /// <param name="routeInput">Specifies whether to provide original input to end-model. Default value is false.</param>
         public RVFLModelConfig(RVFLHiddenLayersConfig layersCfg,
                                IModelConfig endModelCfg,
                                double scaleFactor = DefaultScaleFactor,

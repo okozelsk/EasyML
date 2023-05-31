@@ -46,6 +46,11 @@ namespace EasyMLCore.MLP
 
         //Attribute properties
         /// <summary>
+        /// RVFL model configuration.
+        /// </summary>
+        public RVFLModelConfig ModelCfg { get; }
+        
+        /// <summary>
         /// Number of input features.
         /// </summary>
         public int NumOfInputFeatures { get; }
@@ -104,6 +109,7 @@ namespace EasyMLCore.MLP
         /// <param name="source">The source instance.</param>
         public RVFLPreprocessor(RVFLPreprocessor source)
         {
+            ModelCfg = (RVFLModelConfig)source.ModelCfg.DeepClone();
             NumOfInputFeatures = source.NumOfInputFeatures;
             NumOfOutputFeatures = source.NumOfOutputFeatures;
             NumOfNeurons = source.NumOfNeurons;
@@ -135,14 +141,15 @@ namespace EasyMLCore.MLP
                                 RVFLModelConfig modelCfg
                                 )
         {
+            ModelCfg = (RVFLModelConfig)modelCfg.DeepClone();
             NumOfInputFeatures = numOfInputFeatures;
             NumOfNeurons = 0;
             NumOfPredictors = 0;
             //Layers
-            LayerCollection = new List<Layer>(modelCfg.LayersCfg.LayerCfgCollection.Count);
+            LayerCollection = new List<Layer>(ModelCfg.LayersCfg.LayerCfgCollection.Count);
             int weightsFlatStartIdx = 0;
             int neuronsFlatStartIdx = 0;
-            foreach (RVFLHiddenLayerConfig layerCfg in modelCfg.LayersCfg.LayerCfgCollection)
+            foreach (RVFLHiddenLayerConfig layerCfg in ModelCfg.LayersCfg.LayerCfgCollection)
             {
                 int numOfLayerInputNodes;
                 if(LayerCollection.Count == 0)
@@ -161,7 +168,7 @@ namespace EasyMLCore.MLP
                 NumOfPredictors += layer.NumOfPredictors;
             }
             NumOfOutputFeatures = NumOfPredictors + (modelCfg.RouteInput ? NumOfInputFeatures : 0);
-            _scaleFactor = modelCfg.ScaleFactor;
+            _scaleFactor = ModelCfg.ScaleFactor;
             _flatWeights = new double[weightsFlatStartIdx];
             _inputFilters = new FeatureFilterBase[NumOfInputFeatures];
             for(int i = 0; i < _inputFilters.Length; i++)
@@ -192,7 +199,7 @@ namespace EasyMLCore.MLP
             BiasesStat.Reset();
             foreach (Layer layer in LayerCollection)
             {
-                layer.RandomizeWights(stdTrainingInputs, _flatWeights, rand, _scaleFactor);
+                layer.RandomizeWeights(stdTrainingInputs, _flatWeights, rand, _scaleFactor);
                 WeightsStat.Merge(layer.WeightsStat);
                 BiasesStat.Merge(layer.BiasesStat);
             }
@@ -209,7 +216,7 @@ namespace EasyMLCore.MLP
             return stdInput;
         }
 
-        private double[] ComputeInternal(double[] input)
+        private double[] ComputeInternal(double[] input, BasicStat[][] activationStats)
         {
             double[] stdInput = Normalize(input);
             double[] output = new double[NumOfOutputFeatures];
@@ -222,7 +229,7 @@ namespace EasyMLCore.MLP
             double[] layerInput = stdInput;
             foreach (Layer layer in LayerCollection)
             {
-                layerInput = layer.Compute(layerInput, _flatWeights, out double[] predictors);
+                layerInput = layer.Compute(layerInput, _flatWeights, activationStats?[layer.LayerIdx], out double[] predictors);
                 if (predictors.Length > 0)
                 {
                     predictors.CopyTo(output, outputIdx);
@@ -243,7 +250,7 @@ namespace EasyMLCore.MLP
             {
                 throw new ArgumentException($"Invalid number of input features {input.Length}. Epected {NumOfInputFeatures}.", nameof(input));
             }
-            return ComputeInternal(input);
+            return ComputeInternal(input, null);
         }
 
         /// <summary>
@@ -251,10 +258,12 @@ namespace EasyMLCore.MLP
         /// </summary>
         /// <param name="trainingData">Training data.</param>
         /// <param name="rand">Random object to be used.</param>
+        /// <param name="preprocessorStat">Preprocessor's statistics.</param>
         /// <param name="progressInfoSubscriber">Subscriber will receive notification event about progress. (Parameter can be null).</param>
         /// <returns>Preprocessed data.</returns>
         public SampleDataset Init(SampleDataset trainingData,
                                   Random rand,
+                                  out RVFLPreprocessorStat preprocessorStat,
                                   ProgressChangedHandler progressInfoSubscriber = null
                                   )
         {
@@ -293,17 +302,45 @@ namespace EasyMLCore.MLP
                 });
                 //New weights
                 RandomizeWeights(stdInputs, rand);
+                //Activation statistics
+                BasicStat[][] activationStats = new BasicStat[LayerCollection.Count][];
+                BasicStat[][] weightStats = new BasicStat[LayerCollection.Count][];
+                BasicStat[][] biasStats = new BasicStat[LayerCollection.Count][];
+                for (int i = 0; i < LayerCollection.Count; i++)
+                {
+                    activationStats[i] = new BasicStat[LayerCollection[i].Pools.Count];
+                    weightStats[i] = new BasicStat[LayerCollection[i].Pools.Count];
+                    biasStats[i] = new BasicStat[LayerCollection[i].Pools.Count];
+                    for (int j = 0; j < activationStats[i].Length; j++)
+                    {
+                        activationStats[i][j] = new BasicStat();
+                        weightStats[i][j] = new BasicStat(LayerCollection[i].Pools[j].WeightsStat);
+                        biasStats[i][j] = new BasicStat(LayerCollection[i].Pools[j].BiasesStat);
+                    }
+                }
                 //Output
                 SampleDataset outputData = new SampleDataset(trainingData.Count);
                 int numOfProcessedInputs = 0;
+                preprocessorStat = null;
                 foreach (Sample sample in trainingData.SampleCollection)
                 {
-                    double[] computed = ComputeInternal(sample.InputVector);
+                    double[] computed = ComputeInternal(sample.InputVector, activationStats);
                     outputData.AddSample(sample.ID, computed, sample.OutputVector);
                     //Progress
+                    ++numOfProcessedInputs;
+                    if (numOfProcessedInputs == trainingData.Count)
+                    {
+                        preprocessorStat =
+                            new RVFLPreprocessorStat(ModelCfg.LayersCfg,
+                                                     activationStats,
+                                                     weightStats,
+                                                     biasStats
+                                                     );
+                    }
                     RVFLInitProgressInfo progressInfo =
-                        new RVFLInitProgressInfo(++numOfProcessedInputs,
-                                                 trainingData.Count
+                        new RVFLInitProgressInfo(numOfProcessedInputs,
+                                                 trainingData.Count,
+                                                 preprocessorStat
                                                  );
                     //Raise notification event
                     InitProgressChanged?.Invoke(progressInfo);
@@ -414,7 +451,7 @@ namespace EasyMLCore.MLP
                 Pools = new List<Pool>(layerCfg.PoolCfgCollection.Count);
                 foreach (RVFLHiddenPoolConfig poolCfg in layerCfg.PoolCfgCollection)
                 {
-                    Pool pool = new Pool(LayerIdx, numOfInputNodes, neuronsFlatStartIdx, weightsFlatStartIdx, poolCfg);
+                    Pool pool = new Pool(LayerIdx, Pools.Count, numOfInputNodes, neuronsFlatStartIdx, weightsFlatStartIdx, poolCfg);
                     Pools.Add(pool);
                     NumOfLayerNeurons += pool.NumOfNeurons;
                     NumOfLayerWeights += pool.NumOfAllWeights;
@@ -443,13 +480,13 @@ namespace EasyMLCore.MLP
             /// <param name="flatWeights">RVFL's weights in a flat structure.</param>
             /// <param name="rand">Random generator to be used.</param>
             /// <param name="scaleFactor">Scale factor of the first layer's weigths.</param>
-            internal void RandomizeWights(double[][] stdTrainingInputs, double[] flatWeights, Random rand, double scaleFactor)
+            internal void RandomizeWeights(double[][] stdTrainingInputs, double[] flatWeights, Random rand, double scaleFactor)
             {
                 WeightsStat.Reset();
                 BiasesStat.Reset();
                 foreach (Pool pool in Pools)
                 {
-                    pool.RandomizeWights(stdTrainingInputs, flatWeights, rand, scaleFactor);
+                    pool.RandomizeWeights(stdTrainingInputs, flatWeights, rand, scaleFactor);
                     WeightsStat.Merge(pool.WeightsStat);
                     BiasesStat.Merge(pool.BiasesStat);
                 }
@@ -461,20 +498,23 @@ namespace EasyMLCore.MLP
             /// </summary>
             /// <param name="inputs">The inputs for this layer.</param>
             /// <param name="flatWeights">All RVFL's weights in a flat structure.</param>
+            /// <param name="poolsStats">Activation statistics dedicated to pools.</param>
             /// <param name="predictors">Predictors of this layer.</param>
             /// <returns>Layer's activations.</returns>
-            internal double[] Compute(double[] inputs, double[] flatWeights, out double[] predictors)
+            internal double[] Compute(double[] inputs, double[] flatWeights, BasicStat[] poolsStats, out double[] predictors)
             {
-                List<double[]> poolOutputs = new List<double[]>(Pools.Count);
+                List<double[]> poolsOutputs = new List<double[]>(Pools.Count);
                 predictors = new double[NumOfPredictors];
                 int predictorsIdx = 0;
                 foreach(Pool pool in Pools)
                 {
-                    poolOutputs.Add(pool.Compute(inputs, flatWeights, out double[] poolPredictors));
+                    double[] poolOutputs = pool.Compute(inputs, flatWeights, out double[] poolPredictors);
+                    poolsStats?[pool.PoolIdx].AddSampleValues(poolOutputs);
+                    poolsOutputs.Add(poolOutputs);
                     poolPredictors.CopyTo(predictors, predictorsIdx);
                     predictorsIdx += pool.NumOfPredictors;
                 }
-                return poolOutputs.Flattenize();
+                return poolsOutputs.Flattenize();
             }
 
             //Inner classes
@@ -489,6 +529,10 @@ namespace EasyMLCore.MLP
                 /// Home layer index.
                 /// </summary>
                 public int LayerIdx { get; }
+                /// <summary>
+                /// Pool index within the home layer.
+                /// </summary>
+                public int PoolIdx { get; }
                 /// <summary>
                 /// The activation function of the layer.
                 /// </summary>
@@ -538,6 +582,7 @@ namespace EasyMLCore.MLP
                 internal Pool(Pool source)
                 {
                     LayerIdx = source.LayerIdx;
+                    PoolIdx = source.PoolIdx;
                     Activation = source.Activation.Clone();
                     NumOfInputNodes = source.NumOfInputNodes;
                     NumOfNeurons = source.NumOfNeurons;
@@ -555,11 +600,13 @@ namespace EasyMLCore.MLP
                 /// Creates an initialized instance.
                 /// </summary>
                 /// <param name="layerIdx">Home layer index.</param>
+                /// <param name="poolIdx">Pool index within the home layer.</param>
                 /// <param name="numOfInputNodes">Number of input nodes.</param>
                 /// <param name="neuronsFlatStartIdx">The starting index of this pool neurons in a flat structure.</param>
                 /// <param name="weightsFlatStartIdx">The starting index of this pool weights in a flat structure.</param>
                 /// <param name="poolCfg">Hidden layer's pool configuration.</param>
                 internal Pool(int layerIdx,
+                              int poolIdx,
                               int numOfInputNodes,
                               int neuronsFlatStartIdx,
                               int weightsFlatStartIdx,
@@ -567,6 +614,7 @@ namespace EasyMLCore.MLP
                               )
                 {
                     LayerIdx = layerIdx;
+                    PoolIdx = poolIdx;
                     NumOfNeurons = poolCfg.NumOfNeurons;
                     NumOfPredictors = poolCfg.UseOutput ? NumOfNeurons : 0;
                     Activation = ActivationFactory.CreateActivationFn(poolCfg.ActivationID);
@@ -589,78 +637,6 @@ namespace EasyMLCore.MLP
                     return new Pool(this);
                 }
 
-                private double[] GetL1NodeWeights(double[][] stdTrainingInputs, Random rand, int mode, double scaleFactor)
-                {
-                    double[] wVector = new double[NumOfInputNodes];
-                    if (mode == 0)
-                    {
-                        //Pure random weights
-                        rand.FillUniform(wVector, -1d, 1d, false);
-                    }
-                    else if (mode == 1)
-                    {
-                        //Single randomly selected sample
-                        stdTrainingInputs[rand.Next(stdTrainingInputs.Length)].CopyTo(wVector, 0);
-                    }
-                    else if (mode == 2)
-                    {
-                        //Sum of two randomly selected samples
-                        int idx1 = rand.Next(stdTrainingInputs.Length);
-                        stdTrainingInputs[idx1].CopyTo(wVector, 0);
-                        int idx2 = rand.Next(stdTrainingInputs.Length);
-                        if (idx2 != idx1)
-                        {
-                            double[] sampleVector2 = stdTrainingInputs[idx2];
-                            //Sum vectors
-                            for (int i = 0; i < sampleVector2.Length; i++)
-                            {
-                                wVector[i] += sampleVector2[i];
-                            }
-                        }
-                    }
-                    else if (mode == 3)
-                    {
-                        //Diff of two randomly selected samples
-                        int idx1 = rand.Next(stdTrainingInputs.Length);
-                        stdTrainingInputs[idx1].CopyTo(wVector, 0);
-                        int idx2 = rand.Next(stdTrainingInputs.Length);
-                        if (idx2 != idx1)
-                        {
-                            double[] sampleVector2 = stdTrainingInputs[idx2];
-                            //Sum vectors
-                            for (int i = 0; i < sampleVector2.Length; i++)
-                            {
-                                wVector[i] -= sampleVector2[i];
-                            }
-                        }
-                    }
-                    //Scale
-                    wVector.Scale(scaleFactor / wVector.Magnitude());
-                    return wVector;
-                }
-
-                internal void SetL1SampleDrivenWeights(double[][] stdTrainingInputs, double[] flatWeights, Random rand, double scaleFactor)
-                {
-                    double[] wBuff = new double[NumOfInputNodes * NumOfNeurons];
-                    for (int neuronIdx = 0; neuronIdx < NumOfNeurons; neuronIdx++)
-                    {
-                        double[] wVector;
-                        wVector = GetL1NodeWeights(stdTrainingInputs, rand, 0, scaleFactor);
-                        //Use wVector as neuron weights
-                        wVector.CopyTo(wBuff, neuronIdx * NumOfInputNodes);
-                    }
-                    wBuff.CopyTo(flatWeights, WeightsStartFlatIdx);
-                    WeightsStat.Reset();
-                    WeightsStat.AddSampleValues(wBuff);
-                    double[] bBuff = new double[NumOfNeurons];
-                    rand.FillUniform(bBuff, -1, 1, false);
-                    //bBuff.Scale(scaleFactor);
-                    bBuff.CopyTo(flatWeights, BiasesStartFlatIdx);
-                    BiasesStat.Reset();
-                    BiasesStat.AddSampleValues(bBuff);
-                    return;
-                }
-
                 /// <summary>
                 /// Randomly initializes pool weights.
                 /// </summary>
@@ -668,36 +644,36 @@ namespace EasyMLCore.MLP
                 /// <param name="flatWeights">RVFL's weights in a flat structure.</param>
                 /// <param name="rand">Random generator to be used.</param>
                 /// <param name="scaleFactor">Scale factor of the first layer's weigths.</param>
-                internal void RandomizeWights(double[][] stdTrainingInputs, double[] flatWeights, Random rand, double scaleFactor)
+                internal void RandomizeWeights(double[][] stdTrainingInputs, double[] flatWeights, Random rand, double scaleFactor)
                 {
                     if(LayerIdx == 0)
                     {
-                        RandomizeWightsUniform(flatWeights, rand, scaleFactor);
+                        RandomizeWeightsUniform(flatWeights, rand, scaleFactor);
                     }
                     else
                     {
-                        RandomizeWightsGaussian(flatWeights, rand);
+                        RandomizeWeightsGaussian(flatWeights, rand);
                     }
 
                 }
 
-                internal void RandomizeWightsUniform(double[] flatWeights, Random rand, double scaleFactor)
+                private void RandomizeWeightsUniform(double[] flatWeights, Random rand, double scaleFactor)
                 {
                     double[] wBuff = new double[NumOfInputNodes * NumOfNeurons];
-                    rand.FillUniform(wBuff, -1d, 1d, false);
-                    wBuff.Scale(scaleFactor / wBuff.Magnitude());
+                    double[] bBuff = new double[NumOfNeurons];
+                    //scaleFactor /= NumOfInputNodes;
+                    rand.FillUniformDouble(wBuff, -scaleFactor, scaleFactor, false);
+                    rand.FillUniformDouble(bBuff, -1, 1, false);
                     wBuff.CopyTo(flatWeights, WeightsStartFlatIdx);
                     WeightsStat.Reset();
                     WeightsStat.AddSampleValues(wBuff);
-                    double[] bBuff = new double[NumOfNeurons];
-                    rand.FillUniform(bBuff, -1d, 1d, false);
                     bBuff.CopyTo(flatWeights, BiasesStartFlatIdx);
                     BiasesStat.Reset();
                     BiasesStat.AddSampleValues(bBuff);
                     return;
                 }
 
-                internal void RandomizeWightsGaussian(double[] flatWeights, Random rand)
+                private void RandomizeWeightsGaussian(double[] flatWeights, Random rand)
                 {
                     double[] wBuff = new double[NumOfInputNodes * NumOfNeurons];
                     double reqStdDev = Activation.GetNormalInitWeightsStdDev(NumOfInputNodes, NumOfNeurons);
@@ -706,8 +682,7 @@ namespace EasyMLCore.MLP
                     WeightsStat.Reset();
                     WeightsStat.AddSampleValues(wBuff);
                     double[] bBuff = new double[NumOfNeurons];
-                    rand.FillUniform(bBuff, -1d, 1d, false);
-                    bBuff.CopyTo(flatWeights, BiasesStartFlatIdx);
+                    rand.FillGaussianDouble(bBuff, 0d, reqStdDev);
                     BiasesStat.Reset();
                     BiasesStat.AddSampleValues(bBuff);
                     return;
@@ -718,6 +693,7 @@ namespace EasyMLCore.MLP
                 /// </summary>
                 /// <param name="inputs">The inputs.</param>
                 /// <param name="flatWeights">All RVFL's weights in a flat structure.</param>
+                /// <param name="predictors">Output predictors if allowed or empty array if not.</param>
                 /// <returns>Pool's activations.</returns>
                 internal double[] Compute(double[] inputs, double[] flatWeights, out double[] predictors)
                 {

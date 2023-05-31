@@ -270,6 +270,11 @@
     </xs:restriction>
   </xs:simpleType>
 
+  <!-- Unsigned double GT 0 with Auto option -->
+  <xs:simpleType name="UDoubleGT0AutoOptionType">
+    <xs:union memberTypes="UDoubleGT0Type AutoOptionType"/>
+  </xs:simpleType>
+
   <!-- Unsigned double GT 1 -->
   <xs:simpleType name="UDoubleGT1Type">
     <xs:restriction base="xs:double">
@@ -811,14 +816,14 @@
         <xs:element type="CompositeModelConfig" name="compositeModel" minOccurs="0" maxOccurs="1"/>
       </xs:choice>
     </xs:sequence>
-    <xs:attribute type="UDoubleGT0Type" name="scaleFactor" use="optional" default="1.5">
+    <xs:attribute type="UDoubleGT0Type" name="scaleFactor" use="optional" default="1">
       <xs:annotation>
-        <xs:documentation xml:lang="en">Specifies the scale factor of the first layer's weights. Default value is 1.5.</xs:documentation>
+        <xs:documentation xml:lang="en">Specifies the scale factor of the first layer's weights. Default value is 1.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute type="xs:boolean" name="routeInput" use="optional" default="true">
+    <xs:attribute type="xs:boolean" name="routeInput" use="optional" default="false">
       <xs:annotation>
-        <xs:documentation xml:lang="en">Specifies whether to provide original input to end-model. Default value is true.</xs:documentation>
+        <xs:documentation xml:lang="en">Specifies whether to provide original input to end-model. Default value is false.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:complexType>

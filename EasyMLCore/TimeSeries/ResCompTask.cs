@@ -140,6 +140,7 @@ namespace EasyMLCore.TimeSeries
                                         resCompTask.TaskType,
                                         resCompTask.OutputFeatureNames,
                                         trainingData,
+                                        out _,
                                         progressInfoSubscriber
                                         );
             }

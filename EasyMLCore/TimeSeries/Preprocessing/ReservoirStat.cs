@@ -108,14 +108,14 @@ namespace EasyMLCore.TimeSeries
         {
             //Build the progress text message
             StringBuilder reportText = new StringBuilder();
-            reportText.Append(new string(' ', margin));
-            reportText.Append($"Number of neurons without stimuli: {NumOfNeuronsWithoutStimuli} (should be 0){Environment.NewLine}");
-            reportText.Append($"Number of blocked predictors     : {NumOfBlockedPredictors.Sum()} (the lower the better){Environment.NewLine}");
-            reportText.Append($"Avg neg-nonlinear range usage    : {NeuronsActivationNegRangeUsage.ArithAvg.ToString("F5", CultureInfo.InvariantCulture)}{Environment.NewLine}");
-            reportText.Append($"Avg pos-nonlinear range usage    : {NeuronsActivationPosRangeUsage.ArithAvg.ToString("F5", CultureInfo.InvariantCulture)}{Environment.NewLine}");
-            reportText.Append($"Neg/Pos activation disbalance    : {Math.Abs(NeuronsActivationPosRangeUsage.ArithAvg - NeuronsActivationNegRangeUsage.ArithAvg).ToString("F5", CultureInfo.InvariantCulture)} (should be close to 0){Environment.NewLine}");
-            reportText.Append($"Avg activation span              : {NeuronsActivationSpanStat.ArithAvg.ToString("F5", CultureInfo.InvariantCulture)} (typically between 1 and 2){Environment.NewLine}");
-            reportText.Append($"Avg spike event rate             : {NeuronsAvgSpikeEventStat.ArithAvg.ToString("F5", CultureInfo.InvariantCulture)} (typically between 0.3 and 0.5){Environment.NewLine}");
+            string marginStr = new string(' ', margin);
+            reportText.Append($"{marginStr}Number of neurons without stimuli: {NumOfNeuronsWithoutStimuli} (should be 0){Environment.NewLine}");
+            reportText.Append($"{marginStr}Number of blocked predictors     : {NumOfBlockedPredictors.Sum()} (the lower the better){Environment.NewLine}");
+            reportText.Append($"{marginStr}Avg neg-nonlinear range usage    : {NeuronsActivationNegRangeUsage.ArithAvg.ToString("F5", CultureInfo.InvariantCulture)}{Environment.NewLine}");
+            reportText.Append($"{marginStr}Avg pos-nonlinear range usage    : {NeuronsActivationPosRangeUsage.ArithAvg.ToString("F5", CultureInfo.InvariantCulture)}{Environment.NewLine}");
+            reportText.Append($"{marginStr}Neg/Pos activation disbalance    : {Math.Abs(NeuronsActivationPosRangeUsage.ArithAvg - NeuronsActivationNegRangeUsage.ArithAvg).ToString("F5", CultureInfo.InvariantCulture)} (should be close to 0){Environment.NewLine}");
+            reportText.Append($"{marginStr}Avg activation span              : {NeuronsActivationSpanStat.ArithAvg.ToString("F5", CultureInfo.InvariantCulture)} (typically between 1 and 2){Environment.NewLine}");
+            reportText.Append($"{marginStr}Avg spike event rate             : {NeuronsAvgSpikeEventStat.ArithAvg.ToString("F5", CultureInfo.InvariantCulture)} (typically between 0.3 and 0.5){Environment.NewLine}");
             return reportText.ToString();
         }
 

@@ -18,16 +18,24 @@ namespace EasyMLCore.MLP
         public ProgressTracker ProcessedInputsTracker { get; }
 
         /// <summary>
+        /// Preprocessor stats if available.
+        /// </summary>
+        public RVFLPreprocessorStat PreprocessorStat { get; }
+
+        /// <summary>
         /// Creates an initialized instance.
         /// </summary>
         /// <param name="numOfProcessedInputs">Number of currently processed inputs.</param>
         /// <param name="totalNumOfInputs">Total number of inputs to be processed.</param>
+        /// <param name="preprocessorStat">Preprocessor stats if available.</param>
         public RVFLInitProgressInfo(int numOfProcessedInputs,
-                                    int totalNumOfInputs
+                                    int totalNumOfInputs,
+                                    RVFLPreprocessorStat preprocessorStat
                                     )
             :base(RVFLPreprocessor.ContextPathID)
         {
             ProcessedInputsTracker = new ProgressTracker((uint)totalNumOfInputs, (uint)numOfProcessedInputs);
+            PreprocessorStat = preprocessorStat;
             return;
         }
 
@@ -83,6 +91,11 @@ namespace EasyMLCore.MLP
             progressText.Append(ContextPath);
             progressText.Append("] ");
             progressText.Append(GetInputsInfoText());
+            if(PreprocessorStat != null)
+            {
+                progressText.Append(Environment.NewLine);
+                progressText.Append(PreprocessorStat.GetReportText(margin + 4));
+            }
             return progressText.ToString();
         }
 

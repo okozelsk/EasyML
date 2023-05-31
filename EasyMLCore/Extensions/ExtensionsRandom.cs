@@ -73,7 +73,7 @@ namespace EasyMLCore.Extensions
         public static double NextRangedUniformDouble(this Random rand, double min = -1, double max = 1, bool randomSign = false)
         {
             //Check for randomness suppression
-            if (min == max)
+            if (min == max && !randomSign)
             {
                 return min;
             }
@@ -99,7 +99,7 @@ namespace EasyMLCore.Extensions
         /// <param name="max">The max value (exclusive).</param>
         /// <param name="randomSign">Specifies whether to randomize sign.</param>
         /// <param name="rand">This random generator.</param>
-        public static void FillUniform(this Random rand, IList<double> buffer, double min, double max, bool randomSign)
+        public static void FillUniformDouble(this Random rand, IList<double> buffer, double min, double max, bool randomSign = false)
         {
             for (int i = 0; i < buffer.Count; i++)
             {
