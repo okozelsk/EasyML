@@ -1068,6 +1068,36 @@ namespace EasyMLCore.MathTools
             return GetInfoText(figures, margin);
         }
 
+        //Static methods
+        /// <summary>
+        /// Gets expected variance of random samples following the uniform distribution.
+        /// </summary>
+        /// <param name="min">Min value.</param>
+        /// <param name="max">Max value.</param>
+        public static double GetUniformDistributionVariance(double min, double max)
+        {
+            return (max - min).Power(2) / 12d;
+        }
+
+        /// <summary>
+        /// Gets expected standard deviation of random samples following the uniform distribution.
+        /// </summary>
+        /// <param name="min">Min value.</param>
+        /// <param name="max">Max value.</param>
+        public static double GetUniformDistributionStdDev(double min, double max)
+        {
+            return Math.Sqrt(GetUniformDistributionVariance(min, max));
+        }
+
+        /// <summary>
+        /// Gets expected span of random samples following the uniform distribution.
+        /// </summary>
+        /// <param name="stdDev">Standard deviation.</param>
+        public static double GetUniformDistributionSpan(double stdDev)
+        {
+            return Math.Sqrt(12d * stdDev.Power(2));
+        }
+
     }//BasicStat
 
 }//Namespace

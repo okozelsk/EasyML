@@ -17,6 +17,14 @@ namespace EasyMLCore.MLP
         /// Name of an associated xsd type.
         /// </summary>
         public const string XsdTypeName = "RVFLHiddenPoolConfig";
+        /// <summary>
+        /// Default value of the parameter specifying the scale factor of the weights. Default value is 1.
+        /// </summary>
+        public const double DefaultScaleFactorW = 1d;
+        /// <summary>
+        /// Default value of the parameter specifying the scale factor of the biases. Default value is 1.
+        /// </summary>
+        public const double DefaultScaleFactorB = 1d;
         //Default values
         /// <summary>
         /// Default value of the parameter specifying whether to use output from this pool as an input for end-model. Default value is true.
@@ -35,6 +43,16 @@ namespace EasyMLCore.MLP
         public ActivationFnID ActivationID { get; }
 
         /// <summary>
+        /// Specifies the scale factor of the weights.
+        /// </summary>
+        public double ScaleFactorW { get; }
+
+        /// <summary>
+        /// Specifies the scale factor of the biases.
+        /// </summary>
+        public double ScaleFactorB { get; }
+
+        /// <summary>
         /// Specifies whether to use output from this pool as an input for end-model.
         /// </summary>
         public bool UseOutput { get; }
@@ -45,14 +63,20 @@ namespace EasyMLCore.MLP
         /// </summary>
         /// <param name="numOfNeurons">Number of pool neurons.</param>
         /// <param name="activationID">Pool's activation function identifier.</param>
+        /// <param name="scaleFactorW">Specifies the scale factor of the weights. Default value is 1.</param>
+        /// <param name="scaleFactorB">Specifies the scale factor of the biases. Default value is 1.</param>
         /// <param name="useOutput">Specifies whether to use output from this pool as an input for end-model. Default value is true.</param>
         public RVFLHiddenPoolConfig(int numOfNeurons,
                                     ActivationFnID activationID,
+                                    double scaleFactorW = DefaultScaleFactorW,
+                                    double scaleFactorB = DefaultScaleFactorB,
                                     bool useOutput = DefaultUseOutput
                                     )
         {
             NumOfNeurons = numOfNeurons;
             ActivationID = activationID;
+            ScaleFactorW = scaleFactorW;
+            ScaleFactorB = scaleFactorB;
             UseOutput = useOutput;
             Check();
             return;
@@ -63,7 +87,9 @@ namespace EasyMLCore.MLP
         /// </summary>
         /// <param name="source">The source instance.</param>
         public RVFLHiddenPoolConfig(RVFLHiddenPoolConfig source)
-            : this(source.NumOfNeurons, source.ActivationID, source.UseOutput)
+            : this(source.NumOfNeurons, source.ActivationID,
+                   source.ScaleFactorW, source.ScaleFactorB,
+                   source.UseOutput)
         {
             return;
         }
@@ -79,12 +105,22 @@ namespace EasyMLCore.MLP
             //Parsing
             NumOfNeurons = int.Parse(validatedElem.Attribute("neurons").Value);
             ActivationID = ActivationFactory.ParseAFnID(validatedElem.Attribute("activation").Value);
+            ScaleFactorW = double.Parse(validatedElem.Attribute("scaleFactorW").Value, CultureInfo.InvariantCulture);
+            ScaleFactorB = double.Parse(validatedElem.Attribute("scaleFactorB").Value, CultureInfo.InvariantCulture);
             UseOutput = bool.Parse(validatedElem.Attribute("useOutput").Value);
             Check();
             return;
         }
 
         //Properties
+        /// <summary>
+        /// Checks the defaults.
+        /// </summary>
+        public bool IsDefaultScaleFactorW { get { return (ScaleFactorW == DefaultScaleFactorW); } }
+        /// <summary>
+        /// Checks the defaults.
+        /// </summary>
+        public bool IsDefaultScaleFactorB { get { return (ScaleFactorB == DefaultScaleFactorB); } }
         /// <summary>
         /// Checks the defaults.
         /// </summary>
@@ -105,6 +141,14 @@ namespace EasyMLCore.MLP
             {
                 throw new ArgumentException($"{ActivationID} activation function cannot be used in a RVFL pool.", nameof(ActivationID));
             }
+            if (ScaleFactorW <= 0d)
+            {
+                throw new ArgumentException("Weights scale factor must be GT 0.", nameof(ScaleFactorW));
+            }
+            if (ScaleFactorB < 0d)
+            {
+                throw new ArgumentException("Biases scale factor must be GE 0.", nameof(ScaleFactorB));
+            }
             return;
         }
 
@@ -121,6 +165,14 @@ namespace EasyMLCore.MLP
                                              new XAttribute("neurons", NumOfNeurons.ToString(CultureInfo.InvariantCulture)),
                                              new XAttribute("activation", ActivationID.ToString())
                                              );
+            if (!suppressDefaults || !IsDefaultScaleFactorW)
+            {
+                rootElem.Add(new XAttribute("scaleFactorW", ScaleFactorW.ToString(CultureInfo.InvariantCulture)));
+            }
+            if (!suppressDefaults || !IsDefaultScaleFactorB)
+            {
+                rootElem.Add(new XAttribute("scaleFactorB", ScaleFactorB.ToString(CultureInfo.InvariantCulture)));
+            }
             if (!suppressDefaults || !IsDefaultUseOutput)
             {
                 rootElem.Add(new XAttribute("useOutput", UseOutput.GetXmlCode()));

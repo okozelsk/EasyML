@@ -71,7 +71,7 @@ namespace EasyMLCore.Data
             }
             //Standardize
             value -= SamplesStat.ArithAvg;
-            value /= SamplesStat.StdDev;
+            value /= SamplesStat.StdDev == 0 ? 1 : SamplesStat.StdDev;
             //Normalize
             if (centered)
             {
@@ -110,7 +110,7 @@ namespace EasyMLCore.Data
                 value = Rescale(value);
             }
             //Naturalize
-            value *= SamplesStat.StdDev;
+            value *= SamplesStat.StdDev == 0 ? 1 : SamplesStat.StdDev;
             value += SamplesStat.ArithAvg;
             if (!value.IsValid())
             {

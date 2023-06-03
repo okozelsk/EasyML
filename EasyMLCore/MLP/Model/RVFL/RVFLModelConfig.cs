@@ -18,10 +18,6 @@ namespace EasyMLCore.MLP
         /// </summary>
         public const string XsdTypeName = "RVFLModelConfig";
         /// <summary>
-        /// Default value of the parameter specifying the scale factor of the first layer's weights. Default value is 1.
-        /// </summary>
-        public const double DefaultScaleFactor = 1d;
-        /// <summary>
         /// Default value of the parameter specifying whether to provide original input to end-model. Default value is false.
         /// </summary>
         public const bool DefaultRouteInput = false;
@@ -38,11 +34,6 @@ namespace EasyMLCore.MLP
         public IModelConfig EndModelCfg { get; }
 
         /// <summary>
-        /// Specifies the scale factor of the first layer's weights.
-        /// </summary>
-        public double ScaleFactor { get; }
-
-        /// <summary>
         /// Specifies whether to provide original input to end-model.
         /// </summary>
         public bool RouteInput { get; }
@@ -54,17 +45,14 @@ namespace EasyMLCore.MLP
         /// </summary>
         /// <param name="layersCfg">Configuration of hidden layers.</param>
         /// <param name="endModelCfg">Configuration of an end-model.</param>
-        /// <param name="scaleFactor">Specifies the scale factor of the first layer's weights. Default value is 1.</param>
         /// <param name="routeInput">Specifies whether to provide original input to end-model. Default value is false.</param>
         public RVFLModelConfig(RVFLHiddenLayersConfig layersCfg,
                                IModelConfig endModelCfg,
-                               double scaleFactor = DefaultScaleFactor,
                                bool routeInput = DefaultRouteInput
                                )
         {
             LayersCfg = (RVFLHiddenLayersConfig)layersCfg.DeepClone();
             EndModelCfg = (IModelConfig)endModelCfg.DeepClone();
-            ScaleFactor = scaleFactor;
             RouteInput = routeInput;
             Check();
             return;
@@ -75,8 +63,7 @@ namespace EasyMLCore.MLP
         /// </summary>
         /// <param name="source">The source instance.</param>
         public RVFLModelConfig(RVFLModelConfig source)
-            : this(source.LayersCfg, source.EndModelCfg, source.ScaleFactor,
-                   source.RouteInput)
+            : this(source.LayersCfg, source.EndModelCfg, source.RouteInput)
         {
             return;
         }
@@ -90,7 +77,6 @@ namespace EasyMLCore.MLP
             //Validation
             XElement validatedElem = Validate(elem, XsdTypeName);
             //Parsing
-            ScaleFactor = double.Parse(validatedElem.Attribute("scaleFactor").Value, CultureInfo.InvariantCulture);
             RouteInput = bool.Parse(validatedElem.Attribute("routeInput").Value);
             //Hidden layers
             XElement layersElem = validatedElem.Element("hiddenLayers");
@@ -115,10 +101,6 @@ namespace EasyMLCore.MLP
         /// Checks the defaults.
         /// </summary>
         public bool IsDefaultRouteInput { get { return (RouteInput == DefaultRouteInput); } }
-        /// <summary>
-        /// Checks the defaults.
-        /// </summary>
-        public bool IsDefaultScaleFactor { get { return (ScaleFactor == DefaultScaleFactor); } }
 
         /// <inheritdoc/>
         public override bool ContainsOnlyDefaults { get { return false; } }
@@ -127,10 +109,6 @@ namespace EasyMLCore.MLP
         /// <inheritdoc/>
         protected override void Check()
         {
-            if(ScaleFactor <= 0d)
-            {
-                throw new ArgumentException("Scale factor must be GT 0.", nameof(ScaleFactor));
-            }
             //Ensure input to end-model
             if(!RouteInput)
             {
@@ -171,10 +149,6 @@ namespace EasyMLCore.MLP
                                              LayersCfg.GetXml(suppressDefaults),
                                              EndModelCfg.GetXml(suppressDefaults)
                                              );
-            if (!suppressDefaults || !IsDefaultScaleFactor)
-            {
-                rootElem.Add(new XAttribute("scaleFactor", ScaleFactor.ToString(CultureInfo.InvariantCulture)));
-            }
             if (!suppressDefaults || !IsDefaultRouteInput)
             {
                 rootElem.Add(new XAttribute("routeInput", RouteInput.GetXmlCode()));
