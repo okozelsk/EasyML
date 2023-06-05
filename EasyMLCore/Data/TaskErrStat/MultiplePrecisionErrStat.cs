@@ -69,7 +69,7 @@ namespace EasyMLCore.Data
             {
                 FeaturePrecisionStats[i] = new SinglePrecisionErrStat(source.FeaturePrecisionStats[i]);
             }
-            TotalPrecisionStat = new BasicStat(source.TotalPrecisionStat);
+            TotalPrecisionStat = source.TotalPrecisionStat.DeepClone();
             return;
         }
 

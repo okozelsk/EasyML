@@ -86,12 +86,12 @@ namespace EasyMLCore.Data
         public SingleDecisionErrStat(SingleDecisionErrStat source)
             : base(source)
         {
-            IdealStat = new BasicStat(source.IdealStat);
+            IdealStat = source.IdealStat.DeepClone();
             FalseFlagStat = new BasicStat[2];
-            FalseFlagStat[0] = new BasicStat(source.FalseFlagStat[0]);
-            FalseFlagStat[1] = new BasicStat(source.FalseFlagStat[1]);
-            WrongDecisionStat = new BasicStat(source.WrongDecisionStat);
-            LogLossStat = new BasicStat(source.LogLossStat);
+            FalseFlagStat[0] = source.FalseFlagStat[0].DeepClone();
+            FalseFlagStat[1] = source.FalseFlagStat[1].DeepClone();
+            WrongDecisionStat = source.WrongDecisionStat.DeepClone();
+            LogLossStat = source.LogLossStat.DeepClone();
             return;
         }
 

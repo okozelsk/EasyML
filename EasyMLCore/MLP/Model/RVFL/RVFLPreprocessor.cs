@@ -121,8 +121,8 @@ namespace EasyMLCore.MLP
             {
                 _inputFilters[i] = source._inputFilters[i].DeepClone();
             }
-            WeightsStat = new BasicStat(source.WeightsStat);
-            BiasesStat = new BasicStat(source.BiasesStat);
+            WeightsStat = source.WeightsStat.DeepClone();
+            BiasesStat = source.BiasesStat.DeepClone();
             Initialized = source.Initialized;
             return;
         }
@@ -185,15 +185,14 @@ namespace EasyMLCore.MLP
         /// <summary>
         /// Randomizes internal weights.
         /// </summary>
-        /// <param name="stdTrainingInputs">Standardized training input data.</param>
         /// <param name="rand">The random generator to be used.</param>
-        private void RandomizeWeights(double[][] stdTrainingInputs, Random rand)
+        private void RandomizeWeights(Random rand)
         {
             WeightsStat.Reset();
             BiasesStat.Reset();
             foreach (Layer layer in LayerCollection)
             {
-                layer.RandomizeWeights(stdTrainingInputs, _flatWeights, rand);
+                layer.RandomizeWeights(_flatWeights, rand);
                 WeightsStat.Merge(layer.WeightsStat);
                 BiasesStat.Merge(layer.BiasesStat);
             }
@@ -295,7 +294,7 @@ namespace EasyMLCore.MLP
                     }
                 });
                 //New weights
-                RandomizeWeights(stdInputs, rand);
+                RandomizeWeights(rand);
                 //Activation statistics
                 BasicStat[][][] activationStats = new BasicStat[LayerCollection.Count][][];
                 BasicStat[][] weightStats = new BasicStat[LayerCollection.Count][];
@@ -312,8 +311,8 @@ namespace EasyMLCore.MLP
                         {
                             activationStats[i][j][k] = new BasicStat();
                         }
-                        weightStats[i][j] = new BasicStat(LayerCollection[i].Pools[j].WeightsStat);
-                        biasStats[i][j] = new BasicStat(LayerCollection[i].Pools[j].BiasesStat);
+                        weightStats[i][j] = LayerCollection[i].Pools[j].WeightsStat.DeepClone();
+                        biasStats[i][j] = LayerCollection[i].Pools[j].BiasesStat.DeepClone();
                     }
                 }
                 //Output
@@ -421,8 +420,8 @@ namespace EasyMLCore.MLP
                 NumOfLayerNeurons = source.NumOfLayerNeurons;
                 NumOfLayerWeights = source.NumOfLayerWeights;
                 NumOfPredictors = source.NumOfPredictors;
-                WeightsStat = new BasicStat(source.WeightsStat);
-                BiasesStat = new BasicStat(source.BiasesStat);
+                WeightsStat = source.WeightsStat.DeepClone();
+                BiasesStat = source.BiasesStat.DeepClone();
                 return;
             }
 
@@ -474,16 +473,15 @@ namespace EasyMLCore.MLP
             /// <summary>
             /// Randomly initializes layer weights.
             /// </summary>
-            /// <param name="stdTrainingInputs">Standardized training input data.</param>
             /// <param name="flatWeights">RVFL's weights in a flat structure.</param>
             /// <param name="rand">Random generator to be used.</param>
-            internal void RandomizeWeights(double[][] stdTrainingInputs, double[] flatWeights, Random rand)
+            internal void RandomizeWeights(double[] flatWeights, Random rand)
             {
                 WeightsStat.Reset();
                 BiasesStat.Reset();
                 foreach (Pool pool in Pools)
                 {
-                    pool.RandomizeWeights(stdTrainingInputs, flatWeights, rand);
+                    pool.RandomizeWeights(flatWeights, rand);
                     WeightsStat.Merge(pool.WeightsStat);
                     BiasesStat.Merge(pool.BiasesStat);
                 }
@@ -571,8 +569,8 @@ namespace EasyMLCore.MLP
                 public BasicStat BiasesStat { get; }
 
                 //Attributes
-                private double _scaleFactorW;
-                private double _scaleFactorB;
+                private readonly double _scaleFactorW;
+                private readonly double _scaleFactorB;
 
                 //Constructor
                 /// <summary>
@@ -591,8 +589,8 @@ namespace EasyMLCore.MLP
                     BiasesStartFlatIdx = source.BiasesStartFlatIdx;
                     NeuronsStartFlatIdx = source.NeuronsStartFlatIdx;
                     NumOfAllWeights = source.NumOfAllWeights;
-                    WeightsStat = new BasicStat(source.WeightsStat);
-                    BiasesStat = new BasicStat(source.BiasesStat);
+                    WeightsStat = source.WeightsStat.DeepClone();
+                    BiasesStat = source.BiasesStat.DeepClone();
                     _scaleFactorW = source._scaleFactorW;
                     _scaleFactorB = source._scaleFactorB;
                     return;
@@ -644,10 +642,9 @@ namespace EasyMLCore.MLP
                 /// <summary>
                 /// Randomly initializes pool weights.
                 /// </summary>
-                /// <param name="stdTrainingInputs">Standardized training input data.</param>
                 /// <param name="flatWeights">RVFL's weights in a flat structure.</param>
                 /// <param name="rand">Random generator to be used.</param>
-                internal void RandomizeWeights(double[][] stdTrainingInputs, double[] flatWeights, Random rand)
+                internal void RandomizeWeights(double[] flatWeights, Random rand)
                 {
                     double[] wBuff = new double[NumOfInputNodes * NumOfNeurons];
                     double[] bBuff = new double[NumOfNeurons];

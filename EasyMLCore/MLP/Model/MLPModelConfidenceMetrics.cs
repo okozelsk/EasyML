@@ -77,7 +77,7 @@ namespace EasyMLCore.MLP
             CategoricalAccuracy = categoricalAccuracy;
             BinaryAccuracy = binaryAccuracy;
             FeatureConfidences = (double[])featureConfidences.Clone();
-            FeatureConfidencesStat = new BasicStat(featureConfidencesStat);
+            FeatureConfidencesStat = featureConfidencesStat.DeepClone();
             return;
         }
 

@@ -57,7 +57,7 @@ namespace EasyMLCore.Data
         public SinglePrecisionErrStat(SinglePrecisionErrStat source)
             : base(source)
         {
-            FeaturePrecisionStat = new BasicStat(source.FeaturePrecisionStat);
+            FeaturePrecisionStat = source.FeaturePrecisionStat.DeepClone();
             return;
         }
 

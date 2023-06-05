@@ -68,9 +68,9 @@ namespace EasyMLCore.Data
         public CategoricalErrStat(CategoricalErrStat source)
             : base(source)
         {
-            ClassificationLogLossStat = new BasicStat(source.ClassificationLogLossStat);
-            WrongClassificationStat = new BasicStat(source.WrongClassificationStat);
-            LowProbabilityClassificationStat = new BasicStat(source.LowProbabilityClassificationStat);
+            ClassificationLogLossStat = source.ClassificationLogLossStat.DeepClone();
+            WrongClassificationStat = source.WrongClassificationStat.DeepClone();
+            LowProbabilityClassificationStat = source.LowProbabilityClassificationStat.DeepClone();
             return;
         }
 

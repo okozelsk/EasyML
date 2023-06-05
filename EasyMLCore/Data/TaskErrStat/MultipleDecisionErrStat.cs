@@ -91,10 +91,10 @@ namespace EasyMLCore.Data
                 FeatureBinDecisionStats[i] = new SingleDecisionErrStat(source.FeatureBinDecisionStats[i]);
             }
             TotalBinFalseFlagStat = new BasicStat[2];
-            TotalBinFalseFlagStat[0] = new BasicStat(source.TotalBinFalseFlagStat[0]);
-            TotalBinFalseFlagStat[1] = new BasicStat(source.TotalBinFalseFlagStat[1]);
-            TotalBinWrongDecisionStat = new BasicStat(source.TotalBinWrongDecisionStat);
-            TotalBinLogLossStat = new BasicStat(source.TotalBinLogLossStat);
+            TotalBinFalseFlagStat[0] = source.TotalBinFalseFlagStat[0].DeepClone();
+            TotalBinFalseFlagStat[1] = source.TotalBinFalseFlagStat[1].DeepClone();
+            TotalBinWrongDecisionStat = source.TotalBinWrongDecisionStat.DeepClone();
+            TotalBinLogLossStat = source.TotalBinLogLossStat.DeepClone();
             return;
         }
 

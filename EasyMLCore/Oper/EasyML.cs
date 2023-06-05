@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace EasyMLCore
 {
@@ -19,10 +20,6 @@ namespace EasyMLCore
         //Static attributes
         //One and only instance
         private static readonly Lazy<EasyML> _lazy = new Lazy<EasyML>(() => new EasyML());
-
-        //Attribute properties
-        /// <inheritdoc cref="StdHandlers"/>>
-        public StdHandlers Handlers { get; }
 
         //Attributes
         //Lock object
@@ -38,7 +35,6 @@ namespace EasyMLCore
         {
             _monitor = new object();
             _log = new ConsoleLog();
-            Handlers = new StdHandlers(_log);
             return;
         }
 
@@ -98,7 +94,22 @@ namespace EasyMLCore
             lock (_monitor)
             { 
                 _log = newLog;
-                Handlers.ChangeOutputLog(newLog);
+            }
+            return;
+        }
+
+        /// <summary>
+        /// Continuously reports information about the particular process progress.
+        /// </summary>
+        /// <param name="progressInfo">The current state of the progress.</param>
+        public void OnProgressChanged(ProgressInfoBase progressInfo)
+        {
+            if (progressInfo.ShouldBeReported)
+            {
+                //Build progress report message
+                string progressText = progressInfo.GetInfoText(0);
+                //Report the progress
+                Log.Write(progressText, !(progressInfo.NewInfoBlock));
             }
             return;
         }
@@ -327,6 +338,10 @@ namespace EasyMLCore
         /// <returns>Default network model configuration for given task complexity.</returns>
         public NetworkModelConfig GetDefaultNetworkModelConfig(SampleDataset trainingData, bool verbose = true)
         {
+            if (trainingData == null)
+            {
+                throw new ArgumentNullException(nameof(trainingData), "Parameter can not be null.");
+            }
             NetworkModelConfig config =
                 NetworkModelConfig.GetDefaultNetworkModelConfig(trainingData.FirstInputVectorLength,
                                                                 trainingData.FirstOutputVectorLength,
@@ -352,6 +367,10 @@ namespace EasyMLCore
                                                                          bool verbose = true
                                                                          )
         {
+            if (trainingData == null)
+            {
+                throw new ArgumentNullException(nameof(trainingData), "Parameter can not be null.");
+            }
             NetworkModelConfig config =
                 NetworkModelConfig.GetDefaultOutputOnlyNetworkModelConfig(trainingData.Count,
                                                                           inputDropoutP
@@ -372,6 +391,10 @@ namespace EasyMLCore
         /// <returns>Default MLP model configuration for given task complexity.</returns>
         public IModelConfig GetDefaultMLPModelConfig(SampleDataset trainingData, bool verbose = true)
         {
+            if (trainingData == null)
+            {
+                throw new ArgumentNullException(nameof(trainingData), "Parameter can not be null.");
+            }
             NetworkModelConfig netCfg = GetDefaultNetworkModelConfig(trainingData, false);
             CrossValModelConfig modelCfg =
                 new CrossValModelConfig(netCfg, CrossValModelConfig.DefaultFoldDataRatio);
@@ -404,6 +427,18 @@ namespace EasyMLCore
                                   bool detail = false
                                   )
         {
+            if (modelCfg == null)
+            {
+                throw new ArgumentNullException(nameof(modelCfg), "Parameter can not be null.");
+            }
+            if (outputFeatureNames == null)
+            {
+                throw new ArgumentNullException(nameof(outputFeatureNames), "Parameter can not be null.");
+            }
+            if (trainingData == null)
+            {
+                throw new ArgumentNullException(nameof(trainingData), "Parameter can not be null.");
+            }
             if (verbose)
             {
                 Log.Write($"Build model for {taskType} task {taskName}.");
@@ -425,7 +460,7 @@ namespace EasyMLCore
                                            outputFeatureNames,
                                            trainingData,
                                            null,
-                                           verbose ? Handlers.OnProgressChanged : null
+                                           verbose ? OnProgressChanged : null
                                            );
             }
             else if (modelCfgType == typeof(CrossValModelConfig))
@@ -435,7 +470,7 @@ namespace EasyMLCore
                                             taskType,
                                             outputFeatureNames,
                                             trainingData,
-                                            verbose ? Handlers.OnProgressChanged : null
+                                            verbose ? OnProgressChanged : null
                                             );
             }
             else if (modelCfgType == typeof(StackingModelConfig))
@@ -445,7 +480,7 @@ namespace EasyMLCore
                                             taskType,
                                             outputFeatureNames,
                                             trainingData,
-                                            verbose ? Handlers.OnProgressChanged : null
+                                            verbose ? OnProgressChanged : null
                                             );
             }
             else if (modelCfgType == typeof(BHSModelConfig))
@@ -455,7 +490,7 @@ namespace EasyMLCore
                                        taskType,
                                        outputFeatureNames,
                                        trainingData,
-                                       verbose ? Handlers.OnProgressChanged : null
+                                       verbose ? OnProgressChanged : null
                                        );
             }
             else if (modelCfgType == typeof(RVFLModelConfig))
@@ -466,7 +501,7 @@ namespace EasyMLCore
                                         outputFeatureNames,
                                         trainingData,
                                         out _,
-                                        verbose ? Handlers.OnProgressChanged : null
+                                        verbose ? OnProgressChanged : null
                                         );
             }
             else if (modelCfgType == typeof(CompositeModelConfig))
@@ -476,7 +511,7 @@ namespace EasyMLCore
                                              taskType,
                                              outputFeatureNames,
                                              trainingData,
-                                             verbose ? Handlers.OnProgressChanged : null
+                                             verbose ? OnProgressChanged : null
                                              );
             }
             else
@@ -516,6 +551,18 @@ namespace EasyMLCore
                                bool detail = false
                                )
         {
+            if (modelCfg == null)
+            {
+                throw new ArgumentNullException(nameof(modelCfg), "Parameter can not be null.");
+            }
+            if (outputFeatureNames == null)
+            {
+                throw new ArgumentNullException(nameof(outputFeatureNames), "Parameter can not be null.");
+            }
+            if (trainingData == null)
+            {
+                throw new ArgumentNullException(nameof(trainingData), "Parameter can not be null.");
+            }
             if (verbose)
             {
                 Log.Write($"Build model for {taskType} task {taskName}.");
@@ -535,7 +582,7 @@ namespace EasyMLCore
                                 outputFeatureNames,
                                 trainingData,
                                 out preprocessorStat,
-                                verbose ? Handlers.OnProgressChanged : null
+                                verbose ? OnProgressChanged : null
                                 );
             if (verbose)
             {
@@ -564,13 +611,21 @@ namespace EasyMLCore
                                     bool detail = false
                                     )
         {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model), "Parameter can not be null.");
+            }
+            if (testingData == null)
+            {
+                throw new ArgumentNullException(nameof(testingData), "Parameter can not be null.");
+            }
             if (verbose)
             {
                 Log.Write($"Test of the model {model.Name} is running...");
             }
             MLPModelErrStat errStat = model.Test(testingData,
                                                 out resultDataset,
-                                                verbose ? Handlers.OnProgressChanged : null
+                                                verbose ? OnProgressChanged : null
                                                 );
             if (verbose)
             {
@@ -594,11 +649,19 @@ namespace EasyMLCore
                                                      bool detail = false
                                                      )
         {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model), "Parameter can not be null.");
+            }
+            if (testingData == null)
+            {
+                throw new ArgumentNullException(nameof(testingData), "Parameter can not be null.");
+            }
             if (verbose)
             {
                 Log.Write($"Diagnostic test of the model {model.Name} is running...");
             }
-            MLPModelDiagnosticData diagnosticData = model.DiagnosticTest(testingData, verbose ? Handlers.OnProgressChanged : null);
+            MLPModelDiagnosticData diagnosticData = model.DiagnosticTest(testingData, verbose ? OnProgressChanged : null);
             if (verbose)
             {
                 Log.Write(diagnosticData.GetInfoText(detail, 0));
@@ -633,7 +696,19 @@ namespace EasyMLCore
         {
             if (cfg == null)
             {
-                throw new ArgumentNullException(nameof(cfg));
+                throw new ArgumentNullException(nameof(cfg), "Parameter can not be null.");
+            }
+            if (outputFeatureNames == null)
+            {
+                throw new ArgumentNullException(nameof(outputFeatureNames), "Parameter can not be null.");
+            }
+            if (origTrainingData == null)
+            {
+                throw new ArgumentNullException(nameof(origTrainingData), "Parameter can not be null.");
+            }
+            if (origTestingData == null)
+            {
+                throw new ArgumentNullException(nameof(origTestingData), "Parameter can not be null.");
             }
             if (rounds < 1)
             {
@@ -707,6 +782,14 @@ namespace EasyMLCore
                              bool detail = false
                              )
         {
+            if (cfg == null)
+            {
+                throw new ArgumentNullException(nameof(cfg), "Parameter can not be null.");
+            }
+            if (trainingData == null)
+            {
+                throw new ArgumentNullException(nameof(trainingData), "Parameter can not be null.");
+            }
             if (verbose)
             {
                 Log.Write($"Build reservoir computer.");
@@ -716,7 +799,7 @@ namespace EasyMLCore
                 Log.Write($"Build is running...");
             }
             //Build
-            ResComp resComp = ResComp.Build(cfg, trainingData, out reservoirStat, verbose ? Handlers.OnProgressChanged : null);
+            ResComp resComp = ResComp.Build(cfg, trainingData, out reservoirStat, verbose ? OnProgressChanged : null);
             if (verbose)
             {
                 Log.Write(string.Empty);
@@ -744,14 +827,22 @@ namespace EasyMLCore
                                           bool detail = false
                                           )
         {
+            if (resComp == null)
+            {
+                throw new ArgumentNullException(nameof(resComp), "Parameter can not be null.");
+            }
+            if (testingData == null)
+            {
+                throw new ArgumentNullException(nameof(testingData), "Parameter can not be null.");
+            }
             if (verbose)
             {
                 Log.Write($"Test of the reservoir computer is running...");
             }
             List<MLPModelErrStat> errStats = resComp.Test(testingData,
-                                                         out resultDataset,
-                                                         verbose ? Handlers.OnProgressChanged : null
-                                                         );
+                                                          out resultDataset,
+                                                          verbose ? OnProgressChanged : null
+                                                          );
             if (verbose)
             {
                 Log.Write(string.Empty);
@@ -784,9 +875,17 @@ namespace EasyMLCore
         {
             if (cfg == null)
             {
-                throw new ArgumentNullException(nameof(cfg));
+                throw new ArgumentNullException(nameof(cfg), "Parameter can not be null.");
             }
-            if(cfg.TaskCfgCollection.Count != 1)
+            if (origTrainingData == null)
+            {
+                throw new ArgumentNullException(nameof(origTrainingData), "Parameter can not be null.");
+            }
+            if (origTestingData == null)
+            {
+                throw new ArgumentNullException(nameof(origTestingData), "Parameter can not be null.");
+            }
+            if (cfg.TaskCfgCollection.Count != 1)
             {
                 throw new ArgumentException($"Only single task configuration is supported.", nameof(cfg));
             }
@@ -857,11 +956,19 @@ namespace EasyMLCore
                                                            bool detail = false
                                                            )
         {
+            if (resComp == null)
+            {
+                throw new ArgumentNullException(nameof(resComp), "Parameter can not be null.");
+            }
+            if (testingData == null)
+            {
+                throw new ArgumentNullException(nameof(testingData), "Parameter can not be null.");
+            }
             if (verbose)
             {
                 Log.Write($"Diagnostic test of the Reservoir Computer is running...");
             }
-            List<MLPModelDiagnosticData> tasksDiagData = resComp.DiagnosticTest(testingData, verbose ? Handlers.OnProgressChanged : null);
+            List<MLPModelDiagnosticData> tasksDiagData = resComp.DiagnosticTest(testingData, verbose ? OnProgressChanged : null);
             if (verbose)
             {
                 //Log.Write(string.Empty);

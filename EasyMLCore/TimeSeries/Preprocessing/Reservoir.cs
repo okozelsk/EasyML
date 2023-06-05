@@ -300,9 +300,9 @@ namespace EasyMLCore.TimeSeries
         {
             OutSectionsLengths = (int[])source.OutSectionsLengths.Clone();
             NumOfInputSynapses = source.NumOfInputSynapses;
-            InputSynapsesWeightStat = new BasicStat(source.InputSynapsesWeightStat);
+            InputSynapsesWeightStat = source.InputSynapsesWeightStat.DeepClone();
             NumOfHiddenSynapses = source.NumOfHiddenSynapses;
-            HiddenSynapsesWeightStat = new BasicStat(source.HiddenSynapsesWeightStat);
+            HiddenSynapsesWeightStat = source.HiddenSynapsesWeightStat.DeepClone();
             ResCfg = (ReservoirConfig)source.ResCfg.DeepClone();
             _inputFilters = new RealFeatureFilter[source._inputFilters.Length];
             for(int i = 0; i < source._inputFilters.Length; i++)

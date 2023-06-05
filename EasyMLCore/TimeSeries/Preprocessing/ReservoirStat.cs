@@ -90,10 +90,10 @@ namespace EasyMLCore.TimeSeries
             {
                 IndividualNeuronStats[i] = new ReservoirNeuronStat(source.IndividualNeuronStats[i]);
             }
-            NeuronsActivationSpanStat = new BasicStat(source.NeuronsActivationSpanStat);
-            NeuronsActivationNegRangeUsage = new BasicStat(source.NeuronsActivationNegRangeUsage);
-            NeuronsActivationPosRangeUsage = new BasicStat(source.NeuronsActivationPosRangeUsage);
-            NeuronsAvgSpikeEventStat = new BasicStat(source.NeuronsAvgSpikeEventStat);
+            NeuronsActivationSpanStat = source.NeuronsActivationSpanStat.DeepClone();
+            NeuronsActivationNegRangeUsage = source.NeuronsActivationNegRangeUsage.DeepClone();
+            NeuronsActivationPosRangeUsage = source.NeuronsActivationPosRangeUsage.DeepClone();
+            NeuronsAvgSpikeEventStat = source.NeuronsAvgSpikeEventStat.DeepClone();
             NumOfNeuronsWithoutStimuli = source.NumOfNeuronsWithoutStimuli;
             return;
         }

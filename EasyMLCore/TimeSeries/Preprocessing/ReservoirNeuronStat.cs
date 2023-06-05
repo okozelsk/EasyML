@@ -48,10 +48,10 @@ namespace EasyMLCore.TimeSeries
         /// <param name="source">Source instance..</param>
         public ReservoirNeuronStat(ReservoirNeuronStat source)
         {
-            ActivationStat = new BasicStat(source.ActivationStat);
-            PosActivationStat = new BasicStat(source.PosActivationStat);
-            NegActivationStat = new BasicStat(source.NegActivationStat);
-            SpikeEventStat = new BasicStat(source.SpikeEventStat);
+            ActivationStat = source.ActivationStat.DeepClone();
+            PosActivationStat = source.PosActivationStat.DeepClone();
+            NegActivationStat = source.NegActivationStat.DeepClone();
+            SpikeEventStat = source.SpikeEventStat.DeepClone();
             return;
         }
 

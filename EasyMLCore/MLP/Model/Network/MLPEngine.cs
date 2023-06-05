@@ -90,8 +90,8 @@ namespace EasyMLCore.MLP
                 LayerCollection.Add(layer.DeepClone());
             }
             _flatWeights = (double[])source._flatWeights.Clone();
-            HLWeightsStat = new BasicStat(source.HLWeightsStat);
-            OLWeightsStat = new BasicStat(source.OLWeightsStat);
+            HLWeightsStat = source.HLWeightsStat.DeepClone();
+            OLWeightsStat = source.OLWeightsStat.DeepClone();
             return;
         }
 

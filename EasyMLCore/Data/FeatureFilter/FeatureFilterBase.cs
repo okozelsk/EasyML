@@ -75,7 +75,7 @@ namespace EasyMLCore.Data
         {
             ValueType = source.ValueType;
             Use = source.Use;
-            SamplesStat = new BasicStat(source.SamplesStat);
+            SamplesStat = source.SamplesStat.DeepClone();
             return;
         }
 
