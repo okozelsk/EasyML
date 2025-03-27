@@ -34,7 +34,7 @@ namespace EasyMLCore
         private EasyML()
         {
             _monitor = new object();
-            _log = new ConsoleLog();
+            _log = null;
             return;
         }
 
@@ -48,7 +48,17 @@ namespace EasyMLCore
         /// <summary>
         /// Gets the instance of associated output log.
         /// </summary>
-        public IOutputLog Log { get { lock (_monitor) { return _log; } } }
+        public IOutputLog Log
+        {
+            get
+            {
+                lock (_monitor)
+                {
+                    _log ??= new ConsoleLog();
+                    return _log;
+                }
+            }
+        }
 
         //Static methods
 

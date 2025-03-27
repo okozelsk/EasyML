@@ -74,6 +74,7 @@ namespace EasyMLCore.TimeSeries
         private readonly double _retainment;
         private readonly double _spikeEventThreshold;
         private readonly double _fadingCoeff;
+        private readonly double _maxLogarithmizedThresholdQuants;
         private double _stimuliSum;
         private double _prevActivation;
         private double _activation;
@@ -101,6 +102,7 @@ namespace EasyMLCore.TimeSeries
             _retainment = retainment;
             _spikeEventThreshold = spikeEventThreshold;
             _fadingCoeff = fadingCoeff;
+            _maxLogarithmizedThresholdQuants = 1d + Math.Log(1d / _spikeEventThreshold);
             _stimuliSum = 0d;
             InputSynapses = new List<ReservoirSynapse>();
             HiddenSynapses = new List<ReservoirSynapse>();
@@ -137,6 +139,7 @@ namespace EasyMLCore.TimeSeries
             _retainment = source._retainment;
             _spikeEventThreshold = source._spikeEventThreshold;
             _fadingCoeff = source._fadingCoeff;
+            _maxLogarithmizedThresholdQuants = source._maxLogarithmizedThresholdQuants;
             _stimuliSum = source._stimuliSum;
             _prevActivation = source._prevActivation;
             _activation = source._activation;
@@ -258,7 +261,7 @@ namespace EasyMLCore.TimeSeries
             //Squared activation
             if (PredictorSwitches[(int)Predictor.SquaredActivation])
             {
-                //Square it but keep sign
+                //Square it but keep original sign
                 Predictors[(int)Predictor.SquaredActivation] = _activation * _activation * Math.Sign(_activation);
             }
             else
@@ -269,16 +272,17 @@ namespace EasyMLCore.TimeSeries
             if (PredictorSwitches[(int)Predictor.SpikesFadingTrace])
             {
                 Predictors[(int)Predictor.SpikesFadingTrace] *= _fadingCoeff;
-                //Original analog spike event implementation firstly invented in predecessor project (NET, StateMachine)
-                //SpikeEvent = (_activation - _prevActivation) >= _spikeEventThreshold;
-                //Enhanced spike implementation (firstly invented here in EasyML)
-                //Spike power as Logarithmized Threshold Quants
-                SpikeEvent = ((_activation - _prevActivation) >= _spikeEventThreshold);
+                //Original analog spike event implementation was firstly invented in a simple form within the predecessor project (https://github.com/okozelsk/NET)
+                //where spike event was defined as: SpikeEvent = ((Activation - PreviousActivation) >= Threshold) and spike power was always 1.
+                //Now, EasyML introduces enhanced analog spike implementation. Spike event condition is the same, but
+                //the spike power is dynamic, defined as Normalized Logarithmized Threshold Quants
+                double activationDifference = (_activation - _prevActivation);
+                SpikeEvent = (activationDifference >= _spikeEventThreshold);
                 SpikePower = 0d;
                 if (SpikeEvent)
                 {
-                    double denominator = Math.Log(1d / _spikeEventThreshold) + 1d;
-                    SpikePower = Math.Min(denominator, 1d + Math.Log((_activation - _prevActivation) / _spikeEventThreshold)) / denominator;
+                    double logarithmizedThresholdQuants = 1d + Math.Log(activationDifference / _spikeEventThreshold);
+                    SpikePower = Math.Min(logarithmizedThresholdQuants, _maxLogarithmizedThresholdQuants) / _maxLogarithmizedThresholdQuants;
                 }
                 Predictors[(int)Predictor.SpikesFadingTrace] += SpikePower;
             }

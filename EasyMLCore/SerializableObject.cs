@@ -18,10 +18,10 @@ namespace EasyMLCore
         /// <returns>Deserialized object instance.</returns>
         public static SerializableObject Deserialize(Stream stream)
         {
+            #pragma warning disable SYSLIB0011 // Typ nebo člen je zastaralý.
             BinaryFormatter formatter = new BinaryFormatter();
-#pragma warning disable SYSLIB0011 // Typ nebo člen je zastaralý.
             return (SerializableObject)formatter.Deserialize(stream);
-#pragma warning restore SYSLIB0011 // Typ nebo člen je zastaralý.
+            #pragma warning restore SYSLIB0011 // Typ nebo člen je zastaralý.
         }
 
         /// <summary>
@@ -42,8 +42,8 @@ namespace EasyMLCore
         /// <param name="stream">A stream.</param>
         public void Serialize(Stream stream)
         {
-            BinaryFormatter formatter = new();
             #pragma warning disable SYSLIB0011 // Typ nebo člen je zastaralý.
+            BinaryFormatter formatter = new();
             formatter.Serialize(stream, this);
             #pragma warning restore SYSLIB0011 // Typ nebo člen je zastaralý.
             return;

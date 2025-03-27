@@ -17,8 +17,8 @@ If you want to write anything of your own to the log, simply use the EasyML.Oper
 <br />
 <br />
 **General characteristics and limitations**
-* The source code is independent on any third party and entire code is written for .net 6.0 in C# 10
-* No GPU utilization, only CPUs
+* The source code is not dependent on any third party library and entire code is written for .net 8.0 in C# 12
+* No GPU utilization
 * Common floating point data type is double (not float)
 * Each ML model class provides static method Build, which creates valid and trained instance (there is no public constructors). The Build method always requires an instance of the appropriate Config class. Config class specifies model's properties, ensures the basic consistency and has constructor(s) for setup from scratch and also the constructor accepting XElement. Config class of any type always provides GetXml method
 * Each ML model provides a Compute method (respectively the IComputable interface). The method expects a 1D array of doubles on input and returns the result as a 1D array of doubles as well
@@ -26,9 +26,9 @@ If you want to write anything of your own to the log, simply use the EasyML.Oper
 * Each MLP model provides a DiagnosticTest method that checks the results of the main model and all its sub-models on test dataset and returns diagnostic data
 * It is not necessary to standardize/normalize the input data in advance. ML models take care of this themselves
 * EasyML does not include data preprocessing tools such as filling in missing values in samples
-* Almost every component is derived from [SerializableObject](./EasyMLCore/SerializableObject.cs) base class and is easily serializable/deserializable using methods of that base class. Serialization uses the BinaryFormatter
 * EasyML does not support the use of distributed resources and is intended for the preparation of models solving small to medium-sized tasks. It is not intended for massive ML tasks with hundreds of thousands of samples
 * Supported ML task types are: Categorical (multi-class classification), Binary (single or multiple decisions) and Regression (single or multiple forecasting)
+* Almost every component is derived from [SerializableObject](./EasyMLCore/SerializableObject.cs) base class and is easily serializable/deserializable using methods of that base class. Serialization uses the BinaryFormatter which is unfortunately currently obsolete. In .net8 it must be explicitly allowed in application's .csproj. To allow BinaryFormatter put element &lt;EnableUnsafeBinaryFormatterSerialization&gt;true&lt;/EnableUnsafeBinaryFormatterSerialization&gt; into element &lt;PropertyGroup&gt; in your .csproj file. 
 
 ### Activation (namespace EasyMLCore.Activation)
 Contains activation functions. Currently implemented [activations](./EasyMLCore/Activation) are: BentIdentity, ElliotSig, ELU, GELU, HardLim, LeakyReLU, Linear, RadBas, ReLU, SELU, Sigmoid, Sine, Softmax, Softplus, TanH.
